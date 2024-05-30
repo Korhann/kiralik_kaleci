@@ -1,0 +1,43 @@
+
+- DEVTOOLS videosunu izle (1)
+- HOMEPAGE Yİ BİTİR VE ARTIK MESSAGE PAGE YE GEÇ
+
+
+SORUNLAR:
+--------------
+GENEL
+- ad soyadı ayrı ayrı al sign up ve login sayfasında (profile page için orada isim ve soyadı kullanıcıya gösteremiyorum)
+- navigasyon barını değiştir (sonradan değiştir unutma).
+---------------
+MESAJLAŞMA SORUNLARI
+
+- eğer bir karda dokunulmazsa sharedvalues.sellerUid bilgisi atanmadığı
+için null gönderiliyor.
+- messagepage sayfasındaki konuşmalar basılan karta göre değişiyor
+
+
+--USER--
+
+SELLERDETAILS
+- selleraddpage yle aynı renk yap saatleri ve kaydırılabilir yap.
+- kullanıcıyı ödeme sayfasına yönlendir
+- sohbet butonuna bastığında satıcıya otomatik olarak 'Merhaba' yazsın.
+
+PROFILEPAGE
+- ad, soyadı veritabanından çek
+- kart bilgilerimdeki texti kart numarası yap
+- carddetailspage in yazılarını daha büyük yap
+
+
+--SELLER--
+
+SELLERADDPAGE
+- yaş,boy,kilo nun hata yazıları yanlış yerde gözükyor.
+- sonradan onclick teki resim boyutunu değiştir(taha nın gönderdiği koda bakıp kopyalayabilirsin)
+- dont use buildcontext in async apps hatasını düzelt.
+- sonradan bütün şehirleri ve ilçeleri ekle(kolay yolunu öğren)
+- fiyat da suffix text in konumunu ayarla
+
+
+
+
