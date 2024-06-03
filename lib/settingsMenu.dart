@@ -2,31 +2,33 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellerChangePassword.dart';
 import 'package:kiralik_kaleci/sellerChangeUserName.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
-class SellerAccountMenu extends StatefulWidget {
-  const SellerAccountMenu({super.key});
+class SettingsMenu extends StatefulWidget {
+  const SettingsMenu({super.key});
 
   @override
-  State<SellerAccountMenu> createState() => _SellerAccountMenuState();
+  State<SettingsMenu> createState() => _SettingsMenuState();
 }
 
-class _SellerAccountMenuState extends State<SellerAccountMenu> {
+class _SettingsMenuState extends State<SettingsMenu> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: sellerbackground,
+        backgroundColor: userorseller ? sellerbackground: background,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(Icons.arrow_back, color: Colors.white)
+          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black)
         ),
       ),
-      backgroundColor: sellerbackground,
+      backgroundColor: userorseller ? sellerbackground: background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +44,7 @@ class _SellerAccountMenuState extends State<SellerAccountMenu> {
               child: Container(
                 height: 50,
                 width: double.infinity,
-                color: sellergrey,
+                color: userorseller ? sellergrey: Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -52,14 +54,14 @@ class _SellerAccountMenuState extends State<SellerAccountMenu> {
                         style: GoogleFonts.roboto(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white
+                          color: userorseller ? Colors.white: Colors.black
                         ),
                       ),
                       const Spacer(),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward,
                         size: 24,
-                        color: Colors.white,
+                        color: userorseller ? Colors.white: Colors.black,
                       )
                     ],
                   ),
@@ -80,7 +82,7 @@ class _SellerAccountMenuState extends State<SellerAccountMenu> {
               child: Container(
                 height: 50,
                 width: double.infinity,
-                color: sellergrey,
+                color: userorseller ? sellergrey: Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -90,14 +92,14 @@ class _SellerAccountMenuState extends State<SellerAccountMenu> {
                         style: GoogleFonts.roboto(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white
+                          color: userorseller ? Colors.white: Colors.black
                         ),
                       ),
                       const Spacer(),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward,
                         size: 24,
-                        color: Colors.white,
+                        color: userorseller ? Colors.white: Colors.black,
                       )
                     ],
                   ),

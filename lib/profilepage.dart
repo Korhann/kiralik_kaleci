@@ -3,8 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/CardDetailsPage.dart';
-import 'package:kiralik_kaleci/accountmenu.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
+import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/showCardDetails.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -17,15 +18,14 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+
   // veri tabanından çektiğim veriler
   String? fullName;
   String? email;
 
   // authentication of the user
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
   final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-
   String? cardNumber;
 
   @override
@@ -70,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const AccountMenu(),
+                          builder: (context) => const SettingsMenu(),
                         ),
                       );
                     }, 
@@ -118,10 +118,12 @@ class _ProfilePageState extends State<ProfilePage> {
                               return;
                             // satıcı sayfasına geç
                             case 1:
+                              // settings in rengini değiştirmek için(siyah yapıyor)
+                              userorseller = true;
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => SellerMainPage()));
+                                      builder: (context) => const SellerMainPage()));
                               break;
                           }
                         },
@@ -178,34 +180,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              
-              /*
-              Container(
-                height: 60,
-                width: double.infinity,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Soyad",
-                        style: GoogleFonts.inter(
-                            fontSize: 22, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        // this is going to be the lastname of the user
-                        "Demir",
-                        style: GoogleFonts.inter(
-                            fontSize: 16, fontWeight: FontWeight.w300),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              */
               Container(
                 height: 1,
                 color: Colors.black,
@@ -304,7 +278,7 @@ class _ProfilePageState extends State<ProfilePage> {
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => CardDetails()));
+                      MaterialPageRoute(builder: (context) => const CardDetails()));
                 },
                 child: Container(
                   height: 70,
@@ -357,7 +331,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   width: 200,
                   height: 60,
                   child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async{
                         // sign out the user
                         _auth.signOut();
                       },

@@ -150,11 +150,12 @@ class _SignUpState extends State<SignUp> {
                                 fillColor: const Color(0xFFE5E5E5),
                                 filled: true),
                             validator: (value) {
-                              if (value!.isEmpty || !RegExp(r'^[a-z A-Z]+$').hasMatch(value)) {
+                              final nameSurname = value?.trim();
+                              if (nameSurname!.isEmpty || !RegExp(r'^[a-z A-Z]+$').hasMatch(nameSurname)) {
                                 setState(() {
                                   _showErrorName = true;
                                 });
-                                return null;
+                                return '';
                               } else {
                                 setState(() {
                                   _showErrorName = false;
@@ -207,11 +208,12 @@ class _SignUpState extends State<SignUp> {
                                 fillColor: const Color(0xFFE5E5E5),
                                 filled: true),
                             validator: (value) {
-                              if (value!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
+                              final email = value?.trim();
+                              if (email!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email)) {
                                 setState(() {
                                   _showErrorEmail = true;
                                 });
-                                return null;
+                                return '';
                               }else {
                                 setState(() {
                                   _showErrorEmail = false;
@@ -264,11 +266,12 @@ class _SignUpState extends State<SignUp> {
                             filled: true,
                           ),
                           validator: (value) {
-                          if (value!.isEmpty || value.length < 6 || value.contains(" ")) {
+                          final password = value?.trim();
+                          if (password!.isEmpty || password.length < 6 || password.contains(" ")) {
                             setState(() {
                               _showErrorPassword = true;
                             });
-                            return null;
+                            return '';
                           } else {
                             setState(() {
                               _showErrorPassword = false;
@@ -282,7 +285,7 @@ class _SignUpState extends State<SignUp> {
                 
                   const SizedBox(height: 5),
                 
-                  if (_showErrorPassword && passwordController.text.length < 6)
+                  if (_showErrorPassword && passwordController.text.trim().length < 6)
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -293,7 +296,7 @@ class _SignUpState extends State<SignUp> {
                       ),
                     ),
                 
-                  if (_showErrorPassword && passwordController.text.contains(" "))
+                  if (_showErrorPassword && passwordController.text.trim().contains(" "))
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -303,7 +306,7 @@ class _SignUpState extends State<SignUp> {
                         ),
                       ),
                     ),
-                  if (_showErrorPassword && passwordController.text.isEmpty)
+                  if (_showErrorPassword && passwordController.text.trim().isEmpty)
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -343,11 +346,12 @@ class _SignUpState extends State<SignUp> {
                               filled: true
                           ),
                           validator: (value) {
-                            if (value!.isEmpty || confirmPasswordController.text.trim() != passwordController.text.trim()){
+                            final repassword = value?.trim();
+                            if (repassword!.isEmpty || confirmPasswordController.text.trim() != passwordController.text.trim()){
                               setState(() {
                                 _showErrorRePassword = true;
                               });
-                              return null;
+                              return '';
                             }
                             else {
                               setState(() {
@@ -361,7 +365,7 @@ class _SignUpState extends State<SignUp> {
                     
                     const SizedBox(height: 5),
                 
-                    if (_showErrorRePassword && passwordController.text.isEmpty)
+                    if (_showErrorRePassword && passwordController.text.trim().isEmpty)
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(

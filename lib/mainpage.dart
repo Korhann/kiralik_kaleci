@@ -36,7 +36,6 @@ Widget build(BuildContext context) {
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         // kullanıcı giriş yaptı
-        // message page da bir sorun var, onu kaldırınca çalışıyor
         return Scaffold(
           body: screens()[_currentIndex],
           bottomNavigationBar: BottomNavyBar(

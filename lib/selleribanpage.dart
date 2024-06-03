@@ -89,7 +89,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                 child: Text(
                   'IBAN no',
                   style: GoogleFonts.roboto(
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.w500,
                     color: Colors.white
                   ),
@@ -165,7 +165,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                 child: Text(
                   'İban Sahibinin Adı',
                   style: GoogleFonts.roboto(
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.w500,
                     color: Colors.white
                   ),

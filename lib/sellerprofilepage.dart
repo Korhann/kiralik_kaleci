@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/loginpage.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
-import 'package:kiralik_kaleci/sellerAccountMenu.dart';
+import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/selleribanpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -30,6 +33,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   bool isLoadingName = true;
   bool isLoadingEmail = true;
   bool isLoadingIban = true;
+
 
   @override
   void initState() {
@@ -69,7 +73,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const SellerAccountMenu(),
+                                builder: (context) => const SettingsMenu(),
                               ),
                             );
                           },
@@ -118,6 +122,8 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                           switch (index) {
                             // aynı sayfada kal
                             case 0:
+                              // settings in rengini değiştirmek için(beyaz yapıyor)
+                              userorseller = false;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -284,9 +290,13 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                   width: 200,
                   height: 60,
                   child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async{
                         // sign out the user
                         _auth.signOut();
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) => const MainPage()),
+                          (Route<dynamic> route) => false,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: sellergrey),
