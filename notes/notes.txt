@@ -1,8 +1,7 @@
 
 - DEVTOOLS videosunu izle (1)
 
-
-- kullanıcı şifre veya kullanıcı adı değiştirdiğinde onay mesajı ver
 - profil sayfasında kullanıcı adını yenileyince hemen gelmesini istiyorum, sayfa değiştirince değil
-
+- kullanıcı adı ve şifre değiştirince ki doğrulama mesajı ve bekleme süresini sonradan gözden geçir
+- dolap bakiyem sayfası yap sonrada sitenin tüm akışını kontrol et
 

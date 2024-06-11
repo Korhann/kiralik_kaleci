@@ -184,6 +184,11 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
     );
   }
 
+  /*
+  MEVCUT ŞİFRELER
+   Krhndmr2002
+  */
+
   void changePassword() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && user.email != null) {
@@ -192,6 +197,7 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
       try {
         await user.reauthenticateWithCredential(cred);
         await user.updatePassword(_newPasswordController.text.trim());
+        await showBottomSheetDialog(context);
         Navigator.pop(context);
       } catch (e) {
         setState(() {
@@ -207,4 +213,30 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
       _reauthErrorMessage = '';
     });
   }
+  Future<void> showBottomSheetDialog(BuildContext context) async {
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return Container(
+        height: 80,
+        padding: const EdgeInsets.all(16.0),
+        color: userorseller ? sellerbackground : background,
+        child: Center(
+          child: Text(
+            'Kullanıcı adı başarı ile güncellenmiştir',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: userorseller ? Colors.white : Colors.black,
+            ),
+          ),
+        ),
+      );
+    },
+  );
+  // Delay pop to give user time to see the confirmation message
+  await Future.delayed(const Duration(seconds: 1));
+}
 }

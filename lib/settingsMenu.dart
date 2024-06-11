@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/globals.dart';
-import 'package:kiralik_kaleci/sellerChangePassword.dart';
-import 'package:kiralik_kaleci/sellerChangeUserName.dart';
+import 'package:kiralik_kaleci/changePassword.dart';
+import 'package:kiralik_kaleci/changeUsername.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class SettingsMenu extends StatefulWidget {

@@ -137,14 +137,43 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
     if (currentuser != null) {
       try {
         await FirebaseFirestore.instance.collection('Users')
-            .doc(currentuser)
-            .update({
+          .doc(currentuser)
+          .update({
           'fullName': _newUsername.text.trim()
         });
+        // onay mesajını göster
+        await showBottomSheetDialog(context);
         Navigator.pop(context);
       } catch (e) {
         print('Error updating username $e');
       }
     }
   }
+
+  Future<void> showBottomSheetDialog(BuildContext context) async {
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return Container(
+        height: 80,
+        padding: const EdgeInsets.all(16.0),
+        color: userorseller ? sellerbackground : background,
+        child: Center(
+          child: Text(
+            'Kullanıcı adı başarı ile güncellenmiştir',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: userorseller ? Colors.white : Colors.black,
+            ),
+          ),
+        ),
+      );
+    },
+  );
+  // Delay pop to give user time to see the confirmation message
+  await Future.delayed(const Duration(seconds: 1));
+}
 }

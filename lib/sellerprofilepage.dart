@@ -30,17 +30,10 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
 
-  bool isLoadingName = true;
-  bool isLoadingEmail = true;
-  bool isLoadingIban = true;
-
 
   @override
   void initState() {
     super.initState();
-    _getUserName();
-    _getEmail();
-    _getIbanNo();
   }
 
   @override
@@ -53,35 +46,27 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
-              isLoadingName
-                  ? const CircularProgressIndicator()
-                  : Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
-                          child: Text(
-                            fullName ?? 'No name',
-                            style: GoogleFonts.roboto(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20.0),
-                          ),
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10.0),
+                    child: _userName(),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsMenu(),
                         ),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SettingsMenu(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.settings,
-                              size: 28, color: Colors.white),
-                        ),
-                      ],
+                      );
+                    },
+                      icon: const Icon(Icons.settings,
+                      size: 28, color: Colors.white),
                     ),
+                  ],
+                ),
               const SizedBox(height: 30),
               Container(
                 color: sellergrey,
@@ -172,14 +157,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                             fontSize: 22, fontWeight: FontWeight.w500,color: Colors.white
                             ),
                       ),
-                      Text(
-                        fullName ?? 'No name',
-                        style: GoogleFonts.roboto(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white
-                        ),
-                      )
+                      _getUserName()
                     ],
                   ),
                 ),
@@ -204,14 +182,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                             fontSize: 22, fontWeight: FontWeight.w500,color: Colors.white
                         ),
                       ),
-                      Text(
-                        email ?? 'No email',
-                        style: GoogleFonts.roboto(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white
-                        ),
-                      )
+                      _getEmail()
                     ],
                   ),
                 ),
@@ -249,14 +220,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                               color: Colors.white
                             ),
                           ),
-                          Text(
-                            iban ?? 'No iban',
-                            style: GoogleFonts.roboto(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white
-                            ),
-                          )
+                          _getIbanNo()
                         ],
                       ),
                     ),
@@ -323,77 +287,100 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
     );
   }
 
-  Future<void> _getUserName() async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-          .instance
-          .collection("Users")
-          .doc(currentuser)
-          .get();
 
-      if (snapshot.exists) {
-        setState(() {
-          fullName = snapshot.data()?['fullName']?.toString();
-          isLoadingName = false;
-        });
-      } else {
-        setState(() {
-          isLoadingName = false;
-        });
-      }
-    } catch (e) {
-      print("Error: $e");
-      setState(() {
-        isLoadingName = false;
-      });
-    }
+  Widget _getUserName() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        return Text(
+          userData['fullName'] ?? '',
+          style: GoogleFonts.roboto(
+            fontSize: 16,
+            fontWeight:FontWeight.w400,
+            color: Colors.white
+          )
+        );
+      },
+    );
   }
-  Future<void> _getEmail() async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-          .instance
-          .collection("Users")
-          .doc(currentuser)
-          .get();
 
-      if (snapshot.exists) {
-        email = snapshot.data()?['email']?.toString();
-        setState(() {
-          isLoadingEmail = false;
-        });
-      }
-    } catch (e) {
-      print("Error: $e");
-      setState(() {
-        isLoadingEmail = false;
-      });
-    }
+  Widget _getEmail() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        return Text(
+          userData['email'] ?? '',
+          style: GoogleFonts.roboto(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Colors.white
+          ),
+        );
+      },
+    );
   }
-  Future<void> _getIbanNo() async {
-    try{
-      DocumentSnapshot<Map<String,dynamic>> snapshot = await FirebaseFirestore
-      .instance
-      .collection('Users')
-      .doc(currentuser)
-      .get();
 
-      if (snapshot.exists) {
-        Map<String,dynamic> data = snapshot.data() as Map<String,dynamic>;
-        if (data.isNotEmpty && data.containsKey('ibanDetails')) {
-          Map<String,dynamic> ibanDetails = data['ibanDetails'];
-          if (ibanDetails.isNotEmpty) {
-            iban = ibanDetails['ibanNo'];
-            setState(() {
-              isLoadingIban = false;
-            });
-          }
-        } 
-      }
-    } catch(e) {
-      print('Error $e');
-      setState(() {
-        isLoadingIban = false;
-      });
-    } 
+  Widget _getIbanNo() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        if (userData.containsKey('ibanDetails') && userData['ibanDetails'].isNotEmpty) {
+          var ibanDetails = userData['ibanDetails'] as Map<String, dynamic>;
+          return Text(
+            ibanDetails['ibanNo'] ?? '',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.white
+            ),
+          );
+        } else {
+          return const Text('No IBAN');
+        }
+      },
+    );
+  }
+  Widget _userName() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        return Text(
+          userData['fullName'] ?? '',
+          style: GoogleFonts.roboto(
+            fontSize: 20,
+            fontWeight:FontWeight.bold,
+            color: Colors.white
+          )
+        );
+      },
+    );
   }
 }

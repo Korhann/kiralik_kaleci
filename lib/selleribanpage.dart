@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
@@ -234,14 +235,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
       String iban = _ibanController.text;
       String name = _nameController.text;
 
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      );
+      
       try {
         Map<String, dynamic> ibanDetails = {
           'ibanNo': iban,
@@ -255,7 +249,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
           .update({'ibanDetails': ibanDetails});
         _ibanController.clear();
         _nameController.clear();
-
+        await showBottomSheetDialog(context);
         Navigator.of(context).pop();
 
       } catch (e) {
@@ -265,4 +259,30 @@ class SellerIbanPageState extends State<SellerIbanPage> {
       }
     }
   }
+  Future<void> showBottomSheetDialog(BuildContext context) async {
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return Container(
+        height: 80,
+        padding: const EdgeInsets.all(16.0),
+        color: userorseller ? sellerbackground : background,
+        child: Center(
+          child: Text(
+            ' Iban numarası başarı ile güncellenmiştir',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: userorseller ? Colors.white : Colors.black,
+            ),
+          ),
+        ),
+      );
+    },
+  );
+  // Delay pop to give user time to see the confirmation message
+  await Future.delayed(const Duration(seconds: 1));
+}
 }

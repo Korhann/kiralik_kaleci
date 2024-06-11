@@ -45,24 +45,9 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 30),
               Row(
                 children: [
-                  FutureBuilder<void>(
-                  future: _getUserName(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: Text(
-                          "$fullName",
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20.0,
-                          ),
-                        ),
-                      );
-                    } else {
-                      return const CircularProgressIndicator();
-                    }
-                  }
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10.0),
+                    child: _userName() // fontsize 20 olcak
                   ),
                   const Spacer(),
                   IconButton(
@@ -93,7 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       Text(
                         "Kaleci Ol",
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.roboto(
                             fontSize: 18, fontWeight: FontWeight.w500),
                       ),
                       ToggleSwitch(
@@ -138,7 +123,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Text(
                   "Hesap",
                   textAlign: TextAlign.start,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
@@ -157,25 +142,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       Text(
                         "Ad Soyad",
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.roboto(
                             fontSize: 22, fontWeight: FontWeight.w500),
                       ),
-                      FutureBuilder<void>(
-                        future: _getUserName(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.done) {
-                            return Text(
-                              "$fullName",
-                              style: GoogleFonts.inter(
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            );
-                          } else {
-                            return const CircularProgressIndicator();
-                          }
-                        },
-                      ),
+                      _getUserName()
                     ],
                   ),
                 ),
@@ -196,23 +166,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       Text(
                         "Email",
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.roboto(
                             fontSize: 22, fontWeight: FontWeight.w500),
                       ),
-                      FutureBuilder(
-                          future: _getEmail(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.done) {
-                              return Text(
-                                "$email",
-                                style: GoogleFonts.inter(
-                                    fontSize: 16, fontWeight: FontWeight.w400),
-                              );
-                            } else {
-                              return const CircularProgressIndicator();
-                            }
-                          }),
+                      _getEmail()
                     ],
                   ),
                 ),
@@ -222,8 +179,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 padding: const EdgeInsets.only(left: 10),
                 child: Text(
                   "Ödeme",
-                  style: GoogleFonts.inter(
-                      fontSize: 20, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.roboto(
+                      fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black),
                 ),
               ),
               const SizedBox(height: 10),
@@ -246,26 +203,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Text(
                           "Kart Bilgilerim",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.roboto(
                               fontSize: 22, fontWeight: FontWeight.w500),
                         ),
-                        FutureBuilder<void>(
-                          future: _getCardNumber(),
-                          builder: (context,snapshot) {
-                            if (snapshot.connectionState == ConnectionState.done) {
-                              return Text(
-                                "$cardNumber",
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400
-                                ),
-                              );
-                            }
-                            else {
-                              return Text("");
-                            }
-                          }
-                        )
+                        _getCardNumber()
                       ],
                     ),
                   ),
@@ -291,7 +232,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Text(
                           "Kart Ekle",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.roboto(
                               fontSize: 22, fontWeight: FontWeight.w500),
                         ),
                         const Icon(Icons.add, size: 24, color: Colors.black)
@@ -316,7 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Text(
                           "Favorilerim",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.roboto(
                               fontSize: 22, fontWeight: FontWeight.w500),
                         ),
                         const Icon(Icons.favorite_border, size: 24)
@@ -342,7 +283,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           Text(
                             "Çıkış Yap",
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.roboto(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black),
@@ -361,56 +302,99 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Future<void> _getUserName() async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-          .instance
-          .collection("Users")
-          .doc(currentuser)
-          .get();
-
-      if (snapshot.exists) {
-        fullName = snapshot.data()?['fullName']?.toString();
-      }
-    } catch (e) {
-      print("Error: $e");
-    }
-  }
-
-  Future<void> _getEmail() async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-          .instance
-          .collection("Users")
-          .doc(currentuser)
-          .get();
-
-      if (snapshot.exists) {
-        email = snapshot.data()?['email']?.toString();
-      }
-    } catch (e) {
-      print("Error: $e");
-    }
-  }
-  Future<void> _getCardNumber() async{
-    try {
-      DocumentSnapshot<Map<String,dynamic>> snapshot = await FirebaseFirestore
-      .instance
-      .collection("Users")
-      .doc(currentuser)
-      .get();
-
-      if (snapshot.exists) {
-      Map<String,dynamic> data = snapshot.data() as Map<String,dynamic>;
-      if (data.isNotEmpty && data.containsKey("cardDetails")) {
-        Map<String,dynamic> cardDetails = data['cardDetails'];
-        if (cardDetails.isNotEmpty) {
-          cardNumber = cardDetails['cardNumber'];
+  Widget _getUserName() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
         }
-      }
-    }
-    }catch (e) {
-      print("error $e");
-    }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        return Text(
+          userData['fullName'] ?? '',
+          style: GoogleFonts.roboto(
+            fontSize: 16,
+            fontWeight:FontWeight.w400,
+            color: Colors.black
+          )
+        );
+      },
+    );
+  }
+
+  Widget _getEmail() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        return Text(
+          userData['email'] ?? '',
+          style: GoogleFonts.roboto(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Colors.black
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _getCardNumber() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        if (userData.containsKey('cardDetails') && userData['cardDetails'].isNotEmpty) {
+          var cardDetails = userData['cardDetails'] as Map<String, dynamic>;
+          return Text(
+            cardDetails['cardNumber'] ?? '',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.black
+            ),
+          );
+        } else {
+          return const Text('No card number');
+        }
+      },
+    );
+  }
+  Widget _userName() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        return Text(
+          userData['fullName'] ?? '',
+          style: GoogleFonts.roboto(
+            fontSize: 20,
+            fontWeight:FontWeight.bold,
+            color: Colors.black
+          )
+        );
+      },
+    );
   }
 }
