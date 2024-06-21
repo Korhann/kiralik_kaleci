@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/loginpage.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
@@ -244,8 +246,55 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                   )
                   ],
                 ),
+                Container(
+                  height: 1,
+                  color: Colors.white,
+                ),
 
-              // Kazançlarım sayfası(fiverr daki gibi)
+                // Kazançlarım sayfası(fiverr daki gibi)
+                Stack(
+                  children: [
+                    Container(
+                    height: 70,
+                    width: double.infinity,
+                    color: sellergrey,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Kazançlarım',
+                            style: GoogleFonts.roboto(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 30,
+                    top: 20,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const EarningsPage())
+                        );
+                      },
+                      child: const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  )
+                  ],
+                ),
 
               // İlanlarım sayfası
               const SizedBox(height: 20),

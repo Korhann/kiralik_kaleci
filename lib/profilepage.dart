@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/CardDetailsPage.dart';
+import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
@@ -244,7 +245,11 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 30),
               GestureDetector(
                 onTap: () {
-                  print("daha sonra yapılacak");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FavouritesPage())
+                    
+                  );
                 },
                 child: Container(
                   height: 60,

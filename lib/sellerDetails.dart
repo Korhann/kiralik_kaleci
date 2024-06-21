@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
@@ -23,7 +22,6 @@ class SellerDetailsPage extends StatefulWidget {
 }
 
 class _SellerDetailsPageState extends State<SellerDetailsPage> {
-
   // kullanıcı saatleri ile ilgili kısım
   List<String> days = [];
   String? day;
@@ -38,13 +36,14 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     'Pazar',
   ];
 
-
   bool isLoading = true;
+  bool isFavorited = false;
 
   @override
   void initState() {
     super.initState();
     _getData();
+    _checkIfFavorited();
   }
 
   Future<void> _getData() async {
@@ -52,6 +51,22 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
       await _getDaysName(widget.sellerUid);
       setState(() {
         isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _checkIfFavorited() async {
+    final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserUid != null && currentUserUid.isNotEmpty) {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUserUid)
+          .collection('favourites')
+          .where('sellerUid', isEqualTo: widget.sellerUid)
+          .get();
+
+      setState(() {
+        isFavorited = snapshot.docs.isNotEmpty;
       });
     }
   }
@@ -110,11 +125,11 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                   right: 25,
                                   child: GestureDetector(
                                     onTap: () {
-                                      _addToFavorites(widget.sellerDetails, widget.sellerUid);
+                                      _toggleFavorite(widget.sellerDetails, widget.sellerUid);
                                     },
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.favorite,
-                                      color: Colors.red,
+                                      color: isFavorited ? Colors.red : Colors.grey,
                                     ),
                                   ),
                                 )
@@ -171,70 +186,70 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                     color: Colors.black,
                                   ),
                                 ),
-                                  SingleChildScrollView(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        // Print days horizontally
-                                        SizedBox(
-                                          height: 150,
-                                          width: 300,
-                                          child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: days.length,
-                                            itemBuilder: (context, index) {
-                                              final day = days[index];
-                                              final hours = hoursByDay[day] ?? [];
-                                              return Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      day, 
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: Colors.black,
-                                                      ),
+                                SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Print days horizontally
+                                      SizedBox(
+                                        height: 150,
+                                        width: 300,
+                                        child: ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: days.length,
+                                          itemBuilder: (context, index) {
+                                            final day = days[index];
+                                            final hours = hoursByDay[day] ?? [];
+                                            return Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    day,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.black,
                                                     ),
-                                                    const SizedBox(height: 7),
-                                                    Container(
-                                                      height: 120,
-                                                      child: SingleChildScrollView(
-                                                        scrollDirection: Axis.vertical,
-                                                        child: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: hours.map((hour) {
-                                                            return ClipRRect(
-                                                              borderRadius: BorderRadius.circular(10),
-                                                              child: Container(
-                                                                margin: const EdgeInsets.symmetric(vertical: 3.0),
-                                                                padding: const EdgeInsets.all(5),
-                                                                color: Colors.cyan,
-                                                                child: Text(
-                                                                  hour,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 14,
-                                                                    fontWeight: FontWeight.w400,
-                                                                    color: Colors.black,
-                                                                  ),
+                                                  ),
+                                                  const SizedBox(height: 7),
+                                                  Container(
+                                                    height: 120,
+                                                    child: SingleChildScrollView(
+                                                      scrollDirection: Axis.vertical,
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: hours.map((hour) {
+                                                          return ClipRRect(
+                                                            borderRadius: BorderRadius.circular(10),
+                                                            child: Container(
+                                                              margin: const EdgeInsets.symmetric(vertical: 3.0),
+                                                              padding: const EdgeInsets.all(5),
+                                                              color: Colors.cyan,
+                                                              child: Text(
+                                                                hour,
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 14,
+                                                                  fontWeight: FontWeight.w400,
+                                                                  color: Colors.black,
                                                                 ),
                                                               ),
-                                                            );
-                                                          }).toList(),
-                                                        ),
+                                                            ),
+                                                          );
+                                                        }).toList(),
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
+                                ),
                               ],
                             ),
                           ),
@@ -268,17 +283,17 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             child: GestureDetector(
               onTap: () {
                 // Merhaba diye mesaj yollayacak kaleciye
-                // zaten dokunulan satıcının uid sini yolladın, 
+                // zaten dokunulan satıcının uid sini yolladın,
                 //direkt messagepage.dart sayfasına yönlendirebilirsin kullanıcıyı
                 sharedValues.onTapped = true;
                 Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      sharedValues.onTapped = false;
-                      return const MessagePage();
-                    }
-                  )
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) {
+                          sharedValues.onTapped = false;
+                          return const MessagePage();
+                        }
+                    )
                 );
               },
               child: ClipRRect(
@@ -319,7 +334,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   }
 
   Future<void> _getDaysName(String userId) async {
-
     DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(userId).get();
 
     if (snapshot.exists) {
@@ -330,8 +344,8 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
           Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
 
           List<String> userDays = orderedDays.where((day) {
-          return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
-        }).toList();
+            return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
+          }).toList();
 
           setState(() {
             days.clear();
@@ -348,28 +362,36 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
       }
     }
   }
-  void _addToFavorites(Map<String, dynamic> sellerDetails, String sellerUid) {
-  final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-  try {
+
+  void _toggleFavorite(Map<String, dynamic> sellerDetails, String sellerUid) async {
+    final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserUid != null && currentUserUid.isNotEmpty) {
-      FirebaseFirestore.instance
-          .collection('Users')
-          .doc(currentUserUid)
-          .collection('favourites')
-          .add(sellerDetails)
-          .then((value) {
-            print('Seller details added successfully with document ID: ${value.id}');
-          })
-          .catchError((error) {
-            print('Error adding seller details: $error');
-          });
+      if (isFavorited) {
+        // Remove from favorites
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentUserUid)
+            .collection('favourites')
+            .where('sellerUid', isEqualTo: sellerUid)
+            .get();
+        for (var doc in snapshot.docs) {
+          await doc.reference.delete();
+        }
+        setState(() {
+          isFavorited = false;
+        });
+      } else {
+        // Add to favorites
+        sellerDetails['sellerUid'] = sellerUid; // Ensure sellerUid is part of the details
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentUserUid)
+            .collection('favourites')
+            .add(sellerDetails);
+        setState(() {
+          isFavorited = true;
+        });
+      }
     }
-  } catch (e) {
-    print('Error: $e');
-    }
-  }
-   bool isFavorite(String sellerUid) {
-    // bunu sonradan yap unutma
-    return true;
   }
 }

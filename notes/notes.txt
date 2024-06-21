@@ -1,7 +1,8 @@
 
 - DEVTOOLS videosunu izle (1)
 
-- profil sayfasında kullanıcı adını yenileyince hemen gelmesini istiyorum, sayfa değiştirince değil
-- kullanıcı adı ve şifre değiştirince ki doğrulama mesajı ve bekleme süresini sonradan gözden geçir
-- dolap bakiyem sayfası yap sonrada sitenin tüm akışını kontrol et
+- dolap bakiyem sayfası yap 
 
+- email değiştir ekleyebilirsin kontrol et
+
+- favorilerim sayfasını yap (yapıldı ama sonradan design i değişecek)

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/changeEmail.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/changePassword.dart';
 import 'package:kiralik_kaleci/changeUsername.dart';
@@ -89,6 +90,44 @@ class _SettingsMenuState extends State<SettingsMenu> {
                     children: [
                       Text(
                         'Şifre Değiştir',
+                        style: GoogleFonts.roboto(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                          color: userorseller ? Colors.white: Colors.black
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 24,
+                        color: userorseller ? Colors.white: Colors.black,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              height: 1,
+              color: sellerwhite,
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChangeEmail())
+                );
+              },
+              child: Container(
+                height: 50,
+                width: double.infinity,
+                color: userorseller ? sellergrey: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Email Değiştir',
                         style: GoogleFonts.roboto(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,

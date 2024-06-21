@@ -1,36 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
-class SellerChangePassword extends StatefulWidget {
-  const SellerChangePassword({super.key});
+class ChangeEmail extends StatefulWidget {
+  const ChangeEmail({super.key});
 
   @override
-  State<SellerChangePassword> createState() => _SellerChangePasswordState();
+  State<ChangeEmail> createState() => _ChangeEmailState();
 }
 
-class _SellerChangePasswordState extends State<SellerChangePassword> {
-  // Controllers for passwords
+class _ChangeEmailState extends State<ChangeEmail> {
+
+  final _emailController = TextEditingController();
   final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  // Form key
+  //
   final _key = GlobalKey<FormState>();
-  // Error flags
+  //
+  bool _showErrorEmail = false;
   bool _showErrorPassword = false;
-  bool _showErrorNewPassword = false;
-
+  //
   String _reauthErrorMessage = '';
+  //
   final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
-
-  @override
-  void dispose() {
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +48,50 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Text(
+                  'Yeni Email',
+                  style: GoogleFonts.roboto(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: userorseller ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+              Container(
+                width: double.infinity,
+                color: userorseller ? sellergrey : Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: TextFormField(
+                    style: TextStyle(color: userorseller ? Colors.white : Colors.black),
+                    controller: _emailController,
+                    obscureText: false,
+                    onChanged: (value) => clearErrors(),
+                    validator: (value) {
+                      final currentTrimmedemail = value?.trim();
+                      if (currentTrimmedemail!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(currentTrimmedemail)) {
+                        setState(() {
+                          _showErrorEmail = true;
+                        });
+                        return '';
+                      } else {
+                        setState(() {
+                          _showErrorEmail = false;
+                        });
+                        return null;
+                      }
+                    },
+                  ),
+                ),
+              ),
+              if (_showErrorEmail) 
+                errorMessage('Girdiğiniz mail hatalı veya kullanımda'),
+
+              const SizedBox(height: 30),
+              
               Padding(
                 padding: const EdgeInsets.only(left: 20),
                 child: Text(
@@ -91,66 +131,14 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
                   ),
                 ),
               ),
-              if (_showErrorPassword && _currentPasswordController.text.trim().length < 6)
-                errorMessage("Parolanız çok kısa"),
-              if (_showErrorPassword && _currentPasswordController.text.trim().contains(" "))
-                errorMessage("Parolada boşluk bulundurmayınız"),
-              if (_showErrorPassword && _currentPasswordController.text.trim().isEmpty)
-                errorMessage("Parola boş bırakılamaz"),
-              if (_reauthErrorMessage.isNotEmpty)
-                errorMessage(_reauthErrorMessage),
-              const SizedBox(height: 15),
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  'Yeni Şifre',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: userorseller ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                color: userorseller ? sellergrey : Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: TextFormField(
-                    style: TextStyle(color: userorseller ? Colors.white : Colors.black),
-                    controller: _newPasswordController,
-                    obscureText: true,
-                    onChanged: (value) => clearErrors(),
-                    validator: (value) {
-                      final newTrimmedPassword = value?.trim();
-                      if (newTrimmedPassword!.isEmpty || newTrimmedPassword.length < 6 || newTrimmedPassword.contains(" ")) {
-                        setState(() {
-                          _showErrorNewPassword = true;
-                        });
-                        return null;
-                      } else {
-                        setState(() {
-                          _showErrorNewPassword = false;
-                        });
-                        return null;
-                      }
-                    },
-                  ),
-                ),
-              ),
-              if (_showErrorNewPassword && _newPasswordController.text.trim().length < 6)
-                errorMessage("Parolanız çok kısa"),
-              if (_showErrorNewPassword && _newPasswordController.text.trim().contains(" "))
-                errorMessage("Parolada boşluk bulundurmayınız"),
-              if (_showErrorNewPassword && _newPasswordController.text.trim().isEmpty)
-                errorMessage("Parola boş bırakılamaz"),
-                
+
               const SizedBox(height: 30),
+
               Center(
                 child: ElevatedButton(
                   onPressed: () {
                     if (_key.currentState!.validate()) {
-                      changePassword();
+                      changeEmail();
                     }
                   },
                   style: buttonPrimary,
@@ -170,7 +158,14 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
       ),
     );
   }
-
+  
+  void clearErrors() {
+    setState(() {
+      _showErrorEmail = false;
+      _reauthErrorMessage = '';
+    });
+  }
+  
   Widget errorMessage(String message) {
     return Align(
       alignment: Alignment.centerLeft,
@@ -184,59 +179,61 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
     );
   }
 
-  /*
-  MEVCUT ŞİFRELER
-   Krhndmr2002
-  */
-
-  void changePassword() async {
+  void changeEmail() async {
     final user = FirebaseAuth.instance.currentUser;
+    final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
+    String email = _emailController.text.trim();
+    String password = _currentPasswordController.text.trim();
     if (user != null && user.email != null) {
-      final cred = EmailAuthProvider.credential(email: user.email.toString(), password: _currentPasswordController.text);
-
+      final cred = EmailAuthProvider.credential(email: user.email.toString(), password: password);
       try {
         await user.reauthenticateWithCredential(cred);
-        await user.updatePassword(_newPasswordController.text.trim());
+        // bu yeni güncellenen mail
+        // hata yazısına dikkatlice bak anlamaya çalış
+        await user.verifyBeforeUpdateEmail(email);
+        await FirebaseFirestore.instance.collection('Users')
+          .doc(currentuser)
+          .update({
+          'email': email
+        });
         await showBottomSheetDialog(context);
         Navigator.pop(context);
       } catch (e) {
         setState(() {
-          _reauthErrorMessage = 'Geçerli bir şifre giriniz';
+          _reauthErrorMessage = 'Geçerli bir mail giriniz';
         });
+        print("Error updating email: $e");
       }
+    } else {
+      setState(() {
+        _reauthErrorMessage = 'Kullanıcı oturumu açılmadı';
+      });
     }
   }
-  void clearErrors() {
-    setState(() {
-      _showErrorPassword = false;
-      _showErrorNewPassword = false;
-      _reauthErrorMessage = '';
-    });
-  }
+
   Future<void> showBottomSheetDialog(BuildContext context) async {
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) {
-      return Container(
-        height: 80,
-        padding: const EdgeInsets.all(16.0),
-        color: userorseller ? sellerbackground : background,
-        child: Center(
-          child: Text(
-            'Kullanıcı şifresi başarı ile güncellenmiştir',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: userorseller ? Colors.white : Colors.black,
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: 80,
+          padding: const EdgeInsets.all(16.0),
+          color: userorseller ? sellerbackground : background,
+          child: Center(
+            child: Text(
+              'Mailin güncellenmesi için onay kodunu onaylayın',
+              style: GoogleFonts.roboto(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: userorseller ? Colors.white : Colors.black,
+              ),
             ),
           ),
-        ),
-      );
-    },
-  );
-  // Delay pop to give user time to see the confirmation message
-  await Future.delayed(const Duration(seconds: 1));
-}
+        );
+      },
+    );
+    await Future.delayed(const Duration(seconds: 1));
+  }
 }
