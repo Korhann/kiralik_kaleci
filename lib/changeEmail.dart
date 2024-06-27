@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
@@ -69,6 +68,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
                     style: TextStyle(color: userorseller ? Colors.white : Colors.black),
                     controller: _emailController,
                     obscureText: false,
+                    keyboardType: TextInputType.emailAddress,
                     onChanged: (value) => clearErrors(),
                     validator: (value) {
                       final currentTrimmedemail = value?.trim();
@@ -131,6 +131,15 @@ class _ChangeEmailState extends State<ChangeEmail> {
                   ),
                 ),
               ),
+
+              if (_showErrorPassword && _currentPasswordController.text.trim().length < 6)
+                errorMessage("Parolanız çok kısa"),
+              if (_showErrorPassword && _currentPasswordController.text.trim().contains(" "))
+                errorMessage("Parolada boşluk bulundurmayınız"),
+              if (_showErrorPassword && _currentPasswordController.text.trim().isEmpty)
+                errorMessage("Parola boş bırakılamaz"),
+              if (_reauthErrorMessage.isNotEmpty)
+                errorMessage(_reauthErrorMessage),
 
               const SizedBox(height: 30),
 

@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
 
@@ -14,7 +14,23 @@ class GetUserData extends StatefulWidget {
 }
 
 class _GetUserDataState extends State<GetUserData> {
-  final _userStream = FirebaseFirestore.instance.collection("Users").snapshots();
+  
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _userStream;
+  
+
+  String? nameFilter;
+  String? cityFilter;
+  String? districtFilter;
+  List<String> daysFilter = [];
+  double? minPriceFilter;
+  double? maxPriceFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _userStream = _firestore.collection("Users").snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +43,10 @@ class _GetUserDataState extends State<GetUserData> {
             return const Text("Bağlantı hatası");
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // sonradan ui için splash screen yada image kullan, bütün sayfaların ui ini düzelt !!
             return const CircularProgressIndicator();
           }
           var docs = snapshot.data!.docs;
 
-          // kullanıcı satıcı mı diye kontrol et !!
           docs = docs.where((doc) => doc.data().containsKey('sellerDetails')).toList();
 
           if (docs.isEmpty) {
@@ -42,7 +56,7 @@ class _GetUserDataState extends State<GetUserData> {
                 style: GoogleFonts.inter(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade500
+                  color: Colors.grey.shade500,
                 ),
               ),
             );
@@ -76,7 +90,7 @@ class _GetUserDataState extends State<GetUserData> {
 
               return Column(
                 children: [
-                  if (index == 0) // Show the text only for the first row
+                  if (index == 0)
                     Container(
                       color: background,
                       padding: const EdgeInsets.only(top: 15),
@@ -87,10 +101,31 @@ class _GetUserDataState extends State<GetUserData> {
                             style: GoogleFonts.inter(
                               fontSize: 26,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black
+                              color: Colors.black,
                             ),
                           ),
-                          const Icon(Icons.handshake)
+                          const SizedBox(width: 10),
+                          const Icon(Icons.handshake),
+                          const Spacer(),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 20),
+                            child: GestureDetector(
+                              onTap: () async {
+                                final filters = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const FilterPage(),
+                                  ),
+                                );
+                                runFilters(filters);
+                              },
+                              child: Image.asset(
+                                'lib/icons/setting.png',
+                                width: 20,
+                                height: 20,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -132,22 +167,23 @@ class _GetUserDataState extends State<GetUserData> {
                                                   style: GoogleFonts.inter(
                                                     fontSize: 17,
                                                     fontWeight: FontWeight.w500,
-                                                    color: Colors.black),
+                                                    color: Colors.black,
                                                   ),
+                                                ),
                                                 Row(
                                                   children: [
                                                     Text(
                                                       "$city1,$district1",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 14,
-                                                        fontWeight: FontWeight.w400
+                                                        fontWeight: FontWeight.w400,
                                                       ),
-                                                    )
+                                                    ),
                                                   ],
-                                                )
+                                                ),
                                               ],
                                             ),
-                                          )
+                                          ),
                                       ],
                                     ),
                                   ),
@@ -168,12 +204,11 @@ class _GetUserDataState extends State<GetUserData> {
                                         if (imageUrl1 != imageUrl2)
                                           Container(
                                             color: Colors.white,
-                                            child: 
-                                            Image.network(
+                                            child: Image.network(
                                               imageUrl2,
                                               height: 190,
                                               fit: BoxFit.cover,
-                                            )
+                                            ),
                                           ),
                                         if (fullName2 != null && fullName2.isNotEmpty && fullName1 != fullName2)
                                           Padding(
@@ -186,23 +221,23 @@ class _GetUserDataState extends State<GetUserData> {
                                                   style: GoogleFonts.inter(
                                                     fontSize: 17,
                                                     fontWeight: FontWeight.w500,
-                                                    color: Colors.black
-                                                    ),
+                                                    color: Colors.black,
                                                   ),
+                                                ),
                                                 Row(
                                                   children: [
                                                     Text(
                                                       "$city2,$district2",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 14,
-                                                        fontWeight: FontWeight.w400
+                                                        fontWeight: FontWeight.w400,
                                                       ),
-                                                    )
+                                                    ),
                                                   ],
-                                                )
-                                              ]
+                                                ),
+                                              ],
                                             ),
-                                          )
+                                          ),
                                       ],
                                     ),
                                   ),
@@ -211,7 +246,7 @@ class _GetUserDataState extends State<GetUserData> {
                             ],
                           ),
                         ),
-                      ]
+                      ],
                     ),
                   ),
                 ],
@@ -233,9 +268,51 @@ class _GetUserDataState extends State<GetUserData> {
         ),
       );
     } else {
-      // Handle the case where sellerDetails is null (buyer user)
-      // You may want to navigate to a different page or display a message
       print("Seller details not found");
     }
+  }
+
+  void runFilters(final filter) {
+    print('Filtreler: $filter');
+    if (filter != null) {
+      setState(() {
+        nameFilter = filter['nameFilter'];
+        cityFilter = filter['cityFilter'];
+        districtFilter = filter['districtFilter'];
+        daysFilter = filter['daysFilter'];
+      });
+      applyFilter();
+    }
+  }
+
+  void applyFilter() {
+    Query<Map<String, dynamic>> filterquery = _firestore.collection('Users');
+
+    if (nameFilter != null && nameFilter!.isNotEmpty) {
+      filterquery = filterquery.where('sellerDetails.sellerName', isEqualTo: nameFilter);
+    }
+    if (cityFilter != null && cityFilter!.isNotEmpty) {
+      filterquery = filterquery.where('sellerDetails.city', isEqualTo: cityFilter);
+      print('şehir query si $filterquery');
+    }
+    if (districtFilter != null && districtFilter!.isNotEmpty) {
+      filterquery = filterquery.where('sellerDetails.district', isEqualTo: districtFilter);
+    }
+    if (daysFilter.isNotEmpty) {
+      // database de yanlış yeri alıyosun, o yüzden göstermiyor
+      filterquery = filterquery.where('sellerDetails.selectedHoursByDay', arrayContainsAny: daysFilter);
+    }
+    /*
+    if (minPriceFilter != null) {
+      filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minPriceFilter);
+    }
+    if (maxPriceFilter != null) {
+      filterquery = filterquery.where('sellerDetails.price', isLessThanOrEqualTo: maxPriceFilter);
+    }
+    */
+
+    setState(() {
+      _userStream = filterquery.snapshots();
+    });
   }
 }

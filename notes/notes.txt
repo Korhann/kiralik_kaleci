@@ -1,8 +1,13 @@
 
 - DEVTOOLS videosunu izle (1)
 
+- kaleci ararken filtreleme yap
 - dolap bakiyem sayfası yap 
-
-- email değiştir ekleyebilirsin kontrol et
-
 - favorilerim sayfasını yap (yapıldı ama sonradan design i değişecek)
+
+Filtreler
+ - İsime göre
+ - Şehire göre
+ - İlçeye göre
+ - Günlere göre
+ - Fiyata göre
