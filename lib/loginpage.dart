@@ -35,7 +35,19 @@ class _LogInState extends State<LogIn> {
 
   // Changed the future with void!!
   Future signInUser() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text.trim(), password: passwordController.text.trim());
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text.trim(), password: passwordController.text.trim());
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'network-request-failed') {
+        print('İnternet bağlantısı yok');
+      } else if (e.code == 'wrong-password') {
+        print('Şifreniz yanlış');
+      } else if (e.code == 'user-not-found') {
+        print('Email bulunamadı');
+      } else if (e.code == 'invalid-credential') {
+        print('Girdiğiniz bilgiler geçersiz');
+      }
+    }
   }
 
   Future<UserCredential?> signInWithGoogle() async {

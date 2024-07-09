@@ -21,6 +21,8 @@ class SellerAddPage extends StatefulWidget {
   State<SellerAddPage> createState() => _SellerAddPageState();
 }
 
+//TODO: Resim eklemek zorunlu olması lazım yoksa getuserinformation page hata veriyor index ten dolayı
+
 class _SellerAddPageState extends State<SellerAddPage> {
   final int maxWords = 150; // Maximum words allowed
   final int minWords = 30; // Min words allowed
@@ -1925,9 +1927,14 @@ void updateDistrictOptions(String? city) {
           
           // burası saatleri yüklemek için
           Map<String,dynamic> formattedData= {};
+          // day = key in the selectedHoursByday (e.g: Pazartesi,Salı,Çarşamba..)
+          // selectedHours = list of 'CheckContainerModel' associated to each day
           _AmenitiesState.selectedHoursByDay.forEach((day, selectedHours) { 
-            formattedData[day] = selectedHours.map((hour) => hour.title).toList();
+            if (selectedHours.isNotEmpty) {
+              formattedData[day] = selectedHours.map((hour) => hour.title).toList();
+            }
           }); 
+          print('THE DATA IS $formattedData');
 
           Map<String, dynamic> sellerDetails = {
             "sellerName": sellerName.text,
@@ -2054,14 +2061,6 @@ class _AmenitiesState extends State<Amenities> {
         (element) => element.title == checkContainers[index].title
       );
     }
-    /*
-    selectedHoursByDay.forEach((key,list){
-      list.forEach((element) {
-        print('$key: ${list.map((e) => e.title).toList()}');
-      });
-    });
-    */
-    
     setState(() {});
   }
 

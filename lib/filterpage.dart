@@ -59,6 +59,7 @@ class _FilterPageState extends State<FilterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: background,
       appBar: AppBar(
         backgroundColor: background,
@@ -78,7 +79,6 @@ class _FilterPageState extends State<FilterPage> {
             }
           }, icon: const Icon(Icons.arrow_back, color: Colors.black)),
       ),
-      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,80 +194,86 @@ class _FilterPageState extends State<FilterPage> {
               ),
             ),
             const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    // containerlardan oluşan buttonlar yap
-                    _dayButton('Pazartesi', isPressedMonday, () { 
-                      setState(() {
-                        isPressedMonday = !isPressedMonday;
-                        days.add('Pazartesi');
-                      });
-                    }),
-                    const SizedBox(width: 5),
-                    _dayButton('Salı', isPressedTuesday, () { 
-                      setState(() {
-                        isPressedTuesday = !isPressedTuesday;
-                        days.add('Salı');
-                      });
-                    }),
-                    const SizedBox(width: 5),
-                    _dayButton('Çarşamba', isPressedWednesday, () { 
-                      setState(() {
-                        isPressedWednesday = !isPressedWednesday;
-                        days.add('Çarşamba');
-                      });
-                    }),
-                  ],
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      // containerlardan oluşan buttonlar yap
+                      _dayButton('Pazartesi', isPressedMonday, () { 
+                        setState(() {
+                          isPressedMonday = !isPressedMonday;
+                          days.add('Pazartesi');
+                        });
+                      }),
+                      const SizedBox(width: 5),
+                      _dayButton('Salı', isPressedTuesday, () { 
+                        setState(() {
+                          isPressedTuesday = !isPressedTuesday;
+                          days.add('Salı');
+                        });
+                      }),
+                      const SizedBox(width: 5),
+                      _dayButton('Çarşamba', isPressedWednesday, () { 
+                        setState(() {
+                          isPressedWednesday = !isPressedWednesday;
+                          days.add('Çarşamba');
+                        });
+                      }),
+                    ],
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _dayButton('Perşembe', isPressedThursday, () { 
-                      setState(() {
-                        isPressedThursday = !isPressedThursday;
-                        days.add('Perşembe');
-                      });
-                    }),
-                    const SizedBox(width: 5),
-                    _dayButton('Cuma', isPressedFriday, () { 
-                      setState(() {
-                        isPressedFriday = !isPressedFriday;
-                        days.add('Cuma');
-                      });
-                    }),
-                    const SizedBox(width: 5),
-                    _dayButton('Cumartesi', isPressedSaturday, () { 
-                      setState(() {
-                        isPressedSaturday = !isPressedSaturday;
-                        days.add('Cumartesi');
-                      });
-                    }),
-                  ],
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _dayButton('Perşembe', isPressedThursday, () { 
+                        setState(() {
+                          isPressedThursday = !isPressedThursday;
+                          days.add('Perşembe');
+                        });
+                      }),
+                      const SizedBox(width: 5),
+                      _dayButton('Cuma', isPressedFriday, () { 
+                        setState(() {
+                          isPressedFriday = !isPressedFriday;
+                          days.add('Cuma');
+                        });
+                      }),
+                      const SizedBox(width: 5),
+                      _dayButton('Cumartesi', isPressedSaturday, () { 
+                        setState(() {
+                          isPressedSaturday = !isPressedSaturday;
+                          days.add('Cumartesi');
+                        });
+                      }),
+                    ],
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: 
-                _dayButton('Pazar', isPressedSunday, () { 
-                      setState(() {
-                        isPressedSunday = !isPressedSunday;
-                        days.add('Pazar');
-                      });
-                    }),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: 
+                  _dayButton('Pazar', isPressedSunday, () { 
+                        setState(() {
+                          isPressedSunday = !isPressedSunday;
+                          days.add('Pazar');
+                        });
+                      }),
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -291,7 +297,7 @@ class _FilterPageState extends State<FilterPage> {
                   color: Colors.black
                 ),
               )),
-            )
+            ),
           ],
         ),
       ),
@@ -317,5 +323,5 @@ class _FilterPageState extends State<FilterPage> {
   }
 }
 
-// kelime benzerliğinden arama gösterme
-// filtreleri gösterme
+// TODO: Kelime benzerliğinden aramaları gösterme
+// TODO: Filtreleri göstermek ve teker teker silebilmek

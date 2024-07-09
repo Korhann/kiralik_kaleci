@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
@@ -17,12 +18,15 @@ class _GetUserDataState extends State<GetUserData> {
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _userStream;
-  
+
+  // NOT: BUNLAR DENEMEK İÇİN
+  final String user = FirebaseAuth.instance.currentUser!.uid;
 
   String? nameFilter;
   String? cityFilter;
   String? districtFilter;
-  List<String> daysFilter = [];
+  List<String> ?daysFilter;
+  // set te kullanabilrsin daysFilter yerine çünkü aynı değeri içermez
   double? minPriceFilter;
   double? maxPriceFilter;
 
@@ -30,6 +34,8 @@ class _GetUserDataState extends State<GetUserData> {
   void initState() {
     super.initState();
     _userStream = _firestore.collection("Users").snapshots();
+    getData();
+    trytogetdata();
   }
 
   @override
@@ -258,6 +264,34 @@ class _GetUserDataState extends State<GetUserData> {
     );
   }
 
+  Future<void> getData() async {
+  // Get all documents in the Users collection
+  QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('Users').get();
+
+  // Iterate over each user document
+  for (var userDoc in userSnapshot.docs) {
+    if (userDoc.exists) {
+      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+      if (data.isNotEmpty && data.containsKey('sellerDetails')) {
+        Map<String, dynamic> sellerDetails = data['sellerDetails'];
+        if (sellerDetails.containsKey('selectedHoursByDay')) {
+          Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
+          print('User: ${userDoc.id}, selectedHoursByDay: $selectedHoursByDay');
+        }
+      }
+    }
+  }
+}
+
+void trytogetdata() async {
+  DocumentReference documentReference = _firestore.collection('Users').doc(user);
+  CollectionReference collectionReference = documentReference.collection('sellerDetails');
+  QuerySnapshot querySnapshot = await collectionReference.get();
+  for (var docSnapshot in querySnapshot.docs) {
+    print('testing ${docSnapshot.data()}');
+  }
+}
+  
   void _handleCardTap(BuildContext context, Map<String, dynamic>? sellerDetails, String sellerUid) {
     if (sellerDetails != null) {
       sharedValues.sellerUid = sellerUid;
@@ -273,7 +307,7 @@ class _GetUserDataState extends State<GetUserData> {
   }
 
   void runFilters(final filter) {
-    print('Filtreler: $filter');
+    print('FİLTERELER: $filter');
     if (filter != null) {
       setState(() {
         nameFilter = filter['nameFilter'];
@@ -285,7 +319,7 @@ class _GetUserDataState extends State<GetUserData> {
     }
   }
 
-  void applyFilter() {
+  void applyFilter() async{
     Query<Map<String, dynamic>> filterquery = _firestore.collection('Users');
 
     if (nameFilter != null && nameFilter!.isNotEmpty) {
@@ -293,14 +327,14 @@ class _GetUserDataState extends State<GetUserData> {
     }
     if (cityFilter != null && cityFilter!.isNotEmpty) {
       filterquery = filterquery.where('sellerDetails.city', isEqualTo: cityFilter);
-      print('şehir query si $filterquery');
     }
     if (districtFilter != null && districtFilter!.isNotEmpty) {
       filterquery = filterquery.where('sellerDetails.district', isEqualTo: districtFilter);
     }
-    if (daysFilter.isNotEmpty) {
+    if (daysFilter != null && daysFilter!.isNotEmpty) {
       // database de yanlış yeri alıyosun, o yüzden göstermiyor
-      filterquery = filterquery.where('sellerDetails.selectedHoursByDay', arrayContainsAny: daysFilter);
+      print('GÜN FİLTRESİ $daysFilter');
+      filterquery = filterquery.where('sellerDetails.selectedHoursByDay', whereIn: daysFilter);
     }
     /*
     if (minPriceFilter != null) {
@@ -310,7 +344,6 @@ class _GetUserDataState extends State<GetUserData> {
       filterquery = filterquery.where('sellerDetails.price', isLessThanOrEqualTo: maxPriceFilter);
     }
     */
-
     setState(() {
       _userStream = filterquery.snapshots();
     });

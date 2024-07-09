@@ -4,6 +4,7 @@
 - kaleci ararken filtreleme yap
 - dolap bakiyem sayfası yap 
 - favorilerim sayfasını yap (yapıldı ama sonradan design i değişecek)
+- kullanıcı ilan oluştururken resim yüklemek zorunlu olmak zorunda
 
 Filtreler
  - İsime göre
