@@ -6,6 +6,7 @@ import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
+import 'globals.dart';
 
 class GetUserData extends StatefulWidget {
   const GetUserData({Key? key}) : super(key: key);
@@ -27,15 +28,12 @@ class _GetUserDataState extends State<GetUserData> {
   String? districtFilter;
   List<String> ?daysFilter;
   // set te kullanabilrsin daysFilter yerine çünkü aynı değeri içermez
-  double? minPriceFilter;
-  double? maxPriceFilter;
 
   @override
   void initState() {
     super.initState();
     _userStream = _firestore.collection("Users").snapshots();
     getData();
-    trytogetdata();
   }
 
   @override
@@ -277,20 +275,17 @@ class _GetUserDataState extends State<GetUserData> {
         if (sellerDetails.containsKey('selectedHoursByDay')) {
           Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
           print('User: ${userDoc.id}, selectedHoursByDay: $selectedHoursByDay');
+          if (selectedHoursByDay.containsKey('Cuma')) { 
+            print('aynı gün mevcut');
+          } else {
+            print('mevcut değil');
+          }
         }
       }
     }
   }
 }
 
-void trytogetdata() async {
-  DocumentReference documentReference = _firestore.collection('Users').doc(user);
-  CollectionReference collectionReference = documentReference.collection('sellerDetails');
-  QuerySnapshot querySnapshot = await collectionReference.get();
-  for (var docSnapshot in querySnapshot.docs) {
-    print('testing ${docSnapshot.data()}');
-  }
-}
   
   void _handleCardTap(BuildContext context, Map<String, dynamic>? sellerDetails, String sellerUid) {
     if (sellerDetails != null) {
@@ -321,6 +316,8 @@ void trytogetdata() async {
 
   void applyFilter() async{
     Query<Map<String, dynamic>> filterquery = _firestore.collection('Users');
+    print('min price is $minPrice');
+    print('max price is $maxPrice');
 
     if (nameFilter != null && nameFilter!.isNotEmpty) {
       filterquery = filterquery.where('sellerDetails.sellerName', isEqualTo: nameFilter);
@@ -332,19 +329,13 @@ void trytogetdata() async {
       filterquery = filterquery.where('sellerDetails.district', isEqualTo: districtFilter);
     }
     if (daysFilter != null && daysFilter!.isNotEmpty) {
-      // database de yanlış yeri alıyosun, o yüzden göstermiyor
-      print('GÜN FİLTRESİ $daysFilter');
-      filterquery = filterquery.where('sellerDetails.selectedHoursByDay', whereIn: daysFilter);
+      filterquery = filterquery.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
     }
-    /*
-    if (minPriceFilter != null) {
-      filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minPriceFilter);
-    }
-    if (maxPriceFilter != null) {
-      filterquery = filterquery.where('sellerDetails.price', isLessThanOrEqualTo: maxPriceFilter);
-    }
-    */
-    setState(() {
+
+    filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minPrice);
+    filterquery = filterquery.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxPrice);
+    
+      setState(() {
       _userStream = filterquery.snapshots();
     });
   }

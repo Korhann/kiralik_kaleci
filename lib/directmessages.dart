@@ -82,7 +82,7 @@ Widget build(BuildContext context) {
                         backgroundColor: Colors.grey,
                         child: CircularProgressIndicator(),
                       );
-                    } else if (snapshot.hasError) {
+                    } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
                       return const CircleAvatar(
                         // error verince
                         backgroundColor: Colors.grey,

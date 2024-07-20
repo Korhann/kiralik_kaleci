@@ -1197,6 +1197,7 @@ void updateDistrictOptions(String? city) {
 }
 
 
+
   @override
   void initState() {
     super.initState();
@@ -1934,7 +1935,8 @@ void updateDistrictOptions(String? city) {
               formattedData[day] = selectedHours.map((hour) => hour.title).toList();
             }
           }); 
-          print('THE DATA IS $formattedData');
+          // filtreleme için price ı integer a dönüştürüyorum
+          int? price = int.tryParse(sellerPrice.text);
 
           Map<String, dynamic> sellerDetails = {
             "sellerName": sellerName.text,
@@ -1942,10 +1944,11 @@ void updateDistrictOptions(String? city) {
             "sellerAge": sellerAge.text,
             "sellerHeight": sellerHeight.text,
             "sellerWeight": sellerWeight.text,
-            "sellerPrice": sellerPrice.text,
+            "sellerPrice": price,
             "city": selectedCity,
             "district": selectedDistrict,
             "imageUrls": imageUrls,
+            'chosenDays': formattedData.keys.toList(),
             "selectedHoursByDay": formattedData
           };
           await FirebaseFirestore.instance

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/rangeslider.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
@@ -44,6 +45,7 @@ class _FilterPageState extends State<FilterPage> {
       nameFilter = null;
       cityFilter = null;
       districtFilter = null;
+      priceFilter = null;
       days.clear();
       isPressedMonday = false;
       isPressedTuesday = false;
@@ -277,6 +279,21 @@ class _FilterPageState extends State<FilterPage> {
               ),
             ),
             const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: Text(
+                'Fiyat Aralığı',
+                style: GoogleFonts.roboto(
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black
+                ),
+              ),
+            ),
+            const RangeSliderExample(),
+            const SizedBox(height: 20),
+            // here
+            const SizedBox(height: 50),
             Center(
               child: ElevatedButton(
                 onPressed: () {
