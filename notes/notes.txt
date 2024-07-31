@@ -17,3 +17,14 @@ Filtreler
 
 
  - saat filtreleme sonradan yap (nasıl bir mantıkla yapmak gerek anla)
+
+
+ ŞİFRELER: 
+ - Krhndmr2002
+ - boran2002
+
+
+fn + a virtual emulator klavye değiştiriyor !!
+
+directmessages.dart
+ - mesajı gönderen veya alan kişiden her hangi biri silince mesajı iki taraftan da siliniyor.

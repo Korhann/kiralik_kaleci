@@ -100,7 +100,7 @@ class _MessagePageState extends State<MessagePage> {
   Widget _buildMessageItem(DocumentSnapshot documentSnapshot) {
     Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
 
-    var alignment = (data['senderId'] == _firebaseAuth.currentUser!.uid)
+    var alignment = (data['uid'] == _firebaseAuth.currentUser!.uid)
     ? Alignment.centerRight
     : Alignment.centerLeft;
 
@@ -109,12 +109,12 @@ class _MessagePageState extends State<MessagePage> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          crossAxisAlignment: (data["senderId"] == _firebaseAuth.currentUser!.uid) 
+          crossAxisAlignment: (data["uid"] == _firebaseAuth.currentUser!.uid) 
           ? CrossAxisAlignment.end 
           : CrossAxisAlignment.start,
           children: [
             // sender maili göstermese de olur. Kaldırabilir sin
-            Text(data['senderEmail']),
+            Text(data['email']),
             const SizedBox(height: 5),
             ChatBubble(message: data['message'])
           ],

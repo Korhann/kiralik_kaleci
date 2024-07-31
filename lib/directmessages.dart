@@ -14,6 +14,8 @@ class DirectMessages extends StatefulWidget {
   State<DirectMessages> createState() => _DirectMessagesState();
 }
 
+// todo: Başkasının gönderdiği mesajlar sen mesaj göndermeden gelmiyo !!
+
 class _DirectMessagesState extends State<DirectMessages> {
   // sharedvalues dan gelen değerleri al
   String uid = sharedValues.sellerUid;
@@ -37,6 +39,26 @@ class _DirectMessagesState extends State<DirectMessages> {
 Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: background,
+    appBar: AppBar(
+      backgroundColor: background,
+      centerTitle: true,
+      title: Padding(
+        padding: const EdgeInsets.only(top: 30),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Mesajlar',
+              style: GoogleFonts.inter(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Colors.black
+              ),
+            )
+          ],
+        ),
+      )
+    ),
     body: ListView.builder(
       itemCount: receiverNames.length,
       itemBuilder: (BuildContext context, int index) {
@@ -44,25 +66,7 @@ Widget build(BuildContext context) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (index == 0)
-              const SizedBox(height: 40), 
-            if (index == 0)
-              Center(
-                child: Column(
-                  children: [
-                    Text(
-                      "Mesajlar",
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 20), 
-                  ],
-                ),
-              ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 10),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -110,6 +114,9 @@ Widget build(BuildContext context) {
                     Text(messages[index]),
                   ],
                 ),
+                trailing: IconButton(onPressed: () {
+                  _deleteChat(distinctReceiverIds[index]);
+                }, icon: const Icon(Icons.delete, color: Colors.red,)),
               ),
             ),
           ],
@@ -121,48 +128,74 @@ Widget build(BuildContext context) {
 
 
   Future<void> _getMessages() async {
-    try {
-      String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  try {
+    String currentUser = FirebaseAuth.instance.currentUser!.uid;
 
-      QuerySnapshot distinctSenderIdsSnapshot = await FirebaseFirestore.instance
+    // Fetch messages where the current user is either sender or receiver
+    QuerySnapshot messagesSnapshot = await FirebaseFirestore.instance
+        .collectionGroup('messages')
+        .where('senderId', isEqualTo: currentUser)
+        .where('deletedBySender', isEqualTo: false)
+        .get();
+
+    QuerySnapshot receivedMessagesSnapshot = await FirebaseFirestore.instance
+        .collectionGroup('messages')
+        .where('receiverId', isEqualTo: currentUser)
+        .where('deletedByReceiver', isEqualTo: false)
+        .get();
+
+    Set<String> participantIds = {};
+
+    // Add sender and receiver IDs to a set to ensure uniqueness
+    messagesSnapshot.docs.forEach((doc) {
+      participantIds.add(doc['receiverId'] as String);
+    });
+
+    receivedMessagesSnapshot.docs.forEach((doc) {
+      participantIds.add(doc['senderId'] as String);
+    });
+
+    for (String participantId in participantIds) {
+      // eğer current user gönderen ise
+      QuerySnapshot latestMessageSnapshot = await FirebaseFirestore.instance
           .collectionGroup('messages')
           .where('senderId', isEqualTo: currentUser)
+          .where('receiverId', isEqualTo: participantId)
+          .orderBy('timestamp', descending: true)
+          .limit(1)
           .get();
 
-      distinctReceiverIds = distinctSenderIdsSnapshot.docs
-          .map((doc) => doc['receiverId'] as String)
-          .toSet() // duplicate olmaması için
-          .toList();
-
-      for (String receiverId in distinctReceiverIds) {
-        QuerySnapshot latestMessageSnapshot = await FirebaseFirestore.instance
+      if (latestMessageSnapshot.docs.isEmpty) {
+        // current user a gönderilmiş ise
+        latestMessageSnapshot = await FirebaseFirestore.instance
             .collectionGroup('messages')
-            .where('senderId', isEqualTo: currentUser)
-            .where('receiverId', isEqualTo: receiverId)
+            .where('senderId', isEqualTo: participantId)
+            .where('receiverId', isEqualTo: currentUser)
             .orderBy('timestamp', descending: true)
             .limit(1)
             .get();
-
-        if (latestMessageSnapshot.docs.isNotEmpty) {
-          // chatteki en son mesajı al
-          DocumentSnapshot latestMessageDoc = latestMessageSnapshot.docs.first;
-          Map<String, dynamic> data = latestMessageDoc.data() as Map<String, dynamic>;
-
-          String message = data['message'];
-          // burada sender email yerine gönderdiğin kişinin ismini alıcaksın
-          String receiverfullName = data['receiverfullName'];
-
-          // mesajı ve ismi ekle
-          setState(() {
-            messages.add(message);
-            receiverNames.add(receiverfullName);
-          });
-        }
       }
-    } catch (e) {
-      print("Error fetching messages: $e");
+
+      if (latestMessageSnapshot.docs.isNotEmpty) {
+        DocumentSnapshot latestMessageDoc = latestMessageSnapshot.docs.first;
+        Map<String, dynamic> data = latestMessageDoc.data() as Map<String, dynamic>;
+
+        String message = data['lastMessage'];
+        String receiverName = currentUser == data['senderId'] ? data['receiverfullName'] : data['senderfullName'];
+
+        setState(() {
+          messages.add(message);
+          receiverNames.add(receiverName);
+          distinctReceiverIds.add(participantId);
+        });
+      }
     }
+  } catch (e) {
+    print("Error fetching messages: $e");
   }
+}
+
+
 
   Future<String?> _getReceiverImage(String receiverId) async {
     try {
@@ -183,5 +216,30 @@ Widget build(BuildContext context) {
       print("Error fetching receiver image: $e");
     }
     return null; 
+  }
+
+  Future<void> _deleteChat(String receiverId) async {
+    // mesajı sadece gönderen silebiliyor
+    try {
+      QuerySnapshot chatMessages = await FirebaseFirestore.instance
+          .collectionGroup('messages')
+          .where('senderId', isEqualTo: currentUser)
+          .where('receiverId', isEqualTo: receiverId)
+          .get();
+
+      for (DocumentSnapshot doc in chatMessages.docs) {
+        await doc.reference.update({'deletedBySender': true});
+      }
+
+      setState(() {
+        int index = distinctReceiverIds.indexOf(receiverId);
+        distinctReceiverIds.removeAt(index);
+        receiverNames.removeAt(index);
+        messages.removeAt(index);
+      });
+
+    } catch (e) {
+      print("Error deleting chat: $e");
+    }
   }
 }

@@ -33,8 +33,7 @@ class _GetUserDataState extends State<GetUserData> {
   void initState() {
     super.initState();
     _userStream = _firestore.collection("Users").snapshots();
-    getData();
-  }
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -261,31 +260,6 @@ class _GetUserDataState extends State<GetUserData> {
       ),
     );
   }
-
-  Future<void> getData() async {
-  // Get all documents in the Users collection
-  QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('Users').get();
-
-  // Iterate over each user document
-  for (var userDoc in userSnapshot.docs) {
-    if (userDoc.exists) {
-      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
-      if (data.isNotEmpty && data.containsKey('sellerDetails')) {
-        Map<String, dynamic> sellerDetails = data['sellerDetails'];
-        if (sellerDetails.containsKey('selectedHoursByDay')) {
-          Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
-          print('User: ${userDoc.id}, selectedHoursByDay: $selectedHoursByDay');
-          if (selectedHoursByDay.containsKey('Cuma')) { 
-            print('aynı gün mevcut');
-          } else {
-            print('mevcut değil');
-          }
-        }
-      }
-    }
-  }
-}
-
   
   void _handleCardTap(BuildContext context, Map<String, dynamic>? sellerDetails, String sellerUid) {
     if (sellerDetails != null) {
@@ -302,7 +276,6 @@ class _GetUserDataState extends State<GetUserData> {
   }
 
   void runFilters(final filter) {
-    print('FİLTERELER: $filter');
     if (filter != null) {
       setState(() {
         nameFilter = filter['nameFilter'];
@@ -316,8 +289,6 @@ class _GetUserDataState extends State<GetUserData> {
 
   void applyFilter() async{
     Query<Map<String, dynamic>> filterquery = _firestore.collection('Users');
-    print('min price is $minPrice');
-    print('max price is $maxPrice');
 
     if (nameFilter != null && nameFilter!.isNotEmpty) {
       filterquery = filterquery.where('sellerDetails.sellerName', isEqualTo: nameFilter);

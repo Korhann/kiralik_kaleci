@@ -5,8 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/chat_services.dart';
 import 'package:kiralik_kaleci/styles/chatBubble.dart';
 
-import 'sharedvalues.dart';
-
 class Direct2Message extends StatefulWidget {
   final String receiverId;
   const Direct2Message({super.key, required this.receiverId});
@@ -16,79 +14,68 @@ class Direct2Message extends StatefulWidget {
 }
 
 class _Direct2MessageState extends State<Direct2Message> {
-  
-
   final ScrollController _scrollController = ScrollController();
-
-  // sharedvalues dan gelen değerler null 
-  String uid = sharedValues.sellerUid;
-  bool? istapped = sharedValues.onTapped;
-
-  // dokunulan kullanıcının maili
-  String? sellerEmail;
-
   final TextEditingController _messageController = TextEditingController();
   final ChatService _chatService = ChatService();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
+  String? sellerEmail;
+
   @override
   void initState() {
     super.initState();
-    _getEmail(uid);
+    _getEmail(widget.receiverId);
+    _chatService.initializeIds(_firebaseAuth.currentUser!.uid, widget.receiverId);
   }
 
   void sendMessage() async {
-    // sadece mesaj boş değilse gönder
     if (_messageController.text.isNotEmpty) {
       await _chatService.sendMessage(widget.receiverId, _messageController.text);
-      // gönderdikten sonra temizle
       _messageController.clear();
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$sellerEmail'),
+        title: Text(sellerEmail ?? 'Loading...'),
         leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-        }, icon: const Icon(Icons.arrow_back)),
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: Column(
         children: [
-          // mesajlar
           Expanded(
             child: _buildMessageList(),
           ),
-
-          // kullanıcı input u
           _buildMessageInput(),
-          const SizedBox(height: 20)
+          const SizedBox(height: 20),
         ],
-      )
+      ),
     );
   }
 
   Widget _buildMessageList() {
-    return StreamBuilder(
+    return StreamBuilder<QuerySnapshot>(
       stream: _chatService.getMessages(widget.receiverId, _firebaseAuth.currentUser!.uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Text("Hata ${snapshot.error}");
+          return Center(child: Text("Error: ${snapshot.error}"));
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text("Yükleniyor");
+          return const Center(child: CircularProgressIndicator());
         }
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
         });
 
         return ListView(
@@ -100,69 +87,76 @@ class _Direct2MessageState extends State<Direct2Message> {
   }
 
   Widget _buildMessageItem(DocumentSnapshot documentSnapshot) {
-    Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+    // bunun document i yanlış olduğu için göstermiyor
+    Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+    
 
-    var alignment = (data['senderId'] == _firebaseAuth.currentUser!.uid)
-    ? Alignment.centerRight
-    : Alignment.centerLeft;
+    var alignment = (data['uid'] == _firebaseAuth.currentUser!.uid)
+        ? Alignment.centerRight
+        : Alignment.centerLeft;
 
     return Container(
       alignment: alignment,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          crossAxisAlignment: (data["senderId"] == _firebaseAuth.currentUser!.uid) 
-          ? CrossAxisAlignment.end 
-          : CrossAxisAlignment.start,
+          crossAxisAlignment: (data['uid'] == _firebaseAuth.currentUser!.uid)
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
-            // sender maili göstermese de olur. Kaldırabilir sin
             Text(
-              data['senderEmail'],
+              data['email'] ?? '',
               style: GoogleFonts.inter(
-                color: Colors.black
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 5),
-            ChatBubble(message: data['message'])
+            ChatBubble(message: data['message']),
           ],
         ),
       ),
     );
   }
+
   Widget _buildMessageInput() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal:20),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: _messageController,
+              decoration: const InputDecoration(
+                hintText: 'Mesaj yazın',
+                border: OutlineInputBorder(),
+              ),
               obscureText: false,
             ),
           ),
-      
-          // gönder butonu
-          IconButton(onPressed: sendMessage, icon: const Icon(Icons.arrow_upward))
+          IconButton(
+            onPressed: sendMessage,
+            icon: const Icon(Icons.send),
+          ),
         ],
       ),
     );
-  } 
-  // email çekme yöntemini değiştir sadece
-  Future<void> _getEmail(String uid) async {
+  }
+
+  Future<void> _getEmail(String receiverId) async {
     try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(widget.receiverId).get();
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(receiverId).get();
       if (snapshot.exists) {
-        Map<String,dynamic> data = snapshot.data() as Map<String,dynamic>;
-        if (data.isNotEmpty && data.containsKey('email')) {
+        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+        if (data.containsKey('email')) {
           setState(() {
             sellerEmail = data['email'] as String;
           });
         }
       } else {
-        print("email bulunamadı");
+        print("Email not found");
       }
     } catch (e) {
-      print("Hata $e");
+      print("Error: $e");
     }
   }
 }
