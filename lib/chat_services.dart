@@ -9,8 +9,6 @@ import 'message.dart';
 class ChatService extends ChangeNotifier{
 
   // TODO: bence unreadmessages fonksiyonu mesajı göndermeden önce çalışaması lazım(yarın yine bak) CHATGPT den dün sormuştun ona bak !!!
-  // TODO: mesaj receiver tarafından alınsa da sent by the sender diyor
-  // TODO: mesajı iki kere gönderiyor(await ile alakalı olabilir)
   
   late String currentUserId;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -65,7 +63,7 @@ class ChatService extends ChangeNotifier{
     }
   }
 
-  // Create or update the message document
+  // yoksa yeniden yarat
   if (!messageDocSnapshot.exists) {
     Message newMessage = Message(
       senderId: currentUserId, 
@@ -81,14 +79,14 @@ class ChatService extends ChangeNotifier{
     );
     await messageDocRef.set(newMessage.toMap());
   } else {
-    // Update the existing message document
+    // eğer varsa güncelle
     await messageDocRef.update({
       'lastMessage': message,
       'timeStamp': timestamp
     });
   }
 
-  // Add the new message to the messageList collection
+  // messageList koleksiyonuna ekliyor
   MessageContent messageContent = MessageContent(
     addtime: timestamp, 
     message: message, 
@@ -96,11 +94,10 @@ class ChatService extends ChangeNotifier{
     email: currentUserEmail
   );
 
-  await messageDocRef.collection('messageList').add(messageContent.toMap());
-
+  // messageList e ekleniyor burada
   Future<DocumentReference<Map<String, dynamic>>> documentReference = messageDocRef.collection('messageList').add(messageContent.toMap());
-  // bunu mesajı göndermeden önce göndermem lazım
-  await unredMessages(documentReference, receiverId);
+  // todo: bunu mesajı göndermeden önce göndermem lazım
+  await unredMessages(documentReference, receiverId,messageDocRef);
   
 }
 
@@ -145,20 +142,30 @@ class ChatService extends ChangeNotifier{
     }
   }
 
-  Future<void> unredMessages(Future<DocumentReference<Map<String,dynamic>>> documentReference, String receiverID) async {
+  Future<void> unredMessages(Future<DocumentReference<Map<String,dynamic>>> documentReference, String receiverID, DocumentReference messageDocRef) async {
 
     DocumentReference<Map<String, dynamic>> messageListdoc = await documentReference;
+    // buradan messageList teki uid yi alıyorum
     DocumentSnapshot<Map<String, dynamic>> messageListsnapshot = await messageListdoc.get();
+    // buradan messageDoc daki senderId ve receiverId yi alıyorum
+    DocumentSnapshot messageDocSnapshot = await messageDocRef.get();
 
-    print(messageListsnapshot.data()!['uid']);
+    if(messageDocSnapshot.exists && messageDocSnapshot.data() != null) {
+      Map<String, dynamic>? messageData = messageDocSnapshot.data() as Map<String, dynamic>;
 
-    // bu mantık yanlış, her türlü ilk döngü doğru oluyor, verileri messageDoc dan al
-    if (messageListsnapshot.data()!['uid'] == currentUserId) {
+      fromMsg = messageData.containsKey('from_msg') ? messageData['from_msg'] : 0;
+      toMsg = messageData.containsKey('to_msg') ? messageData['to_msg'] : 0;
+
+    if (messageListsnapshot.data()!['uid'] == messageData['senderId']) {
       fromMsg = fromMsg + 1;
-      print('sent by the sender');
-    } else if (messageListsnapshot.data()!['uid'] == receiverID) {
+    } else if (messageListsnapshot.data()!['uid'] == messageData['receiverId']) {
       toMsg = toMsg + 1;
-      print('sent by the receiver');
     }
+  }
+    // burada fromMsg ve toMsg i update ediyor
+    await messageDocRef.update({
+      'from_msg': fromMsg,
+      'to_msg': toMsg
+    });
   }
 }
