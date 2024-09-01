@@ -6,7 +6,6 @@ import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
-import 'globals.dart';
 
 class GetUserData extends StatefulWidget {
   const GetUserData({Key? key}) : super(key: key);
@@ -27,7 +26,8 @@ class _GetUserDataState extends State<GetUserData> {
   String? cityFilter;
   String? districtFilter;
   List<String> ?daysFilter;
-  // set te kullanabilrsin daysFilter yerine çünkü aynı değeri içermez
+  int? minFilter = 0;
+  int? maxFilter = 0;
 
   @override
   void initState() {
@@ -282,32 +282,41 @@ class _GetUserDataState extends State<GetUserData> {
         cityFilter = filter['cityFilter'];
         districtFilter = filter['districtFilter'];
         daysFilter = filter['daysFilter'];
+        minFilter = filter['minFilter'];
+        maxFilter = filter['maxFilter'];
       });
       applyFilter();
     }
   }
 
-  void applyFilter() async{
-    Query<Map<String, dynamic>> filterquery = _firestore.collection('Users');
+  void applyFilter() async {
+  Query<Map<String, dynamic>> filterquery = _firestore.collection('Users');
 
-    if (nameFilter != null && nameFilter!.isNotEmpty) {
-      filterquery = filterquery.where('sellerDetails.sellerName', isEqualTo: nameFilter);
-    }
-    if (cityFilter != null && cityFilter!.isNotEmpty) {
-      filterquery = filterquery.where('sellerDetails.city', isEqualTo: cityFilter);
-    }
-    if (districtFilter != null && districtFilter!.isNotEmpty) {
-      filterquery = filterquery.where('sellerDetails.district', isEqualTo: districtFilter);
-    }
-    if (daysFilter != null && daysFilter!.isNotEmpty) {
-      filterquery = filterquery.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
-    }
+  if (nameFilter != null && nameFilter!.isNotEmpty) {
+    filterquery = filterquery.where('sellerDetails.sellerName', isEqualTo: nameFilter);
+  }
+  if (cityFilter != null && cityFilter!.isNotEmpty) {
+    filterquery = filterquery.where('sellerDetails.city', isEqualTo: cityFilter);
+  }
+  if (districtFilter != null && districtFilter!.isNotEmpty) {
+    filterquery = filterquery.where('sellerDetails.district', isEqualTo: districtFilter);
+  }
+  if (daysFilter != null && daysFilter!.isNotEmpty) {
+    filterquery = filterquery.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
+  }
 
-    filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minPrice);
-    filterquery = filterquery.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxPrice);
-    
-      setState(() {
-      _userStream = filterquery.snapshots();
-    });
+  if (minFilter != null && maxFilter != null) {
+    filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter);
+    filterquery = filterquery.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter);
+  } else if (minFilter != null) {
+    filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter);
+  } else if (maxFilter != null) {
+    filterquery = filterquery.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter);
+  }
+
+  // Update the user stream based on the filter query
+  setState(() {
+    _userStream = filterquery.snapshots();
+  });
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kiralik_kaleci/getuserinformation.dart';
+import 'package:kiralik_kaleci/searchpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class HomePage extends StatefulWidget {

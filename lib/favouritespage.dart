@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
-import 'package:kiralik_kaleci/styles/colors.dart';
 
 class FavouritesPage extends StatefulWidget {
   const FavouritesPage({Key? key}) : super(key: key);
@@ -44,7 +43,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
       return Scaffold(
         appBar: AppBar(
           title: Text('Favorlilerim', style: GoogleFonts.inter(color: Colors.white)),
-          backgroundColor: background,
+          backgroundColor: Colors.white,
         ),
         body: const Center(
           child: CircularProgressIndicator(),
@@ -54,8 +53,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Favorilerim', style: GoogleFonts.inter(color: Colors.white)),
-        backgroundColor: background,
+        title: Text('Favorilerim', style: GoogleFonts.inter(color: Colors.black)),
+        backgroundColor: Colors.white,
       ),
       body: ListView.builder(
         itemCount: favourites.length,

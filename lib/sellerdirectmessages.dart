@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/direct2messagepage.dart';
-import 'package:kiralik_kaleci/sellermessagepage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'sharedvalues.dart';
 
