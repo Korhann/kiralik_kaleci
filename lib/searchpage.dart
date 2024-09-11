@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -53,15 +54,72 @@ class _GetUserDataState extends State<GetUserData> {
           docs = docs.where((doc) => doc.data().containsKey('sellerDetails')).toList();
 
           if (docs.isEmpty) {
-            return Center(
-              child: Text(
-                "Ana Sayfa şuanlık boş...",
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade500,
+            return Column(
+              children: [
+                Container(
+                  color: background,
+                  padding: const EdgeInsets.only(top: 15),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Kalecilerimiz',
+                        style: GoogleFonts.inter(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        )
+                      ),
+                      const SizedBox(width: 10),
+                      const Icon(Icons.handshake),
+                      const Spacer(),
+                      Padding(
+                            padding: const EdgeInsets.only(right: 20),
+                            child: GestureDetector(
+                              onTap: () async {
+                                final filters = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const FilterPage(),
+                                  ),
+                                );
+                                runFilters(filters);
+                              },
+                              child: Image.asset(
+                                'lib/icons/setting.png',
+                                width: 20,
+                                height: 20,
+                              ),
+                            ),
+                          ),
+                    ],
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search,
+                          size: 70,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(height: 10),
+                        Center(
+                          child: Text(
+                            'İlgili sonuç bulunamadı',
+                            style: GoogleFonts.inter(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                  ),
+                )
+              ],
             );
           }
 

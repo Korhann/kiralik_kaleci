@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
+import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -22,6 +23,7 @@ class SellerDetailsPage extends StatefulWidget {
 }
 
 class _SellerDetailsPageState extends State<SellerDetailsPage> {
+
   // kullanıcı saatleri ile ilgili kısım
   List<String> days = [];
   String? day;
@@ -262,6 +264,12 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 ElevatedButton(
                   onPressed: () {
                     // butona bastıktan sonra ödeme sayfasına atacak
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentPage(sellerUid: widget.sellerUid)
+                      ),
+                    );
                   },
                   style: buttonPrimary,
                   child: Text(
@@ -382,7 +390,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
         });
       } else {
         // Add to favorites
-        sellerDetails['sellerUid'] = sellerUid; // Ensure sellerUid is part of the details
+        sellerDetails['sellerUid'] = sellerUid; 
         await FirebaseFirestore.instance
             .collection('Users')
             .doc(currentUserUid)
