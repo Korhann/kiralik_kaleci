@@ -3,14 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/creditcarduipage.dart';
+import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class PaymentPage extends StatefulWidget {
   final String sellerUid;
+  final String selectedDay;
+  final String selectedHour;
 
   const PaymentPage({
     super.key,
-    required this.sellerUid
+    required this.sellerUid,
+    required this.selectedDay,
+    required this.selectedHour
   });
 
   @override
@@ -18,6 +23,8 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
+
+  //todo: Sonradan devam edilecek
 
   // referanslar
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -167,7 +174,21 @@ class _PaymentPageState extends State<PaymentPage> {
                   ],
                 ),
               ),
-            )
+            ),
+            ElevatedButton(
+              onPressed: () async{
+                bool paymentSuccessful = await _processPayment();
+                if (paymentSuccessful) {
+                  await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
+                  Navigator.of(context).pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Ödeme Başarısız, lütfen tekrar deneyiniz'))
+                  );
+                }
+            }, 
+            style: buttonPrimary,
+            child: Text('Ödeme'))
           ],
         ),
       ),
@@ -239,5 +260,52 @@ class _PaymentPageState extends State<PaymentPage> {
         );
       }
     );
+  }
+  // ÖDEME BURAYA EKLENECEK
+  Future<bool> _processPayment() async {
+    // Simulate payment process (replace this with actual payment gateway logic)
+    await Future.delayed(const Duration(seconds: 2));
+    return true; // Return true if payment is successful
+  }
+
+  Future<void> _markHourAsTaken(String day, String hourTitle) async {
+    DocumentReference userRef = FirebaseFirestore.instance.collection("Users").doc(widget.sellerUid);
+
+    // Get the existing document
+    DocumentSnapshot snapshot = await userRef.get();
+
+    if (snapshot.exists) {
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
+      if (data.containsKey('sellerDetails')) {
+        Map<String, dynamic> sellerDetails = data['sellerDetails'];
+
+        if (sellerDetails.containsKey('selectedHoursByDay')) {
+          Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
+
+          if (selectedHoursByDay.containsKey(day)) {
+            List<dynamic> hours = selectedHoursByDay[day];
+            print('hours: $hours');
+
+            for (int i = 0; i < hours.length; i++) {
+              // ÖRNEĞİN PAZARTESİ İÇİN SEÇENEK 3 SAAT VARSA SEÇİLEN HANGİSİ DİYE BAKIYOR
+              Map<String, dynamic> hour = hours[i];
+
+              if (hour['title'] == hourTitle) {
+                // Mark the hour as taken
+                hour['istaken'] = true;
+
+                // Update Firestore with the new data
+                selectedHoursByDay[day] = hours;
+                await userRef.update({
+                  'sellerDetails.selectedHoursByDay': selectedHoursByDay
+                });
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

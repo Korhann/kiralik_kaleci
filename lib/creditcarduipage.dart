@@ -17,6 +17,8 @@ class CardWidget extends StatefulWidget {
   State<CardWidget> createState() => _CardWidgetState();
 }
 
+// TODO: Sonradan devam edilecek
+
 class _CardWidgetState extends State<CardWidget> {
   @override
   Widget build(BuildContext context) {

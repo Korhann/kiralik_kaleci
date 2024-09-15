@@ -28,6 +28,10 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   List<String> days = [];
   String? day;
   Map<String, List<String>> hoursByDay = {};
+  Map<String,bool> hourIsTaken = {};
+  Map<String, Color> hourColors = {};
+  String? _selectedDay;
+  String? _selectedHour;
   List<String> orderedDays = [
     'Pazartesi',
     'Salı',
@@ -216,25 +220,41 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                     ),
                                                   ),
                                                   const SizedBox(height: 7),
-                                                  Container(
+                                                  SizedBox(
                                                     height: 120,
                                                     child: SingleChildScrollView(
                                                       scrollDirection: Axis.vertical,
                                                       child: Column(
                                                         crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: hours.map((hour) {
-                                                          return ClipRRect(
-                                                            borderRadius: BorderRadius.circular(10),
-                                                            child: Container(
-                                                              margin: const EdgeInsets.symmetric(vertical: 3.0),
-                                                              padding: const EdgeInsets.all(5),
-                                                              color: Colors.cyan,
-                                                              child: Text(
-                                                                hour,
-                                                                style: GoogleFonts.inter(
-                                                                  fontSize: 14,
-                                                                  fontWeight: FontWeight.w400,
-                                                                  color: Colors.black,
+                                                          // todo: dayHourKey ile db den aldığım saatleri karşılaştırıp ona göre rengini değiştirebilirim
+                                                          String dayHourKey = '$day $hour';
+                                                          return GestureDetector(
+                                                            onTap: () {
+                                                              setState(() {
+                                                                _selectedDay = day;
+                                                                _selectedHour = hour;
+                                                                if (hourColors[dayHourKey] == Colors.grey) {
+                                                                  hourColors[dayHourKey] = Colors.cyan;
+                                                                } else {
+                                                                  hourColors[dayHourKey] = Colors.grey;
+                                                                }
+                                                              });
+                                                              print('selected day is: $_selectedDay, selected hour is: $_selectedHour');
+                                                            },
+                                                            child: ClipRRect(
+                                                              borderRadius: BorderRadius.circular(10),
+                                                              child: Container(
+                                                                margin: const EdgeInsets.symmetric(vertical: 3.0),
+                                                                padding: const EdgeInsets.all(5),
+                                                                color: hourColors[dayHourKey] ?? Colors.cyan,
+                                                                child: Text(
+                                                                  hour,
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 14,
+                                                                    fontWeight: FontWeight.w400,
+                                                                    color: Colors.black,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
@@ -263,11 +283,14 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 const SizedBox(height: 50),
                 ElevatedButton(
                   onPressed: () {
-                    // butona bastıktan sonra ödeme sayfasına atacak
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PaymentPage(sellerUid: widget.sellerUid)
+                        builder: (context) => PaymentPage(
+                          sellerUid: widget.sellerUid,
+                          selectedDay: _selectedDay!,
+                          selectedHour: _selectedHour!,
+                        )
                       ),
                     );
                   },
@@ -342,34 +365,50 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   }
 
   Future<void> _getDaysName(String userId) async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(userId).get();
+  DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(userId).get();
 
-    if (snapshot.exists) {
-      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-      if (data.isNotEmpty && data.containsKey('sellerDetails')) {
-        Map<String, dynamic> sellerDetails = data['sellerDetails'];
-        if (sellerDetails.containsKey('selectedHoursByDay')) {
-          Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
+  if (snapshot.exists) {
+    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+    if (data.isNotEmpty && data.containsKey('sellerDetails')) {
+      Map<String, dynamic> sellerDetails = data['sellerDetails'];
+      if (sellerDetails.containsKey('selectedHoursByDay')) {
+        Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
 
-          List<String> userDays = orderedDays.where((day) {
-            return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
-          }).toList();
+        List<String> userDays = orderedDays.where((day) {
+          return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
+        }).toList();
 
-          setState(() {
-            days.clear();
-            days.addAll(userDays);
-            hoursByDay.clear(); // Başka bir kullanıcıya tıklayınca temizle
-          });
+        setState(() {
+          days.clear();
+          days.addAll(userDays);
+          hoursByDay.clear(); // Clean up for another user
+        });
 
-          for (String day in days) {
-            if (selectedHoursByDay.containsKey(day)) {
-              hoursByDay[day] = (selectedHoursByDay[day] as List).cast<String>();
+        for (String day in days) {
+          if (selectedHoursByDay.containsKey(day)) {
+            // Extract the title and istaken value for each hour
+            List<dynamic> hourList = selectedHoursByDay[day] as List;
+            List<String> hourTitles = [];
+            for (var hour in hourList) {
+              Map<String, dynamic> hourMap = hour as Map<String, dynamic>;
+              String title = hourMap['title'];
+              bool istaken = hourMap['istaken'];
+
+              // Store the color based on istaken value (grey if taken)
+              String dayHourKey = '$day $title';
+              hourColors[dayHourKey] = istaken ? Colors.grey : Colors.cyan;
+
+              // Add the title to display in the UI
+              hourTitles.add(title);
             }
+            hoursByDay[day] = hourTitles;
           }
         }
       }
     }
   }
+}
+
 
   void _toggleFavorite(Map<String, dynamic> sellerDetails, String sellerUid) async {
     final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;

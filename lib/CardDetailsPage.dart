@@ -16,6 +16,8 @@ class CardDetails extends StatefulWidget {
   State<CardDetails> createState() => _CardDetailsState();
 }
 
+// TODO: Sonradan devam edilecek
+
 class _CardDetailsState extends State<CardDetails> {
   String cardNumber = '';
   String expiryDate = '';

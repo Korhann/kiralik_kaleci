@@ -1932,9 +1932,13 @@ void updateDistrictOptions(String? city) {
           // selectedHours = list of 'CheckContainerModel' associated to each day
           _AmenitiesState.selectedHoursByDay.forEach((day, selectedHours) { 
             if (selectedHours.isNotEmpty) {
-              formattedData[day] = selectedHours.map((hour) => hour.title).toList();
+              // istaken: false
+              formattedData[day] = selectedHours.map((hour) => {
+                'title': hour.title,
+                'istaken': false
+              }).toList();
             }
-          }); 
+          });
           // filtreleme için price ı integer a dönüştürüyorum
           int? price = int.tryParse(sellerPrice.text);
 
