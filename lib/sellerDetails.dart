@@ -283,7 +283,15 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 const SizedBox(height: 50),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
+                    if (_selectedDay == null && _selectedHour == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Saat ve gün seçiniz'),
+                          backgroundColor: Colors.red,
+                        )
+                      );
+                    } else {
+                      Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => PaymentPage(
@@ -293,6 +301,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                         )
                       ),
                     );
+                    }
                   },
                   style: buttonPrimary,
                   child: Text(
@@ -377,6 +386,8 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
         List<String> userDays = orderedDays.where((day) {
           return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
         }).toList();
+
+        print('3 $userDays');
 
         setState(() {
           days.clear();

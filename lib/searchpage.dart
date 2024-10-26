@@ -370,8 +370,8 @@ class _GetUserDataState extends State<GetUserData> {
     filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter);
   } else if (maxFilter != null) {
     filterquery = filterquery.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter);
-  }
-
+  } 
+  
   // Update the user stream based on the filter query
   setState(() {
     _userStream = filterquery.snapshots();

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/CardDetailsPage.dart';
+import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
@@ -243,6 +244,45 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Text(
+                  "Diğer",
+                  style: GoogleFonts.roboto(
+                      fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black),
+                ),
+              ),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AppointmentsPage())
+                  );
+                },
+                child: Container(
+                  height: 60,
+                  width: double.infinity,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Randevularım',
+                          style: GoogleFonts.roboto(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w500
+                          ),
+                        ),
+                        const Icon(Icons.alarm, size: 24)
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Container(height: 1,color: Colors.black),
               GestureDetector(
                 onTap: () {
                   Navigator.push(

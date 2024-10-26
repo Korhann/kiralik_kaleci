@@ -175,20 +175,31 @@ class _PaymentPageState extends State<PaymentPage> {
                 ),
               ),
             ),
-            ElevatedButton(
-              onPressed: () async{
-                bool paymentSuccessful = await _processPayment();
-                if (paymentSuccessful) {
-                  await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
-                  Navigator.of(context).pop();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Ödeme Başarısız, lütfen tekrar deneyiniz'))
-                  );
-                }
-            }, 
-            style: buttonPrimary,
-            child: Text('Ödeme'))
+            const SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: () async{
+                  bool paymentSuccessful = await _processPayment();
+                  if (paymentSuccessful) {
+                    await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
+                    Navigator.of(context).pop();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Ödeme Başarısız, lütfen tekrar deneyiniz'))
+                    );
+                  }
+              }, 
+              style: buttonPrimary,
+              child: Text(
+                'Ödeme',
+                style: GoogleFonts.inter(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+                )
+              ),
+            )
           ],
         ),
       ),
