@@ -21,9 +21,14 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
 
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   // veri tabanından çektiğim veriler
   String? fullName;
   String? email;
+  // appointmentpage ya göndermek için
+  late String sellerUid;
+  late String buyerUid;
 
   // authentication of the user
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -33,6 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    getSellerUid();
   }
 
   @override
@@ -442,4 +448,21 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
+  // appointmentpage ya göndermek için aldım ama 2 tane var nasıl yapacağına karar ver
+  Future<void> getSellerUid() async {
+
+  CollectionReference collectionReference = _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentbuyer');
+  QuerySnapshot querySnapshot = await collectionReference.get();
+  
+  for (var doc in querySnapshot.docs) {
+    final data = doc.data() as Map<String, dynamic>; 
+    
+    String? sellerUid = data['appointmentDetails']?['selleruid'];
+    print('Seller UID: $sellerUid');
+  }
+}
+
 }

@@ -336,6 +336,7 @@ class _PaymentPageState extends State<PaymentPage> {
     Map<String,String> appointmentDetails = {
       'name': sellerName,
       'surname': sellerSurname,
+      'selleruid': widget.sellerUid,
       'day': widget.selectedDay,
       'hour': widget.selectedHour,
     };
@@ -362,6 +363,7 @@ class _PaymentPageState extends State<PaymentPage> {
   // Create the appointmentDetails map with the fetched data
   Map<String, String> appointmentDetails = {
     'fullName': fullName,
+    'buyerUid': currentuser,
     'day': widget.selectedDay,
     'hour': widget.selectedHour,
   };

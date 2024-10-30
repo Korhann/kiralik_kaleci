@@ -110,12 +110,22 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   Future<void> _fetchAppointments() async {
-    QuerySnapshot snapshot = await _firestore
+    QuerySnapshot snapshot;
+
+    // if de hangisi user hangisi seller bak
+    if(userorseller == false){
+      snapshot = await _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentbuyer')
+      .get();
+    } else {
+      snapshot = await _firestore
         .collection('Users')
         .doc(currentuser)
-        .collection('appointmentbuyer')
+        .collection('appointmentseller')
         .get();
-
+    }
     setState(() {
       appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
     });
