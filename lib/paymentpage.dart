@@ -24,18 +24,23 @@ class PaymentPage extends StatefulWidget {
 
 class _PaymentPageState extends State<PaymentPage> {
 
-  //todo: Sonradan devam edilecek
+  //todo: Ödemeden sonra eğer ödeme başarılı ise randevularım a eklenecek.
+  /*
+  kullanıcı adı soyadı, seçili saat, seçili gün 
+  */
 
   // referanslar
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
+  late String sellerName;
+  late String sellerSurname;
 
   Color _buttonColor = Colors.white;
 
   // kredi kartı için
-  TextEditingController _cardNumberController = TextEditingController();
-  TextEditingController _expiryDateController = TextEditingController();
-  TextEditingController _cvvController = TextEditingController();
+  final TextEditingController _cardNumberController = TextEditingController();
+  final TextEditingController _expiryDateController = TextEditingController();
+  final TextEditingController _cvvController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +187,8 @@ class _PaymentPageState extends State<PaymentPage> {
                   bool paymentSuccessful = await _processPayment();
                   if (paymentSuccessful) {
                     await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
+                    appointmentBuyer();
+                    appointmentSeller();
                     Navigator.of(context).pop();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -258,6 +265,11 @@ class _PaymentPageState extends State<PaymentPage> {
         var userData = snapshot.data!.data() as Map<String,dynamic>;
         var sellerDetails = userData['sellerDetails'];
         var sellerPrice = sellerDetails['sellerPrice'];
+
+        // appointment page için
+        sellerName = sellerDetails['sellerName'];
+        sellerSurname = sellerDetails['sellerLastName'];
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
@@ -274,6 +286,7 @@ class _PaymentPageState extends State<PaymentPage> {
   }
   // ÖDEME BURAYA EKLENECEK
   Future<bool> _processPayment() async {
+
     // Simulate payment process (replace this with actual payment gateway logic)
     await Future.delayed(const Duration(seconds: 2));
     return true; // Return true if payment is successful
@@ -319,4 +332,48 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     }
   }
+  void appointmentBuyer() async{
+    Map<String,String> appointmentDetails = {
+      'name': sellerName,
+      'surname': sellerSurname,
+      'day': widget.selectedDay,
+      'hour': widget.selectedHour,
+    };
+
+    await _firestore.collection('Users')
+    .doc(currentuser)
+    .collection('appointmentbuyer')
+    .add({
+      'appointmentDetails': appointmentDetails
+    });
+  }
+  void appointmentSeller() async {
+  String fullName;
+  
+  // Fetch user data once using `get()` to avoid the asynchronous issue
+  final snapshot = await _firestore.collection('Users').doc(currentuser).get();
+  if (snapshot.exists) {
+    final userdata = snapshot.data();
+    fullName = userdata!['fullName'] ?? '';
+  } else {
+    throw Exception("User data not found"); 
+  }
+
+  // Create the appointmentDetails map with the fetched data
+  Map<String, String> appointmentDetails = {
+    'fullName': fullName,
+    'day': widget.selectedDay,
+    'hour': widget.selectedHour,
+  };
+  
+  // Add appointment details to Firestore
+  await _firestore
+      .collection('Users')
+      .doc(widget.sellerUid)
+      .collection('appointmentseller')
+      .add({
+    'appointmentDetails': appointmentDetails,
+  });
+}
+
 }

@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
@@ -199,6 +201,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 10),
               Stack(
                   children: [
@@ -293,7 +296,52 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                   )
                   ],
                 ),
+              const SizedBox(height: 30),
 
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Text(
+                  'Diğer',
+                  style: GoogleFonts.roboto(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              GestureDetector(
+                //TODO user or seller a göre de yapabilirsin belki yada yeni bir sellerappointment page de yapabilirsin
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AppointmentsPage())
+                  );
+                },
+                child: Container(
+                  height: 60,
+                  width: double.infinity,
+                  color: sellergrey,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Randevularım',
+                          style: GoogleFonts.roboto(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white
+                          ),
+                        ),
+                        const Icon(Icons.alarm, size: 24, color: Colors.white,)
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               // İlanlarım sayfası
               const SizedBox(height: 20),
               Center(
