@@ -451,7 +451,14 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
             ),
           );
         } else {
-          return const Text('No IBAN');
+          return Text(
+            'İban bilgisi yok',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.white
+            ),
+          );
         }
       },
     );

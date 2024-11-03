@@ -14,19 +14,17 @@ class AppointmentsPage extends StatefulWidget {
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
 
-  // gelince en doğru querysnapshot nası çekilir öğren
-
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
 
-  List<Map<String,dynamic>> appointments = [];
+  List<Map<String, dynamic>> appointments = [];
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     _fetchAppointments();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,55 +52,69 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 ),
               ),
             ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: appointments.length,
-              itemBuilder: (context, index) {
-                final appointment = appointments[index];
-                final appointmentDetails = appointment['appointmentDetails'];
-                final name = appointmentDetails['name'] ?? '';
-                final surname = appointmentDetails['surname'] ?? '';
-                final day = appointmentDetails['day'] ?? '';
-                final hour = appointmentDetails['hour'] ?? '';
-                
-                return Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      color: Colors.white,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(10),
-                        title: Text(
-                          '$name $surname',
-                          style: GoogleFonts.poppins(fontSize: 18),
-                        ),
-                        subtitleTextStyle: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black
-                        ),
-                        subtitle: 
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_month),
-                            const SizedBox(width: 5),
-                            Text('$day'),
-                      
-                            const Spacer(),
-                      
-                            const Icon(Icons.watch_later_outlined),
-                            const SizedBox(width: 5),
-                            Text('$hour')
-                          ],
+            // Randevu yoksa bu mesajı göster
+            appointments.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Randevunuz bulunmamaktadır',
+                          style: GoogleFonts.poppins(
+                            fontSize: 26,
+                            color: userorseller ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: appointments.length,
+                    itemBuilder: (context, index) {
+                      final appointment = appointments[index];
+                      final appointmentDetails = appointment['appointmentDetails'];
+                      final name = appointmentDetails['fullName'] ?? appointmentDetails['name'];
+                      final surname = appointmentDetails['surname'] ?? '';
+                      final day = appointmentDetails['day'] ?? '';
+                      final hour = appointmentDetails['hour'] ?? '';
+
+                      return Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            color: Colors.white,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(10),
+                              title: Text(
+                                '$name $surname',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  const Icon(Icons.calendar_month),
+                                  const SizedBox(width: 5),
+                                  Text('$day'),
+                                  const Spacer(),
+                                  const Icon(Icons.watch_later_outlined),
+                                  const SizedBox(width: 5),
+                                  Text('$hour')
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ],
         ),
       ),
@@ -112,19 +124,18 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   Future<void> _fetchAppointments() async {
     QuerySnapshot snapshot;
 
-    // if de hangisi user hangisi seller bak
-    if(userorseller == false){
+    if (userorseller == false) {
       snapshot = await _firestore
-      .collection('Users')
-      .doc(currentuser)
-      .collection('appointmentbuyer')
-      .get();
+          .collection('Users')
+          .doc(currentuser)
+          .collection('appointmentbuyer')
+          .get();
     } else {
       snapshot = await _firestore
-        .collection('Users')
-        .doc(currentuser)
-        .collection('appointmentseller')
-        .get();
+          .collection('Users')
+          .doc(currentuser)
+          .collection('appointmentseller')
+          .get();
     }
     setState(() {
       appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();

@@ -33,6 +33,8 @@ class _DirectMessagesState extends State<DirectMessages> {
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
+        // geri basma tuşu
+        automaticallyImplyLeading: false,
         backgroundColor: background,
         centerTitle: true,
         title: Padding(

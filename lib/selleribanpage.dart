@@ -15,6 +15,7 @@ class SellerIbanPage extends StatefulWidget {
 }
 
 class SellerIbanPageState extends State<SellerIbanPage> {
+  // TODO problem text i silince TR kısmında T ve R yazmaya başlıyor !!!
 
   final formkey = GlobalKey<FormState>();
   
@@ -27,17 +28,6 @@ class SellerIbanPageState extends State<SellerIbanPage> {
 
   final String _ibanPattern = r'^TR\d{2} \d{4} \d{4} \d{4} \d{4} \d{4} \d{2}$';
 
-  @override
-  void initState() {
-    super.initState();
-    _ibanController.text = 'TR';
-    _ibanFocusNode.addListener(() {
-      if (_ibanFocusNode.hasFocus && !_ibanController.text.startsWith('TR')) {
-        _ibanController.text = 'TR';
-        _ibanController.selection = TextSelection.fromPosition(TextPosition(offset: _ibanController.text.length));
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -111,28 +101,33 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                       LengthLimitingTextInputFormatter(32), // Including spaces
                       FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9 ]')),
                       TextInputFormatter.withFunction((oldValue, newValue) {
-                        String newText = newValue.text.toUpperCase();
-                        if (newText.startsWith('TR') && newText.length > 2) {
-                          newText = 'TR' + formatIban(newText.substring(2));
-                        } else if (!newText.startsWith('TR')) {
-                          newText = 'TR' + formatIban(newText);
-                        } else {
-                          newText = formatIban(newText);
-                        }
+  String newText = newValue.text.toUpperCase();
 
-                        TextSelection newSelection = newValue.selection;
-                        if (newSelection.start <= 2) {
-                          newSelection = newSelection.copyWith(
-                            baseOffset: 2,
-                            extentOffset: 2,
-                          );
-                        }
+  // Format the input while keeping "TR" at the start
+  if (newText.startsWith('TR') && newText.length > 2) {
+    newText = 'TR' + formatIban(newText.substring(2));
+  } else if (!newText.startsWith('TR')) {
+    newText = 'TR' + formatIban(newText);
+  } else {
+    newText = formatIban(newText);
+  }
 
-                        return TextEditingValue(
-                          text: newText,
-                          selection: newSelection,
-                        );
-                      }),
+  // Calculate the correct cursor position
+  int newSelectionIndex = newValue.selection.end;
+
+  // Track spaces in the formatted IBAN
+  int spaceCount = 'TR'.allMatches(newText).length;
+  newSelectionIndex += spaceCount;
+
+  // Make sure the cursor position is within bounds
+  newSelectionIndex = newSelectionIndex.clamp(0, newText.length);
+
+  // Return the updated TextEditingValue with adjusted cursor position
+  return TextEditingValue(
+    text: newText,
+    selection: TextSelection.collapsed(offset: newSelectionIndex),
+  );
+})
                     ],
                     keyboardType: TextInputType.text,
                     decoration: const InputDecoration(

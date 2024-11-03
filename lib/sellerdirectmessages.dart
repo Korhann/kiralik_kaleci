@@ -31,6 +31,7 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
     return Scaffold(
       backgroundColor: sellerbackground,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: sellerbackground,
         centerTitle: true,
         title: Padding(
