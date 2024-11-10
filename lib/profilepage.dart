@@ -461,7 +461,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final data = doc.data() as Map<String, dynamic>; 
     
     String? sellerUid = data['appointmentDetails']?['selleruid'];
-    print('Seller UID: $sellerUid');
   }
 }
 

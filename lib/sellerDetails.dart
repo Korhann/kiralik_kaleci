@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'timer.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
@@ -240,7 +242,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                                   hourColors[dayHourKey] = Colors.grey;
                                                                 }
                                                               });
-                                                              print('selected day is: $_selectedDay, selected hour is: $_selectedHour');
                                                             },
                                                             child: ClipRRect(
                                                               borderRadius: BorderRadius.circular(10),
@@ -386,8 +387,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
         List<String> userDays = orderedDays.where((day) {
           return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
         }).toList();
-
-        print('3 $userDays');
 
         setState(() {
           days.clear();
