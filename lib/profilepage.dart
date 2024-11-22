@@ -6,6 +6,7 @@ import 'package:kiralik_kaleci/CardDetailsPage.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/policiespage.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/showCardDetails.dart';
@@ -315,7 +316,35 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                   ),
-                ),
+                ),  
+              ),
+              Container(height: 1,color: Colors.black),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PoliciesPage())
+                  );
+                },
+                child: Container(
+                  height: 60,
+                  width: double.infinity,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Kiralık Kaleci",
+                          style: GoogleFonts.roboto(
+                              fontSize: 22, fontWeight: FontWeight.w500),
+                        ),
+                        const Icon(Icons.handshake_outlined, size: 24)
+                      ],
+                    ),
+                  ),
+                ),  
               ),
               const SizedBox(height: 20),
               Center(

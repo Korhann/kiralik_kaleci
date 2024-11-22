@@ -7,6 +7,7 @@ import 'package:kiralik_kaleci/timer.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  //todo: function ın içinde kontrol ediyor hangi gün çalışacak diye
   TimerService().startWeeklyRefresh();
   runApp(const MyApp());
 }

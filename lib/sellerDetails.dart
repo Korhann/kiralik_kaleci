@@ -8,7 +8,6 @@ import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'timer.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
@@ -46,6 +45,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
 
   bool isLoading = true;
   bool isFavorited = false;
+  final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
 
   @override
   void initState() {
@@ -232,17 +232,18 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                           // todo: dayHourKey ile db den aldığım saatleri karşılaştırıp ona göre rengini değiştirebilirim
                                                           String dayHourKey = '$day $hour';
                                                           return GestureDetector(
-                                                            onTap: () {
+                                                            // renk sadece cyan ise seçilebilir
+                                                            onTap: hourColors[dayHourKey] == Colors.cyan
+                                                            ? () {
                                                               setState(() {
                                                                 _selectedDay = day;
                                                                 _selectedHour = hour;
-                                                                if (hourColors[dayHourKey] == Colors.grey) {
-                                                                  hourColors[dayHourKey] = Colors.cyan;
-                                                                } else {
+                                                                // eğer available ise seçebilirsin, değilse seçemezsin
+                                                                if (hourColors[dayHourKey] == Colors.cyan) {
                                                                   hourColors[dayHourKey] = Colors.grey;
                                                                 }
                                                               });
-                                                            },
+                                                            } : null,
                                                             child: ClipRRect(
                                                               borderRadius: BorderRadius.circular(10),
                                                               child: Container(
@@ -291,7 +292,15 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                           backgroundColor: Colors.red,
                         )
                       );
-                    } else {
+                    } else if (widget.sellerUid == currentUserUid) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Kullanıcı kendini seçemez'),
+                          backgroundColor: Colors.red,
+                        )
+                      );
+                    }
+                    else {
                       Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -392,33 +401,63 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
           days.clear();
           days.addAll(userDays);
           hoursByDay.clear(); // Clean up for another user
+          hourColors.clear(); // Reset hourColors for new data
         });
 
-        for (String day in days) {
-          if (selectedHoursByDay.containsKey(day)) {
-            // Extract the title and istaken value for each hour
-            List<dynamic> hourList = selectedHoursByDay[day] as List;
-            List<String> hourTitles = [];
-            for (var hour in hourList) {
-              Map<String, dynamic> hourMap = hour as Map<String, dynamic>;
-              String title = hourMap['title'];
-              bool istaken = hourMap['istaken'];
+        // Get the current day
+        final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+        final int currentDayIndex = now.weekday - 1; // 0 for Monday, 6 for Sunday
 
-              // Store the color based on istaken value (grey if taken)
-              String dayHourKey = '$day $title';
-              hourColors[dayHourKey] = istaken ? Colors.grey : Colors.cyan;
+        for (int i = 0; i < orderedDays.length; i++) {
+          final day = orderedDays[i];
+          if (!selectedHoursByDay.containsKey(day)) continue;
 
-              // Add the title to display in the UI
-              hourTitles.add(title);
+          List<dynamic> hourList = selectedHoursByDay[day] as List;
+          List<String> hourTitles = [];
+          for (var hour in hourList) {
+            Map<String, dynamic> hourMap = hour as Map<String, dynamic>;
+            String title = hourMap['title'];
+            bool istaken = hourMap['istaken'];
+
+            // Determine the color based on istaken and whether the day is past
+            String dayHourKey = '$day $title';
+            bool isPastDay = i < currentDayIndex;
+
+            // eski false değeri kaldırıp yerine true değerini koyuyor aşşağıda
+            if (isPastDay && istaken) {
+              await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(userId)
+              .update({
+                'sellerDetails.selectedHoursByDay.$day':
+                FieldValue.arrayUnion([{'title': title, 'istaken': false}])
+              });
+
+              await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(userId)
+              .update({
+                'sellerDetails.selectedHoursByDay.$day':
+                FieldValue.arrayRemove([{'title': title, 'istaken': true}])
+              });
+              istaken = false;
             }
-            hoursByDay[day] = hourTitles;
+
+            // If the day is past or the hour is taken, mark as grey
+            hourColors[dayHourKey] = (isPastDay || istaken) ? Colors.grey : Colors.cyan;
+
+            // Add the title to display in the UI
+            hourTitles.add(title);
           }
+
+          setState(() {
+            hoursByDay[day] = hourTitles;
+          });
         }
       }
     }
   }
 }
-
 
   void _toggleFavorite(Map<String, dynamic> sellerDetails, String sellerUid) async {
     final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;

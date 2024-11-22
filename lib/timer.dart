@@ -3,8 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-
-// todo: ZAMAN YANLIŞ GÖSTERİYOR SAAT KALAN ZAMANIN SAATİ OLMASI GEREKENDEN FAZLA
+import 'package:kiralik_kaleci/appointmentspage.dart';
 
 class TimerService with ChangeNotifier {
   static final TimerService _instance = TimerService._internal();
@@ -29,17 +28,24 @@ class TimerService with ChangeNotifier {
     super.dispose();
   }
 
-  void startWeeklyRefresh() {
-    _scheduleWeeklyRefresh();
-    _startCountdown();
+  void startWeeklyRefresh() async{
+    // eğer pazartesi olmuşsa gün aktive ediyor
+    if (DateTime.now().weekday == DateTime.monday) {
+      _scheduleWeeklyRefresh();
+      _startCountdown();
+      // kullanıcı yenileme gününe kadar uygulamayı açmadıysa
+      checkAndResetAppointments();
+      // appointmentlerde silinicek
+      AppointmentsPage().deleteAppointments();
+    }
   }
 
   void _scheduleWeeklyRefresh() {
     Duration duration = _calculateTimeUntilNextMonday();
     _weeklyTimer = Timer(duration, () {
-      _refreshAppointments();
+      refreshAppointments();
       _weeklyTimer = Timer.periodic(const Duration(days: 7), (timer) {
-        _refreshAppointments();
+        refreshAppointments();
       });
     });
   }
@@ -50,29 +56,31 @@ class TimerService with ChangeNotifier {
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       remainingTime = _calculateTimeUntilNextMonday();
       _remainingTimeController.add(remainingTime);
-      print("Remaining time until next refresh: $remainingTime");
+      //print("Remaining time until next refresh: $remainingTime");
     });
   }
 
-  // kulllanıcı uygulamayı pazartesi gününe kadar açmadıysa
+  // kulllanıcı uygulamayı pazartesi gününe kadar açmadıysa (daha kullanılmadı) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   void checkAndResetAppointments() {
   Duration remainingTime = _calculateTimeUntilNextMonday();
   if (remainingTime.isNegative) {
     // eğer kalan zaman negatif ise kendiliğinden yeniliyor
-    _refreshAppointments();
+    refreshAppointments();
   }
 }
 
   Duration _calculateTimeUntilNextMonday() {
-    DateTime now = DateTime.now();
-    int daysUntilMonday = (DateTime.monday - now.weekday + 7) % 7;
-    DateTime nextMonday = now.add(Duration(days: daysUntilMonday)).copyWith(hour: 0, minute: 0, second: 0);
-    return nextMonday.difference(now);
-  }
+  DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // Adjusting to UTC+3 for Turkey Time
+  //todo: şuan cumartesi olarak ayarlı sonradan değiştirilecek
+  int daysUntilMonday = (DateTime.monday - now.weekday + 7) % 7;
 
-  // istaken ların hepsini true dan false ya dönüştürecek
-  void _refreshAppointments() async{
-    print('working');
+  DateTime nextMonday = now.add(Duration(days: daysUntilMonday)).copyWith(hour: 0, minute: 0, second: 0);
+  return nextMonday.difference(now);
+}
+
+
+  // pazartesi günü istaken ların hepsini false yapıyor
+  void refreshAppointments() async{
     DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('Users').doc(currentuser).get();
     if (snapshot.exists) {
       Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
@@ -80,14 +88,26 @@ class TimerService with ChangeNotifier {
         Map<String, dynamic> sellerDetails = data['sellerDetails'];
         if (sellerDetails.containsKey('selectedHoursByDay')) {
           Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
-          
+
+          // istaken ları false yapıyor
+          selectedHoursByDay.forEach((days, values) {
+            if (values is List) {
+              for (var props in values) {
+                if (props is Map<String,dynamic> && props.containsKey('istaken')) {
+                  props['istaken'] = false;
+                }
+              }
+            }
+          });
+          await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentuser)
+          .update({
+            'sellerDetails.selectedHoursByDay': selectedHoursByDay
+          });
         }
       }
     }
-    
-    
-    
-    
-    print("Refreshing appointments at: ${DateTime.now()}");
+    print("Time now is: ${DateTime.now().toUtc().add(const Duration(hours: 3))}");
   }
 }

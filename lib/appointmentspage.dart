@@ -10,8 +10,19 @@ class AppointmentsPage extends StatefulWidget {
 
   @override
   State<AppointmentsPage> createState() => _AppointmentsPageState();
-}
 
+  // randevular da haftalık olaraka silinecek
+  Future<void> deleteAppointments() async{
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String currentuser = FirebaseAuth.instance.currentUser!.uid;
+
+    var collection = _firestore.collection('Users').doc(currentuser).collection('appointmentbuyer');
+    var appointments = await collection.get();
+    for (var doc in appointments.docs) {
+      await doc.reference.delete();
+    }
+  }
+}
 class _AppointmentsPageState extends State<AppointmentsPage> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -141,4 +152,5 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
     });
   }
+
 }
