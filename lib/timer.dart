@@ -13,7 +13,7 @@ class TimerService with ChangeNotifier {
 
   Timer? _weeklyTimer;
   Timer? _countdownTimer;
-  static var remainingTime;
+  late Duration remainingTime;
 
   final StreamController<Duration> _remainingTimeController = StreamController<Duration>.broadcast();
   Stream<Duration> get remainingTimeStream => _remainingTimeController.stream;
@@ -29,55 +29,64 @@ class TimerService with ChangeNotifier {
   }
 
   void startWeeklyRefresh() async{
-    // eğer pazartesi olmuşsa gün aktive ediyor
-    if (DateTime.now().weekday == DateTime.monday) {
-      _scheduleWeeklyRefresh();
-      _startCountdown();
-      // kullanıcı yenileme gününe kadar uygulamayı açmadıysa
-      checkAndResetAppointments();
-      // appointmentlerde silinicek
-      AppointmentsPage().deleteAppointments();
+    remainingTime = _calculateTimeUntilNextMonday();
+    if (remainingTime.isNegative) {
+      await _performWeeklyReset();
+    } else {
+      Timer(remainingTime,() async{ 
+        await _performWeeklyReset();
+      });
     }
+  }
+
+  Future<void> _performWeeklyReset() async{
+    _scheduleWeeklyRefresh();
+    _startCountdown();
+    const AppointmentsPage().deleteAppointments();
   }
 
   void _scheduleWeeklyRefresh() {
     Duration duration = _calculateTimeUntilNextMonday();
     _weeklyTimer = Timer(duration, () {
       refreshAppointments();
-      _weeklyTimer = Timer.periodic(const Duration(days: 7), (timer) {
-        refreshAppointments();
-      });
     });
   }
 
   void _startCountdown() {
-    // başla bir sayaç daha varsa yok edilecek
+    // başla bir sayaç daha varsa yok edilecek 
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       remainingTime = _calculateTimeUntilNextMonday();
       _remainingTimeController.add(remainingTime);
-      //print("Remaining time until next refresh: $remainingTime");
+      print("Remaining time until next refresh: $remainingTime");
     });
   }
-
-  // kulllanıcı uygulamayı pazartesi gününe kadar açmadıysa (daha kullanılmadı) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  void checkAndResetAppointments() {
+  /*
+  // kullanıcı uygulamayı pazartesi gününe kadar açmadıysa (daha kullanılmadı) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  Future<void> checkAndResetAppointments() async{
   Duration remainingTime = _calculateTimeUntilNextMonday();
   if (remainingTime.isNegative) {
     // eğer kalan zaman negatif ise kendiliğinden yeniliyor
     refreshAppointments();
   }
 }
+*/
 
+  // salı olarak deneme yapılacak
   Duration _calculateTimeUntilNextMonday() {
   DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // Adjusting to UTC+3 for Turkey Time
-  //todo: şuan cumartesi olarak ayarlı sonradan değiştirilecek
-  int daysUntilMonday = (DateTime.monday - now.weekday + 7) % 7;
-
-  DateTime nextMonday = now.add(Duration(days: daysUntilMonday)).copyWith(hour: 0, minute: 0, second: 0);
-  return nextMonday.difference(now);
+  int targetDay = DateTime.tuesday;
+  int daysUntilMonday = (targetDay - now.weekday + 7) % 7;
+  if (daysUntilMonday == 0 && (now.hour > 0 || now.minute > 0 || now.second > 0)) {
+    daysUntilMonday = 7;
+  }
+  DateTime nextTargetDay = now.add(Duration(days: daysUntilMonday)).copyWith(
+    hour: 0,
+    minute: 0,
+    second: 0
+  );
+  return nextTargetDay.difference(now);
 }
-
 
   // pazartesi günü istaken ların hepsini false yapıyor
   void refreshAppointments() async{

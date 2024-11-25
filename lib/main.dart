@@ -8,7 +8,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   //todo: function ın içinde kontrol ediyor hangi gün çalışacak diye
-  TimerService().startWeeklyRefresh();
+  //TimerService().startWeeklyRefresh();
   runApp(const MyApp());
 }
 
@@ -23,7 +23,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     // uygulama kapanınca timeservice i de kapatıyor
-    TimerService().dispose(); 
+    //TimerService().dispose(); 
     super.dispose();
   }
 

@@ -16,9 +16,14 @@ class AppointmentsPage extends StatefulWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
 
-    var collection = _firestore.collection('Users').doc(currentuser).collection('appointmentbuyer');
-    var appointments = await collection.get();
-    for (var doc in appointments.docs) {
+    var collectionBuyer = _firestore.collection('Users').doc(currentuser).collection('appointmentbuyer');
+    var collectionSeller = _firestore.collection('Users').doc(currentuser).collection('appointmentseller');
+    var appointmentsBuyer = await collectionBuyer.get();
+    var appointmentsSeller = await collectionSeller.get();
+    for (var doc in appointmentsBuyer.docs) {
+      await doc.reference.delete();
+    }
+    for (var doc in appointmentsSeller.docs) {
       await doc.reference.delete();
     }
   }

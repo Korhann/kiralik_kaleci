@@ -46,7 +46,7 @@ class ContactPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Mail: mailalveyaz@gmail.com',
+                    'Mail: kiraliikkalecii@gmail.com',
                       style: GoogleFonts.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
