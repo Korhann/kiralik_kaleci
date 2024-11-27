@@ -24,13 +24,9 @@ class SellerAddPage extends StatefulWidget {
 //TODO: Resim eklemek zorunlu olması lazım yoksa getuserinformation page hata veriyor index ten dolayı
 
 class _SellerAddPageState extends State<SellerAddPage> {
-  final int maxWords = 150; // Maximum words allowed
-  final int minWords = 30; // Min words allowed
-  final TextEditingController _controller = TextEditingController();
-
+  
   // Kullanıcı bilgileri
-  TextEditingController sellerName = TextEditingController();
-  TextEditingController sellerLastName = TextEditingController();
+  TextEditingController sellerFullName = TextEditingController();
   TextEditingController sellerAge = TextEditingController();
   TextEditingController sellerHeight = TextEditingController();
   TextEditingController sellerWeight = TextEditingController();
@@ -52,7 +48,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
   late SingleValueDropDownController _cnt2;
   List<DropDownValueModel>? districtOptions;
 
-
+  // cityDistricts
   Map<String, List<DropDownValueModel>> cityDistricts = {
   'Adana': const [
     DropDownValueModel(name: 'Çukurova', value: 'Çukurova'),
@@ -1184,19 +1180,27 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
 // Function to update the dropdown menu options based on the selected city
 void updateDistrictOptions(String? city) {
-  if (city != null && cityDistricts.containsKey(city)) {
-    districtOptions = cityDistricts[city];
-    // Update selected district if it's not in the new options
-    if (districtOptions != null && !districtOptions!.contains(selectedDistrict)) {
-      selectedDistrict = null;
-    }
-  } else {
-    districtOptions = null;
+  setState(() {
+    districtOptions = cityDistricts[city] ?? [];
     selectedDistrict = null;
-  }
+    _cnt2.setDropDown(null); // Reset district dropdown
+  });
 }
 
+// insertion dan sonra dropdown menüyü temizliyor
+void clearDropdownValues() {
+  setState(() {
+    selectedCity = null;
+    selectedDistrict = null;
 
+    // Reset controllers to clear dropdown values
+    _cnt.setDropDown(null);
+    _cnt2.setDropDown(null);
+
+    // Reset district options if needed
+    districtOptions = [];
+  });
+}
 
   @override
   void initState() {
@@ -1209,9 +1213,7 @@ void updateDistrictOptions(String? city) {
   void dispose() {
     super.dispose();
     // veriyi cloud a yolladıktan sonra hepsini sil
-    _controller.dispose();
-    sellerName.dispose();
-    sellerLastName.dispose();
+    sellerFullName.dispose();
     sellerAge.dispose();
     sellerHeight.dispose();
     sellerWeight.dispose();
@@ -1222,8 +1224,7 @@ void updateDistrictOptions(String? city) {
     if (mounted) {
       setState(() {
         imageFileList.clear();
-        sellerName.clear();
-        sellerLastName.clear();
+        sellerFullName.clear();
         sellerAge.clear();
         sellerHeight.clear();
         sellerWeight.clear();
@@ -1398,7 +1399,7 @@ void updateDistrictOptions(String? city) {
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
                   child: Text(
-                    "Ad",
+                    "Ad Soyad",
                     style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18,
@@ -1407,7 +1408,7 @@ void updateDistrictOptions(String? city) {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
-                  controller: sellerName,
+                  controller: sellerFullName,
                   validator: (name) {
                     if (name == null || name.isEmpty) {
                       return "Boş Bırakılamaz !";
@@ -1428,7 +1429,7 @@ void updateDistrictOptions(String? city) {
                       fillColor: sellergrey,
                       filled: true),
                 ),
-                const SizedBox(height: 20),
+                /*
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
                   child: Text(
@@ -1439,7 +1440,9 @@ void updateDistrictOptions(String? city) {
                         fontWeight: FontWeight.w600),
                   ),
                 ),
+                */
                 const SizedBox(height: 10),
+                /*
                 TextFormField(
                   controller: sellerLastName,
                   validator: (lastname) {
@@ -1462,6 +1465,7 @@ void updateDistrictOptions(String? city) {
                       filled: true,
                       contentPadding: const EdgeInsets.all(10)),
                 ),
+                */
                 const SizedBox(height: 40),
                 Container(
                   color: sellergrey,
@@ -1603,6 +1607,9 @@ void updateDistrictOptions(String? city) {
                   ),
                 ),
                 const SizedBox(height: 20),
+                /*
+                Seçilen şehire göre ilçeler updateDistrictOptions() fonksiyonu ile popüle ediliyor
+                */
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
                   child: Text(
@@ -1641,8 +1648,10 @@ void updateDistrictOptions(String? city) {
                       dropDownList: cityDistricts.keys.map((city) => DropDownValueModel(name: city, value: city)).toList(),
                       onChanged: (val) {
                         setState(() {
-                          selectedCity = val.value;
-                          updateDistrictOptions(selectedCity);
+                          if (val is DropDownValueModel) {
+                            selectedCity = val.value as String?;
+                            updateDistrictOptions(selectedCity);
+                          }
                         });
                       },
                     ),
@@ -1689,7 +1698,9 @@ void updateDistrictOptions(String? city) {
                       dropDownList: districtOptions ?? [],
                       onChanged: (val2) {
                         setState(() {
-                          selectedDistrict = val2.value;
+                          if (val2 is DropDownValueModel) {
+                            selectedDistrict = val2.value as String;
+                          }
                         });
                       },
                     ),
@@ -1869,8 +1880,9 @@ void updateDistrictOptions(String? city) {
                       style: buttonPrimary,
                       onPressed: () async {
                         try {
-                          await _insertSellerDetails();
+                          await _insertSellerDetails(context);
                           _clearImageandText();
+                          clearDropdownValues();
                         } catch (e) {
                           log("error at $e");
                         }
@@ -1904,11 +1916,6 @@ void updateDistrictOptions(String? city) {
     });
   }
 
-  String _trimToMaxWords(String text) {
-    // Trim the text to the maximum number of words
-    List<String> words = text.trim().split(RegExp(r'\s+'));
-    return words.take(maxWords).join(' ');
-  }
 
   Future _pickImageFromGallery() async {
     final List<XFile> selectedImages = await imagePicker.pickMultiImage();
@@ -1918,55 +1925,107 @@ void updateDistrictOptions(String? city) {
     setState(() {});
   }
 
-  Future<void> _insertSellerDetails() async {
-    // Bilgiler eksiksiz ise verileri firestore a gönder
-    if (_formKey.currentState!.validate()) {
-      try {
-        String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-        if (userId.isNotEmpty) {
-          List<String> imageUrls = await _uploadImagesToStorage();
-          
-          // burası saatleri yüklemek için
-          Map<String,dynamic> formattedData= {};
-          // day = key in the selectedHoursByday (e.g: Pazartesi,Salı,Çarşamba..)
-          // selectedHours = list of 'CheckContainerModel' associated to each day
-          _AmenitiesState.selectedHoursByDay.forEach((day, selectedHours) { 
-            if (selectedHours.isNotEmpty) {
-              // istaken: false
-              formattedData[day] = selectedHours.map((hour) => {
-                'title': hour.title,
-                'istaken': false
-              }).toList();
-            }
-          });
-          // filtreleme için price ı integer a dönüştürüyorum
-          int? price = int.tryParse(sellerPrice.text);
-
-          Map<String, dynamic> sellerDetails = {
-            "sellerName": sellerName.text,
-            "sellerLastName": sellerLastName.text,
-            "sellerAge": sellerAge.text,
-            "sellerHeight": sellerHeight.text,
-            "sellerWeight": sellerWeight.text,
-            "sellerPrice": price,
-            "city": selectedCity,
-            "district": selectedDistrict,
-            "imageUrls": imageUrls,
-            'chosenDays': formattedData.keys.toList(),
-            "selectedHoursByDay": formattedData
-          };
-          await FirebaseFirestore.instance
-              .collection("Users")
-              .doc(userId)
-              .update({"sellerDetails": sellerDetails});
-        }
-        _AmenitiesState.selectedHoursByDay.clear();
-      } catch (e) {
-        log("error $e");
-        // Show error message to the user
+  Future<void> _insertSellerDetails(BuildContext context) async {
+  if (_formKey.currentState!.validate()) {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            color: Colors.green,
+            backgroundColor: Colors.grey,
+          ),
+        );
       }
+    );
+
+    try {
+      String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+      if (userId.isNotEmpty) {
+        List<String> imageUrls = await _uploadImagesToStorage();
+
+        Map<String, dynamic> formattedData = {};
+        _AmenitiesState.selectedHoursByDay.forEach((day, selectedHours) {
+          if (selectedHours.isNotEmpty) {
+            formattedData[day] = selectedHours.map((hour) => {
+                  'title': hour.title,
+                  'istaken': false,
+                }).toList();
+          }
+        });
+
+        int? price = int.tryParse(sellerPrice.text);
+
+        Map<String, dynamic> sellerDetails = {
+          "sellerFullName": sellerFullName.text,
+          "sellerAge": sellerAge.text,
+          "sellerHeight": sellerHeight.text,
+          "sellerWeight": sellerWeight.text,
+          "sellerPrice": price,
+          "city": selectedCity,
+          "district": selectedDistrict,
+          "imageUrls": imageUrls,
+          'chosenDays': formattedData.keys.toList(),
+          "selectedHoursByDay": formattedData,
+        };
+
+        await FirebaseFirestore.instance
+            .collection("Users")
+            .doc(userId)
+            .update({"sellerDetails": sellerDetails});
+
+        setState(() {
+          _AmenitiesState.selectedHoursByDay.clear();
+        });
+
+
+        // Close the loading dialog
+        Navigator.of(context).pop();
+
+        // Show success message
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: const Text('İşlem Başarılı'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the success dialog
+                  },
+                  child: const Text('Tamam'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      log("error $e");
+      Navigator.of(context).pop(); // Close the loading dialog if an error occurs
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Error"),
+            content: Text("An error occurred: $e"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the error dialog
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
+}
+
 
   Future<List<String>> _uploadImagesToStorage() async {
     List<String> imageUrls = [];
@@ -2082,7 +2141,7 @@ Widget build(BuildContext context) {
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 5.0),
           padding: const EdgeInsets.all(8),
-          color: container.isCheck ? const Color.fromRGBO(33, 150, 243, 1) : Colors.white,
+          color: container.isCheck ? const Color.fromRGBO(33, 150, 243, 1) : Colors.white, // seçim rengini yeşil yap
           child: Text(
             container.title,
             textAlign: TextAlign.center,

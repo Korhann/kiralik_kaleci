@@ -60,8 +60,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
         itemCount: favourites.length,
         itemBuilder: (context, index) {
           final favourite = favourites[index];
-          final sellerName = favourite['sellerName'] ?? '';
-          final sellerLastName = favourite['sellerLastName'] ?? '';
+          final sellerFullName = favourite['sellerFullName'] ?? '';
           final city = favourite['city'] ?? 'Unknown';
           final district = favourite['district'] ?? '';
           final imageUrl = (favourite['imageUrls'] != null && favourite['imageUrls'].isNotEmpty)
@@ -71,7 +70,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
           return ListTile(
             contentPadding: const EdgeInsets.all(10),
             title: Text(
-              "$sellerName $sellerLastName",
+              "$sellerFullName",
               style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             subtitle: Text(

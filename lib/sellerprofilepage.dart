@@ -343,7 +343,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 ),
               ),
               // İlanlarım sayfası
-              const SizedBox(height: 20),
+              const SizedBox(height: 60),
               Center(
                 child: SizedBox(
                   width: 200,

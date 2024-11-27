@@ -2,14 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kiralik_kaleci/CardDetailsPage.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/policiespage.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
-import 'package:kiralik_kaleci/showCardDetails.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -183,73 +181,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: Text(
-                  "Ödeme",
-                  style: GoogleFonts.roboto(
-                      fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black),
-                ),
-              ),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: (){
-                  Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (context) => const ShowCardDetails())
-                  );
-                },
-                child: Container(
-                  height: 70,
-                  width: double.infinity,
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Kart Bilgilerim",
-                          style: GoogleFonts.roboto(
-                              fontSize: 22, fontWeight: FontWeight.w500),
-                        ),
-                        _getCardNumber()
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                height: 1,
-                color: Colors.black,
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const CardDetails()));
-                },
-                child: Container(
-                  height: 70,
-                  width: double.infinity,
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Kart Ekle",
-                          style: GoogleFonts.roboto(
-                              fontSize: 22, fontWeight: FontWeight.w500),
-                        ),
-                        const Icon(Icons.add, size: 24, color: Colors.black)
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              
               const SizedBox(height: 30),
               Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -346,7 +278,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),  
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 60),
               Center(
                 child: SizedBox(
                   width: 200,
@@ -428,33 +360,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _getCardNumber() {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const Text('Veri bulunamadı');
-        }
-        var userData = snapshot.data!.data() as Map<String, dynamic>;
-        if (userData.containsKey('cardDetails') && userData['cardDetails'].isNotEmpty) {
-          var cardDetails = userData['cardDetails'] as Map<String, dynamic>;
-          return Text(
-            cardDetails['cardNumber'] ?? '',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Colors.black
-            ),
-          );
-        } else {
-          return const Text('No card number');
-        }
-      },
-    );
-  }
   Widget _userName() {
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),

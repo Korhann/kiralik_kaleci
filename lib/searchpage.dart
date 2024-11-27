@@ -143,7 +143,7 @@ class _GetUserDataState extends State<GetUserData> {
               }
 
               var sellerDetails1 = docs[startIndex]['sellerDetails'];
-              var fullName1 = sellerDetails1['sellerName'];
+              var fullName1 = sellerDetails1['sellerFullName'];
               var imageUrls1 = sellerDetails1['imageUrls'];
               var imageUrl1 = imageUrls1[0];
               String city1 = sellerDetails1['city'];
@@ -151,7 +151,7 @@ class _GetUserDataState extends State<GetUserData> {
               var sellerUid1 = docs[startIndex].id;
 
               var sellerDetails2 = docs[endIndex]['sellerDetails'];
-              var fullName2 = sellerDetails2['sellerName'];
+              var fullName2 = sellerDetails2['sellerFullName'];
               var imageUrls2 = sellerDetails2['imageUrls'];
               var imageUrl2 = imageUrls2[0];
               String city2 = sellerDetails2['city'];
@@ -360,7 +360,7 @@ class _GetUserDataState extends State<GetUserData> {
   Query<Map<String, dynamic>> filterquery = _firestore.collection('Users');
 
   if (nameFilter != null && nameFilter!.isNotEmpty) {
-    filterquery = filterquery.where('sellerDetails.sellerName', isEqualTo: nameFilter);
+    filterquery = filterquery.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
   }
   if (cityFilter != null && cityFilter!.isNotEmpty) {
     filterquery = filterquery.where('sellerDetails.city', isEqualTo: cityFilter);

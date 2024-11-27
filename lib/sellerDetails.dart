@@ -150,16 +150,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                             child: Row(
                               children: [
                                 Text(
-                                  "${widget.sellerDetails['sellerName']}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  "${widget.sellerDetails['sellerLastName']}",
+                                  "${widget.sellerDetails['sellerFullName']}",
                                   style: GoogleFonts.inter(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w400,
