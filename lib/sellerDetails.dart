@@ -192,7 +192,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                       // Print days horizontally
                                       SizedBox(
                                         height: 150,
-                                        width: 300,
+                                        width: double.infinity,
                                         child: ListView.builder(
                                           scrollDirection: Axis.horizontal,
                                           itemCount: days.length,

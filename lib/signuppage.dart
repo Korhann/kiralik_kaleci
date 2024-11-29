@@ -57,22 +57,22 @@ class _SignUpState extends State<SignUp> {
 
       // Navigate to the desired page (you can customize this part)
       Navigator.push(context, MaterialPageRoute(builder: (_) => const MyApp()));
+
+    }
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'email-already-in-use') {
+      setState(() {
+        _emailInUse = true;
+      });
     }
   } catch (e) {
-    if (e is PlatformException) {
-      if (e.code == 'email-already-in-use') {
-        setState(() {
-          _emailInUse = true;
-        });
-      }
-    }
+    print(e);
   }
 }
 
   bool samePassword() {
     // Check if the passwords are the same
-    if (passwordController.text.trim() ==
-        confirmPasswordController.text.trim()) {
+    if (passwordController.text.trim() == confirmPasswordController.text.trim()) {
       return true;
     } else {
       return false;
@@ -129,24 +129,22 @@ class _SignUpState extends State<SignUp> {
                         child: TextFormField(
                           controller: fullNameController,
                             style: const TextStyle(
-                                color: Colors.black, fontSize: 20),
+                              color: Colors.black, fontSize: 20),
                             decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.fromLTRB(
-                                    20.0, 10.0, 20.0, 10.0),
+                              contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                                 hintText: "Ad Soyad",
                                 hintStyle: GoogleFonts.inter(
-                                    textStyle: hintstyle,
-                                    fontSize: 20,
-                                    color: grey),
+                                  textStyle: hintstyle,
+                                  fontSize: 20,
+                                  color: grey
+                                ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: Colors.black),
+                                  borderSide: const BorderSide(color: Colors.black),
                                   borderRadius: BorderRadius.circular(15.0),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        const BorderSide(color: Colors.black),
-                                    borderRadius: BorderRadius.circular(15.0)),
+                                  borderSide: const BorderSide(color: Colors.black),
+                                  borderRadius: BorderRadius.circular(15.0)),
                                 fillColor: const Color(0xFFE5E5E5),
                                 filled: true),
                             validator: (value) {
@@ -172,6 +170,7 @@ class _SignUpState extends State<SignUp> {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Geçerli bir isim soyisim giriniz",
+                        textAlign: TextAlign.start,
                         style: GoogleFonts.inter(
                           textStyle: errorstyle
                         ),
@@ -189,29 +188,29 @@ class _SignUpState extends State<SignUp> {
                             style: const TextStyle(
                                 color: Colors.black, fontSize: 20),
                             decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.fromLTRB(
-                                    20.0, 10.0, 20.0, 10.0),
+                                contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                                 hintText: "Email",
                                 hintStyle: GoogleFonts.inter(
-                                    textStyle: hintstyle,
-                                    fontSize: 20,
-                                    color: grey),
+                                  textStyle: hintstyle,
+                                  fontSize: 20,
+                                  color: grey
+                                ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: Colors.black),
+                                  borderSide: const BorderSide(color: Colors.black),
                                   borderRadius: BorderRadius.circular(15.0),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        const BorderSide(color: Colors.black),
+                                    borderSide: const BorderSide(color: Colors.black),
                                     borderRadius: BorderRadius.circular(15.0)),
                                 fillColor: const Color(0xFFE5E5E5),
-                                filled: true),
+                                filled: true
+                                ),
                             validator: (value) {
                               final email = value?.trim();
-                              if (email!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email)) {
+                              if (email!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email) || _emailInUse) {
                                 setState(() {
                                   _showErrorEmail = true;
+                                  _emailInUse = false;
                                 });
                                 return '';
                               }else {
@@ -227,7 +226,7 @@ class _SignUpState extends State<SignUp> {
                     const SizedBox(height: 5),
 
                     // Email başka bir hesap tarafından kullanımda olmasına rağmen hata vermiyor.
-                    if (_showErrorEmail || _emailInUse )
+                    if (_showErrorEmail)
                       Align(
                         alignment: Alignment.centerLeft,
                       child: Text(

@@ -27,9 +27,6 @@ class _SellerAddPageState extends State<SellerAddPage> {
   
   // Kullanıcı bilgileri
   TextEditingController sellerFullName = TextEditingController();
-  TextEditingController sellerAge = TextEditingController();
-  TextEditingController sellerHeight = TextEditingController();
-  TextEditingController sellerWeight = TextEditingController();
   TextEditingController sellerPrice = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
@@ -1214,9 +1211,6 @@ void clearDropdownValues() {
     super.dispose();
     // veriyi cloud a yolladıktan sonra hepsini sil
     sellerFullName.dispose();
-    sellerAge.dispose();
-    sellerHeight.dispose();
-    sellerWeight.dispose();
     sellerPrice.dispose();
   }
 
@@ -1225,9 +1219,6 @@ void clearDropdownValues() {
       setState(() {
         imageFileList.clear();
         sellerFullName.clear();
-        sellerAge.clear();
-        sellerHeight.clear();
-        sellerWeight.clear();
         sellerPrice.clear();
       });
     }
@@ -1429,184 +1420,8 @@ void clearDropdownValues() {
                       fillColor: sellergrey,
                       filled: true),
                 ),
-                /*
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Soyad",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ),
-                */
-                const SizedBox(height: 10),
-                /*
-                TextFormField(
-                  controller: sellerLastName,
-                  validator: (lastname) {
-                    if (lastname == null || lastname.isEmpty) {
-                      return "Boş bırakılamaz !";
-                    }
-                    return null;
-                  },
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300),
-                  decoration: InputDecoration(
-                      hintText: "Soyadınızı Giriniz",
-                      hintStyle: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300),
-                      fillColor: sellergrey,
-                      filled: true,
-                      contentPadding: const EdgeInsets.all(10)),
-                ),
-                */
                 const SizedBox(height: 40),
-                Container(
-                  color: sellergrey,
-                  width: double.infinity,
-                  height: 100,
-                  child: Center(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Column(
-                            children: [
-                              Text(
-                                "Yaş",
-                                style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  color: Colors.white,
-                                  width: 60,
-                                  height: 40,
-                                  child: TextFormField(
-                                    controller: sellerAge,
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    textAlignVertical: TextAlignVertical.center,
-                                    validator: (age) {
-                                      if (age == null || age.isEmpty) {
-                                        return "Boş bırakılamaz !";
-                                      }
-                                      return null;
-                                    },
-                                    style: GoogleFonts.inter(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Column(
-                            children: [
-                              Text(
-                                "Boy",
-                                style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  color: Colors.white,
-                                  width: 60,
-                                  height: 40,
-                                  child: TextFormField(
-                                    controller: sellerHeight,
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    textAlignVertical: TextAlignVertical.center,
-                                    validator: (height) {
-                                      if (height == null || height.isEmpty) {
-                                        return "Boş bırakılamaz !";
-                                      }
-                                      return null;
-                                    },
-                                    style: GoogleFonts.inter(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Column(
-                            children: [
-                              Text(
-                                "Kilo",
-                                style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  color: sellerwhite,
-                                  width: 60,
-                                  height: 40,
-                                  child: TextFormField(
-                                    controller: sellerWeight,
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    textAlignVertical: TextAlignVertical.center,
-                                    validator: (weight) {
-                                      if (weight == null || weight.isEmpty) {
-                                        return "Boş bırakılamaz !";
-                                      }
-                                      return null;
-                                    },
-                                    style: GoogleFonts.inter(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
+                
                 /*
                 Seçilen şehire göre ilçeler updateDistrictOptions() fonksiyonu ile popüle ediliyor
                 */
@@ -1960,9 +1775,6 @@ void clearDropdownValues() {
 
         Map<String, dynamic> sellerDetails = {
           "sellerFullName": sellerFullName.text,
-          "sellerAge": sellerAge.text,
-          "sellerHeight": sellerHeight.text,
-          "sellerWeight": sellerWeight.text,
           "sellerPrice": price,
           "city": selectedCity,
           "district": selectedDistrict,
