@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
+import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/selleribanpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -30,12 +31,12 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   int toggleIndex = 1; // Ensure the toggle switch is at the second index
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-
-
+  final String currentuser = FirebaseAuth.instance.currentUser!.uid;
+  Map<String,dynamic> sellerDetails = {};
   @override
   void initState() {
     super.initState();
+    getUserDetails();
   }
 
   @override
@@ -342,6 +343,40 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                   ),
                 ),
               ),
+              Container(
+                height: 1,
+                color: Colors.white,
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentuser))
+                  );
+                },
+                child: Container(
+                  height: 60,
+                  width: double.infinity,
+                  color: sellergrey,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'İlanlarım',
+                          style: GoogleFonts.roboto(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white
+                          ),
+                        ),
+                        const Icon(Icons.diamond, size: 24, color: Colors.white,)
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               // İlanlarım sayfası
               const SizedBox(height: 60),
               Center(
@@ -484,5 +519,22 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
         );
       },
     );
+  }
+  Future<void> getUserDetails() async{
+    try{
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentuser)
+      .get();
+
+      if (documentSnapshot.exists) {
+        Map<String,dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+        if (data.isNotEmpty && data.containsKey('sellerDetails')) {
+          sellerDetails = data['sellerDetails'];
+        }
+      }
+    }catch (e) {
+      print('$e');
+    }
   }
 }

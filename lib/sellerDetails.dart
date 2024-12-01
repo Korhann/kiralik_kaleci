@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
@@ -93,18 +94,18 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: background,
+        backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black),
         ),
       ),
       body: Stack(
         children: [
           Container(
-            color: background,
+            color: userorseller ? sellerbackground : background,
             child: Column(
               children: [
                 const SizedBox(height: 25),
@@ -113,7 +114,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      color: Colors.white,
+                      color: userorseller ? sellergrey: Colors.white,
                       height: 450,
                       width: double.infinity,
                       child: Column(
@@ -154,7 +155,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                   style: GoogleFonts.inter(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w400,
-                                    color: Colors.black,
+                                    color: userorseller ? Colors.white : Colors.black,
                                   ),
                                 ),
                               ],
@@ -168,7 +169,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                               style: GoogleFonts.inter(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w300,
-                                color: Colors.black,
+                                color: userorseller ? Colors.white : Colors.black,
                               ),
                             ),
                           ),
@@ -182,7 +183,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                   style: GoogleFonts.inter(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black,
+                                    color: userorseller ? Colors.white : Colors.black,
                                   ),
                                 ),
                                 SingleChildScrollView(
@@ -209,7 +210,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                     style: GoogleFonts.inter(
                                                       fontSize: 16,
                                                       fontWeight: FontWeight.w500,
-                                                      color: Colors.black,
+                                                      color: userorseller ? Colors.white: Colors.black,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 7),
@@ -246,7 +247,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                                   style: GoogleFonts.inter(
                                                                     fontSize: 14,
                                                                     fontWeight: FontWeight.w400,
-                                                                    color: Colors.black,
+                                                                    color: userorseller ? Colors.white : Colors.black,
                                                                   ),
                                                                 ),
                                                               ),
@@ -310,7 +311,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                     style: GoogleFonts.inter(
                       fontSize: 30,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: userorseller ? Colors.white : Colors.black,
                     ),
                   ),
                 ),

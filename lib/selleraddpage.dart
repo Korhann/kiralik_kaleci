@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:kiralik_kaleci/sellersuccesspage.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
@@ -44,6 +45,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
   late SingleValueDropDownController _cnt;
   late SingleValueDropDownController _cnt2;
   List<DropDownValueModel>? districtOptions;
+
+  bool isInserted = false;
 
   // cityDistricts
   Map<String, List<DropDownValueModel>> cityDistricts = {
@@ -1642,7 +1645,7 @@ void clearDropdownValues() {
                       ],
                     ),
                   ),
-                ),
+                ), 
                 
                 const SizedBox(height: 20),
                 Padding(
@@ -1743,6 +1746,7 @@ void clearDropdownValues() {
   Future<void> _insertSellerDetails(BuildContext context) async {
   if (_formKey.currentState!.validate()) {
     // Show loading dialog
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1790,28 +1794,16 @@ void clearDropdownValues() {
 
         setState(() {
           _AmenitiesState.selectedHoursByDay.clear();
+          isInserted = true;
         });
 
-
-        // Close the loading dialog
+        // yükleme ekranından çık
         Navigator.of(context).pop();
 
-        // Show success message
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              content: const Text('İşlem Başarılı'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the success dialog
-                  },
-                  child: const Text('Tamam'),
-                ),
-              ],
-            );
-          },
+        // saat seçme ui ını yenilemesi için pushreplacement
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SellerSuccessPage())
         );
       }
     } catch (e) {
@@ -1836,8 +1828,7 @@ void clearDropdownValues() {
       );
     }
   }
-}
-
+}   
 
   Future<List<String>> _uploadImagesToStorage() async {
     List<String> imageUrls = [];
@@ -1925,11 +1916,11 @@ class _AmenitiesState extends State<Amenities> {
     }
   }
 
+
   void onCheckTap(CheckContainerModel container) {
     final index = checkContainers.indexWhere(
       (element) => element.title == container.title,
     );
-
     bool previousIsCheck = checkContainers[index].isCheck;
     checkContainers[index].isCheck = !previousIsCheck;
     if (checkContainers[index].isCheck) {
@@ -1942,10 +1933,11 @@ class _AmenitiesState extends State<Amenities> {
     setState(() {});
   }
 
+
 @override
 Widget build(BuildContext context) {
   return Column(
-    crossAxisAlignment: CrossAxisAlignment.start, // Align items to the start (left side)
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: checkContainers.map((container) {
       return InkWell(
         splashColor: Colors.cyanAccent,
