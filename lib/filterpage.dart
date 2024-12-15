@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -257,7 +255,9 @@ class _FilterPageState extends State<FilterPage> {
                           isPressedMonday = !isPressedMonday;
                           if (isPressedMonday) {
                             days.add('Pazartesi');
-                          } else days.remove('Pazartesi');
+                          } else {
+                            days.remove('Pazartesi');
+                          }
                         });
                       }),
                       const SizedBox(width: 5),
@@ -266,7 +266,9 @@ class _FilterPageState extends State<FilterPage> {
                           isPressedTuesday = !isPressedTuesday;
                           if (isPressedTuesday) {
                             days.add('Salı');
-                          } else days.remove('Salı');
+                          } else {
+                            days.remove('Salı');
+                          }
                         });
                       }),
                       const SizedBox(width: 5),
@@ -275,7 +277,9 @@ class _FilterPageState extends State<FilterPage> {
                           isPressedWednesday = !isPressedWednesday;
                           if (isPressedWednesday) {
                             days.add('Çarşamba');
-                          } else days.remove('Çarşamba');
+                          } else {
+                            days.remove('Çarşamba');
+                          }
                         });
                       }),
                     ],
@@ -296,7 +300,9 @@ class _FilterPageState extends State<FilterPage> {
                           isPressedThursday = !isPressedThursday;
                           if (isPressedThursday) {
                             days.add('Perşembe');
-                          } else days.remove('Perşembe');
+                          } else {
+                            days.remove('Perşembe');
+                          }
                         });
                       }),
                       const SizedBox(width: 5),
@@ -305,7 +311,9 @@ class _FilterPageState extends State<FilterPage> {
                           isPressedFriday = !isPressedFriday;
                           if (isPressedFriday) {
                             days.add('Cuma');
-                          } else days.remove('Cuma');
+                          } else {
+                            days.remove('Cuma');
+                          }
                         });
                       }),
                       const SizedBox(width: 5),
@@ -314,7 +322,9 @@ class _FilterPageState extends State<FilterPage> {
                           isPressedSaturday = !isPressedSaturday;
                           if (isPressedSaturday) {
                             days.add('Cumartesi');
-                          } else days.remove('Cumartesi');
+                          } else {
+                            days.remove('Cumartesi');
+                          }
                         });
                       }),
                     ],
@@ -333,7 +343,9 @@ class _FilterPageState extends State<FilterPage> {
                       isPressedSunday = !isPressedSunday;
                       if (isPressedSunday) {
                         days.add('Pazar');
-                      } else days.remove('Pazar');
+                      } else {
+                        days.remove('Pazar');
+                      }
                     });
                   }),
                 ),

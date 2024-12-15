@@ -7,7 +7,6 @@ import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
@@ -1874,7 +1873,7 @@ class CheckContainerModel {
 class Amenities extends StatefulWidget {
   
   final String day;
-  const Amenities({Key? key, required this.day}) : super(key: key);
+  const Amenities({super.key, required this.day});
 
   @override
   State<StatefulWidget> createState() {

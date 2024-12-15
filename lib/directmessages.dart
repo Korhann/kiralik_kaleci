@@ -8,7 +8,7 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 import 'direct2messagepage.dart';
 
 class DirectMessages extends StatefulWidget {
-  const DirectMessages({Key? key}) : super(key: key);
+  const DirectMessages({super.key});
 
   @override
   State<DirectMessages> createState() => _DirectMessagesState();
@@ -149,13 +149,13 @@ class _DirectMessagesState extends State<DirectMessages> {
 
       Set<String> participantIds = {};
 
-      messagesSnapshot.docs.forEach((doc) {
+      for (var doc in messagesSnapshot.docs) {
         participantIds.add(doc['receiverId'] as String);
-      });
+      }
 
-      receivedMessagesSnapshot.docs.forEach((doc) {
+      for (var doc in receivedMessagesSnapshot.docs) {
         participantIds.add(doc['senderId'] as String);
-      });
+      }
 
       for (String participantId in participantIds) {
         QuerySnapshot latestMessageSnapshot = await FirebaseFirestore.instance
@@ -222,9 +222,9 @@ class _DirectMessagesState extends State<DirectMessages> {
 
       // Determine the document path
       if (currentUser.compareTo(receiverId) < 0) {
-        docPath = '$currentUser\_$receiverId';
+        docPath = '${currentUser}_$receiverId';
       } else {
-        docPath = '$receiverId\_$currentUser';
+        docPath = '${receiverId}_$currentUser';
       }
 
       // Return the stream that listens for changes in the unread message count
@@ -257,9 +257,9 @@ class _DirectMessagesState extends State<DirectMessages> {
 
       // Determine the document path
       if (currentUser.compareTo(receiverId) < 0) {
-        docPath = '$currentUser\_$receiverId';
+        docPath = '${currentUser}_$receiverId';
       } else {
-        docPath = '$receiverId\_$currentUser';
+        docPath = '${receiverId}_$currentUser';
       }
 
       DocumentReference messageDocRef = FirebaseFirestore.instance

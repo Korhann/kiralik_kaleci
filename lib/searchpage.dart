@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -10,7 +9,7 @@ import 'sellerDetails.dart';
 import 'sharedvalues.dart';
 
 class GetUserData extends StatefulWidget {
-  const GetUserData({Key? key}) : super(key: key);
+  const GetUserData({super.key});
 
   @override
   State<GetUserData> createState() => _GetUserDataState();

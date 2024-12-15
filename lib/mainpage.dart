@@ -10,7 +10,7 @@ import 'package:kiralik_kaleci/profilepage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  const MainPage({super.key});
 
   @override
   State<MainPage> createState() => _MainPageState();

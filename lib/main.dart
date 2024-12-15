@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
-import 'package:kiralik_kaleci/timer.dart';
 
 
 void main() async {

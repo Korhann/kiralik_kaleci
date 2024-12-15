@@ -103,7 +103,7 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
                       ),
                       Text(
                         messages[index],
-                        style: TextStyle(color: Colors.white70), // Changed message preview text color to white with 70% opacity
+                        style: const TextStyle(color: Colors.white70), // Changed message preview text color to white with 70% opacity
                       ),
                     ],
                   ),
@@ -153,13 +153,13 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
 
       Set<String> participantIds = {};
 
-      messagesSnapshot.docs.forEach((doc) {
+      for (var doc in messagesSnapshot.docs) {
         participantIds.add(doc['receiverId'] as String);
-      });
+      }
 
-      receivedMessagesSnapshot.docs.forEach((doc) {
+      for (var doc in receivedMessagesSnapshot.docs) {
         participantIds.add(doc['senderId'] as String);
-      });
+      }
 
       for (String participantId in participantIds) {
         QuerySnapshot latestMessageSnapshot = await FirebaseFirestore.instance
@@ -225,9 +225,9 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
       String docPath;
 
       if (currentUser.compareTo(receiverId) < 0) {
-        docPath = '$currentUser\_$receiverId';
+        docPath = '${currentUser}_$receiverId';
       } else {
-        docPath = '$receiverId\_$currentUser';
+        docPath = '${receiverId}_$currentUser';
       }
 
       return FirebaseFirestore.instance
@@ -258,9 +258,9 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
       String docPath;
 
       if (currentUser.compareTo(receiverId) < 0) {
-        docPath = '$currentUser\_$receiverId';
+        docPath = '${currentUser}_$receiverId';
       } else {
-        docPath = '$receiverId\_$currentUser';
+        docPath = '${receiverId}_$currentUser';
       }
 
       DocumentReference messageDocRef = FirebaseFirestore.instance

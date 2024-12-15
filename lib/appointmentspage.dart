@@ -13,11 +13,11 @@ class AppointmentsPage extends StatefulWidget {
 
   // randevular da haftalık olaraka silinecek
   Future<void> deleteAppointments() async{
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
 
-    var collectionBuyer = _firestore.collection('Users').doc(currentuser).collection('appointmentbuyer');
-    var collectionSeller = _firestore.collection('Users').doc(currentuser).collection('appointmentseller');
+    var collectionBuyer = firestore.collection('Users').doc(currentuser).collection('appointmentbuyer');
+    var collectionSeller = firestore.collection('Users').doc(currentuser).collection('appointmentseller');
     var appointmentsBuyer = await collectionBuyer.get();
     var appointmentsSeller = await collectionSeller.get();
     for (var doc in appointmentsBuyer.docs) {

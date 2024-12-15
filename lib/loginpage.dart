@@ -317,7 +317,7 @@ class _LogInState extends State<LogIn> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
+                              SizedBox(
                                 height: 25,
                                 width: 25,
                                 child: Image.asset("lib/icons/google.png"),
