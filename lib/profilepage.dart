@@ -12,7 +12,7 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key});
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();

@@ -105,9 +105,9 @@ class SellerIbanPageState extends State<SellerIbanPage> {
 
   // Format the input while keeping "TR" at the start
   if (newText.startsWith('TR') && newText.length > 2) {
-    newText = 'TR' + formatIban(newText.substring(2));
+    newText = 'TR${formatIban(newText.substring(2))}';
   } else if (!newText.startsWith('TR')) {
-    newText = 'TR' + formatIban(newText);
+    newText = 'TR${formatIban(newText)}';
   } else {
     newText = formatIban(newText);
   }

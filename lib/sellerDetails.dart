@@ -12,10 +12,10 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
-    Key? key,
+    super.key,
     required this.sellerDetails,
     required this.sellerUid,
-  }) : super(key: key);
+  });
 
   final Map<String, dynamic> sellerDetails;
   final String sellerUid;
