@@ -20,6 +20,7 @@ android {
     namespace "com.example.kiralik_kaleci" // Keep only one namespace here
     compileSdkVersion 34
     ndkVersion = "27.0.12077973"
+    buildToolsVersion "35.0.0"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -27,7 +28,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = "1.8"
     }
 
     sourceSets {
