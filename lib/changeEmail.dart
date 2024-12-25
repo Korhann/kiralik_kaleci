@@ -9,6 +9,8 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 class ChangeEmail extends StatefulWidget {
   const ChangeEmail({super.key});
 
+  // Software choose emulator graphics i olmuyorsa !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   @override
   State<ChangeEmail> createState() => _ChangeEmailState();
 }
