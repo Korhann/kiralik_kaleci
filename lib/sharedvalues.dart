@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 class sharedValues {
   // bu iki veri de null. O yüzden widget açılmıyor mainpage.dart tarafından
   // sellerDetails sayfasından sohbet e tıklayınca null olmuyor !!(dene bunu)
@@ -6,4 +8,5 @@ class sharedValues {
   static bool? onTapped;
   static String? ids;
   static List<String> idsroom = [];
+  
 }

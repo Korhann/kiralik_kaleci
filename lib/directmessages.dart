@@ -134,66 +134,68 @@ class _DirectMessagesState extends State<DirectMessages> {
   }
 
   Future<void> _getMessages() async {
-    try {
-      QuerySnapshot messagesSnapshot = await FirebaseFirestore.instance
+  try {
+    QuerySnapshot messagesSnapshot = await FirebaseFirestore.instance
+        .collectionGroup('messages')
+        .where('senderId', isEqualTo: currentUser)
+        .where('deletedBySender', isEqualTo: false)
+        .get();
+
+    QuerySnapshot receivedMessagesSnapshot = await FirebaseFirestore.instance
+        .collectionGroup('messages')
+        .where('receiverId', isEqualTo: currentUser)
+        .where('deletedByReceiver', isEqualTo: false)
+        .get();
+
+    Set<String> participantIds = {};
+    for (var doc in messagesSnapshot.docs) {
+      participantIds.add(doc['receiverId'] as String);
+    }
+    for (var doc in receivedMessagesSnapshot.docs) {
+      participantIds.add(doc['senderId'] as String);
+    }
+
+    for (String participantId in participantIds) {
+      QuerySnapshot latestMessageSnapshot = await FirebaseFirestore.instance
           .collectionGroup('messages')
           .where('senderId', isEqualTo: currentUser)
-          .where('deletedBySender', isEqualTo: false)
+          .where('receiverId', isEqualTo: participantId)
+          .orderBy('timestamp', descending: true)
+          .limit(1)
           .get();
 
-      QuerySnapshot receivedMessagesSnapshot = await FirebaseFirestore.instance
-          .collectionGroup('messages')
-          .where('receiverId', isEqualTo: currentUser)
-          .where('deletedByReceiver', isEqualTo: false)
-          .get();
-
-      Set<String> participantIds = {};
-
-      for (var doc in messagesSnapshot.docs) {
-        participantIds.add(doc['receiverId'] as String);
-      }
-
-      for (var doc in receivedMessagesSnapshot.docs) {
-        participantIds.add(doc['senderId'] as String);
-      }
-
-      for (String participantId in participantIds) {
-        QuerySnapshot latestMessageSnapshot = await FirebaseFirestore.instance
+      if (latestMessageSnapshot.docs.isEmpty) {
+        latestMessageSnapshot = await FirebaseFirestore.instance
             .collectionGroup('messages')
-            .where('senderId', isEqualTo: currentUser)
-            .where('receiverId', isEqualTo: participantId)
+            .where('senderId', isEqualTo: participantId)
+            .where('receiverId', isEqualTo: currentUser)
             .orderBy('timestamp', descending: true)
             .limit(1)
             .get();
-
-        if (latestMessageSnapshot.docs.isEmpty) {
-          latestMessageSnapshot = await FirebaseFirestore.instance
-              .collectionGroup('messages')
-              .where('senderId', isEqualTo: participantId)
-              .where('receiverId', isEqualTo: currentUser)
-              .orderBy('timestamp', descending: true)
-              .limit(1)
-              .get();
-        }
-
-        if (latestMessageSnapshot.docs.isNotEmpty) {
-          DocumentSnapshot latestMessageDoc = latestMessageSnapshot.docs.first;
-          Map<String, dynamic> data = latestMessageDoc.data() as Map<String, dynamic>;
-
-          String message = data['lastMessage'];
-          String receiverName = currentUser == data['senderId'] ? data['receiverfullName'] : data['senderfullName'];
-
-          setState(() {
-            messages.add(message);
-            receiverNames.add(receiverName);
-            distinctReceiverIds.add(participantId);
-          });
-        }
       }
-    } catch (e) {
-      print("Error fetching messages: $e");
+
+      if (latestMessageSnapshot.docs.isNotEmpty) {
+        DocumentSnapshot latestMessageDoc = latestMessageSnapshot.docs.first;
+        Map<String, dynamic> data = latestMessageDoc.data() as Map<String, dynamic>;
+
+        String message = data['lastMessage'];
+
+        // Fetch the updated username
+        String receiverId = currentUser == data['senderId'] ? data['receiverId'] : data['senderId'];
+        String receiverName = await _getUpdatedName(receiverId);
+        
+        setState(() {
+          messages.add(message);
+          receiverNames.add(receiverName);
+          distinctReceiverIds.add(participantId);
+        });
+      }
     }
+  } catch (e) {
+    print("Error fetching messages: $e");
   }
+}
+
 
   Future<String?> _getReceiverImage(String receiverId) async {
     try {
@@ -283,4 +285,21 @@ class _DirectMessagesState extends State<DirectMessages> {
       print("Error resetting unread messages: $e");
     }
   }
+
+  Future<String> _getUpdatedName(String userId) async {
+  try {
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+
+    if (userSnapshot.exists) {
+      Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>;
+      return userData['fullName'] ?? 'Unknown';
+    } else {
+      return 'Unknown';
+    }
+  } catch (e) {
+    print("Error fetching user name: $e");
+    return 'Unknown';
+  }
+}
+
 }

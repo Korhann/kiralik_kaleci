@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'package:kiralik_kaleci/timer.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
 
@@ -34,13 +33,11 @@ class _GetUserDataState extends State<GetUserData> {
   void initState() {
     super.initState();
     _userStream = _firestore.collection("Users").snapshots();
-    TimerService().startWeeklyRefresh();
     }
 
     @override
   void dispose() {
     // TODO: implement dispose
-    //TimerService().dispose();
     super.dispose();
   }
 

@@ -9,6 +9,7 @@ import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/timer.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
@@ -37,7 +38,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   List<String> orderedDays = [
     'Pazartesi',
     'Salı',
-    'Çarşmaba',
+    'Çarşamba',
     'Perşembe',
     'Cuma',
     'Cumartesi',
@@ -74,9 +75,11 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
           .where('sellerUid', isEqualTo: widget.sellerUid)
           .get();
 
-      setState(() {
+      if (mounted) {
+        setState(() {
         isFavorited = snapshot.docs.isNotEmpty;
       });
+      }
     }
   }
 
@@ -398,8 +401,8 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
 
         // Get the current day
         final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-        final int currentDayIndex = now.weekday - 1; // 0 for Monday, 6 for Sunday
-
+        final int currentDayIndex = now.weekday - 1; // 0 pazartesi, 6 pazar
+        
         for (int i = 0; i < orderedDays.length; i++) {
           final day = orderedDays[i];
           if (!selectedHoursByDay.containsKey(day)) continue;
