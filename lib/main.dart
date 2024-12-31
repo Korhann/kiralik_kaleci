@@ -29,6 +29,7 @@ void main() async {
   runApp(const MyApp());
 }
 
+// Bunu bir daha dene ve neyi ekleyince çalıştığını anla !!!
 @pragma('vm:entry-point')
 void callbackDispatcher() async{
   Workmanager().executeTask((task, inputData) async {
@@ -40,7 +41,6 @@ void callbackDispatcher() async{
       return Future.value(false);
     }
     DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // Adjust to UTC+3 for Turkey
-    print(now.weekday);
     try {
       if (now.weekday == DateTime.tuesday) {
       TimerService timerService = TimerService();
@@ -50,7 +50,6 @@ void callbackDispatcher() async{
       await timerService.performWeeklyReset();
       await appointmentsPage.deleteAppointments();
       print('Periodic task executed: $task at $now');
-      print('IT IS MONDAY, RESETTING...');
       } else {
       print('Not monday!!');
       }

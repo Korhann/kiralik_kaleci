@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:kiralik_kaleci/appointmentspage.dart';
 
 class TimerService with ChangeNotifier {
   static final TimerService _instance = TimerService._internal();
@@ -31,7 +30,6 @@ class TimerService with ChangeNotifier {
   void startWeeklyRefresh() async {
     await performWeeklyReset(); 
     remainingTime = _calculateTimeUntilNextTargetDay();
-    print('Remaining time until next refresh: $remainingTime');
     print('succesfull for the user $currentuser');
     _scheduleWeeklyRefresh();
     _startCountdown();
