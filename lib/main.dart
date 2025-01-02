@@ -18,12 +18,11 @@ void main() async {
 
   // Register the periodic task
   const taskName = 'refreshAppointments';
-  //Workmanager().cancelByUniqueName(taskName); // Clear previous tasks to avoid conflicts
+  Workmanager().cancelByUniqueName(taskName); // Clear previous tasks to avoid conflicts
   await Workmanager().registerPeriodicTask(
     taskName,
     taskName,
-    frequency: const Duration(minutes: 15), // Test interval
-    initialDelay: Duration(seconds: 10),
+    frequency: const Duration(days: 1), // Test interval
   );
 
   runApp(const MyApp());
@@ -42,7 +41,7 @@ void callbackDispatcher() async{
     }
     DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // Adjust to UTC+3 for Turkey
     try {
-      if (now.weekday == DateTime.tuesday) {
+      if (now.weekday == DateTime.saturday) {
       TimerService timerService = TimerService();
       AppointmentsPage appointmentsPage = AppointmentsPage();
 
@@ -51,7 +50,7 @@ void callbackDispatcher() async{
       await appointmentsPage.deleteAppointments();
       print('Periodic task executed: $task at $now');
       } else {
-      print('Not monday!!');
+      print('Periodic task not executed: $task at $now');
       }
     } catch (e) {
       print('Error code days $e');
