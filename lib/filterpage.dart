@@ -134,8 +134,8 @@ class _FilterPageState extends State<FilterPage> {
                     ),
                   ),
                 ),
-                Positioned(
-                  right: 20,
+                Align(
+                  alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
                       clearAllFilters();
@@ -168,7 +168,7 @@ class _FilterPageState extends State<FilterPage> {
                         _nameController.text = value;
                       },
                       decoration: InputDecoration(
-                        labelText: 'Ad',
+                        labelText: 'Ad Soyad',
                         labelStyle: GoogleFonts.roboto(fontSize: 18, color: Colors.black),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.clear),

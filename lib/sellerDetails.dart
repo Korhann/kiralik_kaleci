@@ -48,6 +48,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   bool isLoading = true;
   bool isFavorited = false;
   final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+  bool isEmpty = false;
 
   @override
   void initState() {
@@ -226,6 +227,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                         children: hours.map((hour) {
                                                           // todo: dayHourKey ile db den aldığım saatleri karşılaştırıp ona göre rengini değiştirebilirim
                                                           String dayHourKey = '$day $hour';
+                                                          bool isSelected = hourColors[dayHourKey] == Colors.grey;
                                                           return GestureDetector(
                                                             // renk sadece cyan ise seçilebilir
                                                             onTap: hourColors[dayHourKey] == Colors.cyan
@@ -234,26 +236,59 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                                 _selectedDay = day;
                                                                 _selectedHour = hour;
                                                                 // eğer available ise seçebilirsin, değilse seçemezsin
-                                                                if (hourColors[dayHourKey] == Colors.cyan) {
-                                                                  hourColors[dayHourKey] = Colors.grey;
-                                                                }
+                                                                hourColors.forEach((key,value) {
+                                                                  if (value != Colors.grey.shade600) {
+                                                                    hourColors[key] = Colors.cyan;
+                                                                  }
+                                                                });
                                                               });
+                                                              hourColors[dayHourKey] = Colors.grey;
                                                             } : null,
-                                                            child: ClipRRect(
-                                                              borderRadius: BorderRadius.circular(10),
-                                                              child: Container(
-                                                                margin: const EdgeInsets.symmetric(vertical: 3.0),
-                                                                padding: const EdgeInsets.all(5),
-                                                                color: hourColors[dayHourKey] ?? Colors.cyan,
-                                                                child: Text(
-                                                                  hour,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 14,
-                                                                    fontWeight: FontWeight.w400,
-                                                                    color: userorseller ? Colors.white : Colors.black,
+                                                            child: Stack(
+                                                              children: [
+                                                                ClipRRect(
+                                                                borderRadius: BorderRadius.circular(10),
+                                                                child: Container(
+                                                                  margin: const EdgeInsets.symmetric(vertical: 3.0),
+                                                                  padding: const EdgeInsets.all(5),
+                                                                  color: hourColors[dayHourKey] ?? Colors.cyan,
+                                                                  child: Text(
+                                                                    hour,
+                                                                    style: GoogleFonts.inter(
+                                                                      fontSize: 14,
+                                                                      fontWeight: FontWeight.w400,
+                                                                      color: userorseller ? Colors.white : Colors.black,
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
+                                                              if (isSelected)
+                                                                Positioned(
+                                                                  right: 0,
+                                                                  top: 0,
+                                                                  child: GestureDetector(
+                                                                    onTap: () {
+                                                                      setState(() {
+                                                                        _selectedDay = null;
+                                                                        _selectedHour = null;
+                                                                        hourColors[dayHourKey] = Colors.cyan;
+                                                                      });
+                                                                    },
+                                                                    child: Container(
+                                                                      padding: const EdgeInsets.all(4),
+                                                                      decoration: const BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: Colors.red,
+                                                                      ),
+                                                                      child: const Icon(
+                                                                        Icons.close,
+                                                                        color: Colors.white,
+                                                                        size: 8,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                              ],
                                                             ),
                                                           );
                                                         }).toList(),
@@ -439,7 +474,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             }
 
             // If the day is past or the hour is taken, mark as grey
-            hourColors[dayHourKey] = (isPastDay || istaken) ? Colors.grey : Colors.cyan;
+            hourColors[dayHourKey] = (isPastDay || istaken) ? Colors.grey.shade600 : Colors.cyan;
 
             // Add the title to display in the UI
             hourTitles.add(title);

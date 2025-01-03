@@ -10,6 +10,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
+  // make this branch the main branch
+
   // Initialize WorkManager
   await Workmanager().initialize(
     callbackDispatcher,
