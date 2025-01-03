@@ -51,10 +51,9 @@ class _PaymentPageState extends State<PaymentPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
-
             Container(
               width: double.infinity,
-              height: 100,
+              height: 200,
               color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -64,26 +63,48 @@ class _PaymentPageState extends State<PaymentPage> {
                   children: [
                     const SizedBox(height: 5),
                     Text(
+                      'Seçilen gün ve saat',
+                      style: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: EdgeInsets.only(right: 20),
+                      child: Row(
+                        children: [
+                          _selectedDay(),
+                          const Spacer(),
+                          _selectedHour()
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Text(
                       'Ödenecek Tutar',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.bold
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    Row(
-                      children: [
-                        Text(
-                          'Hizmet Bedeli:',
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.grey.shade700
-                            ),
-                        ),
-                        const Spacer(),
-                        _price()
-                      ],
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: EdgeInsets.only(right: 20),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Hizmet Bedeli:',
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black
+                              ),
+                          ),
+                          const Spacer(),
+                          _price()
+                        ],
+                      ),
                     )
                   ],
                 ),
@@ -122,6 +143,29 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
+  Widget _selectedDay() {
+  return Text(
+    widget.selectedDay,
+    style: GoogleFonts.inter(
+      fontSize: 15,
+      fontWeight: FontWeight.normal,
+      color: Colors.black,
+    ),
+  );
+}
+  Widget _selectedHour() {
+  return Text(
+    widget.selectedHour,
+    style: GoogleFonts.inter(
+      fontSize: 15,
+      fontWeight: FontWeight.normal,
+      color: Colors.black,
+    ),
+  );
+}
+
+
+
   Widget _price() {
     return StreamBuilder<DocumentSnapshot>(
       stream: _firestore.collection('Users').doc(widget.sellerUid).snapshots(),
@@ -139,15 +183,12 @@ class _PaymentPageState extends State<PaymentPage> {
         // appointment page için
         sellerFullName = sellerDetails['sellerFullName'];
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            sellerPrice != null ? '${sellerPrice.toString()}TL' : '',
-            style: GoogleFonts.inter(
-              fontSize: 17,
-              fontWeight: FontWeight.w400,
-              color: Colors.black
-            ),
+        return Text(
+          sellerPrice != null ? '${sellerPrice.toString()}TL' : '',
+          style: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+            color: Colors.black
           ),
         );
       }

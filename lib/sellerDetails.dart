@@ -119,7 +119,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
                       color: userorseller ? sellergrey: Colors.white,
-                      height: 450,
+                      height: 440,
                       width: double.infinity,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +312,44 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: 15),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              height: 10,
+                              width: 10,
+                              color: Colors.cyan,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text('Müsait')
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              height: 10,
+                              width: 10,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text('Alınmış veya geçmiş')
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     if (_selectedDay == null && _selectedHour == null) {
