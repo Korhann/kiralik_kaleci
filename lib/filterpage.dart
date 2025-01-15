@@ -143,12 +143,15 @@ class _FilterPageState extends State<FilterPage> {
                         isCleared = true;
                       });
                     },
-                    child: Text(
-                      'Temizle',
-                      style: GoogleFonts.roboto(
-                        fontSize: 18,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.red
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 10),
+                      child: Text(
+                        'Temizle',
+                        style: GoogleFonts.roboto(
+                          fontSize: 18,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.red
+                        ),
                       ),
                     ),
                   ),

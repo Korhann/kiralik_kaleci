@@ -1,16 +1,15 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/timer.dart';
 import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
-  // make this branch the main branch
 
   // Initialize WorkManager
   await Workmanager().initialize(
@@ -30,6 +29,18 @@ void main() async {
   runApp(const MyApp());
 }
 
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: MainPage(),
+    );
+  }
+}
+
 // Bunu bir daha dene ve neyi ekleyince çalıştığını anla !!!
 @pragma('vm:entry-point')
 void callbackDispatcher() async{
@@ -43,13 +54,21 @@ void callbackDispatcher() async{
     }
     DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // Adjust to UTC+3 for Turkey
     try {
-      if (now.weekday == DateTime.saturday) {
+      if (now.weekday == DateTime.thursday) {
       TimerService timerService = TimerService();
       AppointmentsPage appointmentsPage = AppointmentsPage();
 
       // seçili olan saatleri ve randevuları yenileyecek
       await timerService.performWeeklyReset();
       await appointmentsPage.deleteAppointments();
+
+      final Email email = Email(
+        body: 'Randevular yenilendi',
+        subject: 'Randevu',
+        recipients: ['korhandemir1@gmail.com'],
+        isHTML: false
+      );
+      await FlutterEmailSender.send(email);
       print('Periodic task executed: $task at $now');
       } else {
       print('Periodic task not executed: $task at $now');
@@ -60,16 +79,4 @@ void callbackDispatcher() async{
 
     return Future.value(true);
   });
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: MainPage(),
-    );
-  }
 }

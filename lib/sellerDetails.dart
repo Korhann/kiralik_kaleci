@@ -9,7 +9,6 @@ import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'package:kiralik_kaleci/timer.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
@@ -328,7 +327,12 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Text('Müsait')
+                          Text(
+                            'Müsait',
+                            style: TextStyle(
+                              color: userorseller ? Colors.white: Colors.black
+                            ),
+                          )
                         ],
                       ),
                       const SizedBox(height: 5),
@@ -343,7 +347,12 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Text('Alınmış veya geçmiş')
+                          Text(
+                            'Alınmış veya geçmiş',
+                            style: TextStyle(
+                              color: userorseller ? Colors.white : Colors.black
+                            ),
+                          )
                         ],
                       ),
                     ],

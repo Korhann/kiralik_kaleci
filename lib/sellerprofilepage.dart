@@ -202,98 +202,98 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
               ),
 
               const SizedBox(height: 10),
-              Stack(
-                  children: [
-                    Container(
-                    height: 70,
-                    width: double.infinity,
-                    color: sellergrey,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Iban No',
-                            style: GoogleFonts.roboto(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SellerIbanPage())
+                  );
+                },
+                child: Stack(
+                    children: [
+                      Container(
+                      height: 70,
+                      width: double.infinity,
+                      color: sellergrey,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Iban No',
+                              style: GoogleFonts.roboto(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white
+                              ),
                             ),
-                          ),
-                          _getIbanNo()
-                        ],
+                            _getIbanNo()
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    right: 30,
-                    top: 20,
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SellerIbanPage())
-                        );
-                      },
+                    Positioned(
+                      right: 30,
+                      top: 20,
                       child: const Icon(
                         Icons.add,
                         color: Colors.white,
                         size: 24,
                       ),
-                    ),
-                  )
-                  ],
-                ),
+                    )
+                    ],
+                  ),
+              ),
                 Container(
                   height: 1,
                   color: Colors.white,
                 ),
 
                 // Kazançlarım sayfası(fiverr daki gibi)
-                Stack(
-                  children: [
-                    Container(
-                    height: 70,
-                    width: double.infinity,
-                    color: sellergrey,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Kazançlarım',
-                            style: GoogleFonts.roboto(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white
-                            ),
-                          )
-                        ],
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const EarningsPage())
+                    );
+                  },
+                  child: Stack(
+                    children: [
+                      Container(
+                      height: 70,
+                      width: double.infinity,
+                      color: sellergrey,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Kazançlarım',
+                              style: GoogleFonts.roboto(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    right: 30,
-                    top: 20,
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const EarningsPage())
-                        );
-                      },
+                    Positioned(
+                      right: 30,
+                      top: 20,
                       child: const Icon(
                         Icons.arrow_forward,
                         color: Colors.white,
                         size: 24,
                       ),
-                    ),
-                  )
-                  ],
+                    )
+                    ],
+                  ),
                 ),
               const SizedBox(height: 30),
 

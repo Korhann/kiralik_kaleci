@@ -318,6 +318,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.15"
+  flutter_email_sender:
+    dependency: "direct main"
+    description:
+      name: flutter_email_sender
+      sha256: fb515d4e073d238d0daf1d765e5318487b6396d46b96e0ae9745dbc9a133f97a
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.3"
   flutter_link_previewer:
     dependency: transitive
     description:
@@ -862,7 +870,7 @@ packages:
     source: hosted
     version: "1.4.0"
   url_launcher:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: url_launcher
       sha256: "9d06212b1362abc2f0f0d78e6f09f726608c74e3b9462e8368bb03314aa8d603"
