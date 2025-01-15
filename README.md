@@ -1,6 +1,6 @@
 # kiralik_kaleci
 
-A new Flutter project.
+Flutter project for renting goal keeper online.
 
 ## Getting Started
 
