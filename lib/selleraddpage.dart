@@ -7,11 +7,13 @@ import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:path_provider/path_provider.dart';
 
 
 class SellerAddPage extends StatefulWidget {
@@ -1269,8 +1271,7 @@ void clearDropdownValues() {
                                 children: [
                                   const Icon(Icons.camera_alt, size: 24),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    "Fotoğraf",
+                                  Text("Fotoğraf",
                                     style: GoogleFonts.inter(
                                         color: Colors.black,
                                         fontSize: 14,
@@ -1317,34 +1318,23 @@ void clearDropdownValues() {
                                             builder: (BuildContext context) {
                                               return Dialog(
                                                 child: SizedBox(
-                                                  width: MediaQuery.of(context)
-                                                      .size
-                                                      .width,
-                                                  height: MediaQuery.of(context)
-                                                      .size
-                                                      .height,
+                                                  width: MediaQuery.of(context).size.width,
+                                                  height: MediaQuery.of(context).size.height,
                                                   child: Expanded(
                                                     child: CarouselSlider(
                                                       options: CarouselOptions(
                                                         aspectRatio: 1,
                                                         viewportFraction: 1,
-                                                        enableInfiniteScroll:
-                                                            false,
+                                                        enableInfiniteScroll:false,
                                                         padEnds: false,
-                                                        initialPage:
-                                                            currentIndex,
+                                                        initialPage:currentIndex,
                                                       ),
-                                                      items: imageFileList
-                                                          .map<Widget>(
-                                                              (imageFile) {
-                                                        return Builder(
-                                                          builder: (BuildContext
-                                                              context) {
-                                                            return Image.file(
-                                                                File(imageFile
-                                                                    .path),
-                                                                fit: BoxFit
-                                                                    .cover);
+                                                      items: imageFileList.map<Widget>(
+                                                        (imageFile) {
+                                                          return Builder(
+                                                            builder: (BuildContext context) {
+                                                            return Image.file(File(imageFile.path),
+                                                              fit: BoxFit.cover);
                                                           },
                                                         );
                                                       }).toList(),
@@ -1388,6 +1378,7 @@ void clearDropdownValues() {
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
@@ -1697,9 +1688,9 @@ void clearDropdownValues() {
                       style: buttonPrimary,
                       onPressed: () async {
                         try {
-                          await _insertSellerDetails(context);
-                          _clearImageandText();
-                          clearDropdownValues();
+                            await _insertSellerDetails(context);
+                            _clearImageandText();
+                            clearDropdownValues();
                         } catch (e) {
                           log("error at $e");
                         }
@@ -1739,7 +1730,6 @@ void clearDropdownValues() {
     if (selectedImages.isNotEmpty) {
       imageFileList.addAll(selectedImages);
     }
-    setState(() {});
   }
 
   Future<void> _insertSellerDetails(BuildContext context) async {
@@ -1830,27 +1820,47 @@ void clearDropdownValues() {
 }   
 
   Future<List<String>> _uploadImagesToStorage() async {
-    List<String> imageUrls = [];
+  List<String> imageUrls = [];
 
-    // Loop through each image file and upload to Firebase Storage
+  // Loop through each image file and upload to Firebase Storage
+  if (imageFileList.isNotEmpty) {
     for (XFile imageFile in imageFileList) {
-      try {
-        
-        File file = File(imageFile.path);
-        String fileName = DateTime.now().millisecondsSinceEpoch.toString(); // Unique file name
+    try {
+      // kullanıcının seçtiği resim olucaksa bu kod
+      File file = File(imageFile.path);
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      Reference ref = FirebaseStorage.instance.ref().child('images/$fileName.jpg');
+      UploadTask uploadTask = ref.putFile(file);
+      TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+      String imageUrl = await taskSnapshot.ref.getDownloadURL();
 
-        Reference ref = FirebaseStorage.instance.ref().child('images/$fileName.jpg');
-        UploadTask uploadTask = ref.putFile(file);
-        TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-        String imageUrl = await taskSnapshot.ref.getDownloadURL();
-        imageUrls.add(imageUrl);
-      } catch (e) {
-        print("Error uploading image: $e");
+      imageUrls.add(imageUrl);
+    } catch (e) {
+      print("Error uploading image: $e");
       }
     }
+  } else {
+    // değilse default bir image yükle
+    File defaultImage = await getDefaultImageFile();
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference ref = FirebaseStorage.instance.ref().child('images/default_$fileName.jpg');
+    UploadTask uploadTask = ref.putFile(defaultImage);
+    TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+    String defaultImageUrl = await taskSnapshot.ref.getDownloadURL();
+    imageUrls.add(defaultImageUrl);
+  }
 
-    return imageUrls;
-  } 
+  return imageUrls;
+}
+  // default resim dosyası path almak için
+  Future<File> getDefaultImageFile() async {
+    final byteData = await rootBundle.load('lib/images/image1.jpg');
+    final tempDir = await getTemporaryDirectory();
+    final tempFile = File('${tempDir.path}/image1.jpg');
+    await tempFile.writeAsBytes(byteData.buffer.asUint8List());
+    print('file is $tempFile');
+    return tempFile;
+  }
 
 }
 /*
