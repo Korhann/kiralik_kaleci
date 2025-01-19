@@ -61,13 +61,6 @@ void callbackDispatcher() async{
       await timerService.performWeeklyReset();
       await appointmentsPage.deleteAppointments();
 
-      final Email email = Email(
-        body: 'Randevular yenilendi',
-        subject: 'Randevu',
-        recipients: ['korhandemir1@gmail.com'],
-        isHTML: false
-      );
-      await FlutterEmailSender.send(email);
       print('Periodic task executed: $task at $now');
       } else {
       print('Periodic task not executed: $task at $now');

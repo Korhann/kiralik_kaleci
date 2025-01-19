@@ -273,7 +273,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
                     style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.w600
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -281,26 +282,29 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: DropdownButton<String>(
-                isExpanded: true,
-                value: selectedCity,
-                items: cities.map((city) => DropdownMenuItem<String>(
+                    child: Container(
+                      color: Colors.white,
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedCity,
+                        items: cities.map((city) => DropdownMenuItem<String>(
                           value: city,
                           child: Text(
                             city,
                             style: GoogleFonts.inter(
-                              color: Colors.white
+                              color: Colors.black
                             ),
                           ),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    onCitySelected(value);
-                  }
-                },
-                hint: const Text('Şehir seçin'),
-              ),
+                        )).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            onCitySelected(value);
+                          }
+                        },
+                        hint: const Text('Şehir seçin'),
+                        underline: const SizedBox(),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -311,7 +315,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
                     style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.w600
+                      ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -319,28 +324,29 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: DropdownButton<String>(
-                isExpanded: true,
-                value: selectedDistrict,
-                items: districts
-                    .map((district) => DropdownMenuItem<String>(
+                    child: Container(
+                      color: Colors.white,
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedDistrict,
+                        items: districts.map((district) => DropdownMenuItem<String>(
                           value: district,
                           child: Text(
                             district,
                             style: GoogleFonts.inter(
                               color: Colors.black,
-                              backgroundColor: Colors.white
                             ),
                           ),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedDistrict = value;
-                  });
-                },
-                hint: const Text('İlçe seçin'),
-              ),
+                        )).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedDistrict = value;
+                          });
+                        },
+                        hint: const Text('İlçe seçin'),
+                        underline: const SizedBox(),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
