@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
@@ -11,13 +10,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'package:kiralik_kaleci/testcities.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:html/dom.dart' as dom;
+import 'package:html/parser.dart' as parser;
+import 'package:beautiful_soup_dart/beautiful_soup.dart';
 
 
 class SellerAddPage extends StatefulWidget {
@@ -48,14 +51,22 @@ class _SellerAddPageState extends State<SellerAddPage> {
   List<String> cities = [];
   List<String> districts = [];
   List<dynamic> cityData = [];
+  // for inserting to database
   String? selectedCity;
   String? selectedDistrict;
+  String? selectedField;
+
   bool isInserted = false;
+
+  // for selecting the fields according to the districts
+  List<String> fields = [];
+
 
   @override
   void initState() {
     super.initState();
     fetchCities();
+    FootballField.storeFields();
   }
 
   @override
@@ -341,10 +352,53 @@ class _SellerAddPageState extends State<SellerAddPage> {
                         onChanged: (value) {
                           setState(() {
                             selectedDistrict = value;
+                            fetchFields(value.toString());
                           });
                         },
                         hint: const Text('İlçe seçin'),
                         underline: const SizedBox(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Text(
+                    "Halı Sahalar",
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      color: Colors.white,
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedField,
+                        items: fields.map((field) => DropdownMenuItem<String>(
+                          value: field,
+                          child: Text(
+                            field,
+                            style: GoogleFonts.inter(
+                              color: Colors.black
+                            ),
+                          )
+                        )).toList(),
+                         onChanged: (value) {
+                          setState(() {
+                            selectedField = value;
+                          });
+                         },
+                         hint: const Text('Halı Saha Seçin'),
+                         underline: const SizedBox(),
                       ),
                     ),
                   ),
@@ -546,6 +600,29 @@ class _SellerAddPageState extends State<SellerAddPage> {
     );
   }
 
+
+  Future<void> fetchFields(String selectedDistrict) async {
+  var box = await Hive.openBox<FootballField>('fields');
+
+  try {
+    // looking if the selectedDistrict is in the districts
+    var field = box.values.firstWhere(
+    (f) => f.city == selectedCity && f.district == selectedDistrict,
+  );
+  setState(() {
+    // adds what is in that specific district
+    fields = field.fieldName;
+    selectedField = null;
+  });
+  } catch (e) {
+    setState(() {
+      fields = [];
+      selectedField = null;
+    });
+    }
+  }
+
+
   Future<void> fetchCities() async {
     var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
     if (response.statusCode == 200) {
@@ -634,6 +711,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
           "sellerPrice": price,
           "city": selectedCity,
           "district": selectedDistrict,
+          'field': selectedField,
           "imageUrls": imageUrls,
           'chosenDays': formattedData.keys.toList(),
           "selectedHoursByDay": formattedData,
@@ -782,13 +860,6 @@ class _AmenitiesState extends State<Amenities> {
    @override
   void initState() {
     super.initState();
-    // deneme için
-    /*
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const TestCities()));
-    });
-    */
-    
     
     if (!selectedHoursByDay.containsKey(widget.day)) {
       selectedHoursByDay[widget.day] = [];

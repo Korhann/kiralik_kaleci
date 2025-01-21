@@ -1,13 +1,17 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/timer.dart';
 import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:hive/hive.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(FootballFieldAdapter());
   await Firebase.initializeApp();
 
   // Initialize WorkManager
