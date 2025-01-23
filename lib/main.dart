@@ -11,6 +11,8 @@ import 'package:hive/hive.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+
+  await Hive.deleteBoxFromDisk('football_fields');
   Hive.registerAdapter(FootballFieldAdapter());
   await Firebase.initializeApp();
 

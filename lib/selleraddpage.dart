@@ -55,6 +55,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
   String? selectedCity;
   String? selectedDistrict;
   String? selectedField;
+  Set<String> multFields = Set.from([]);
+  String? value1;
 
   bool isInserted = false;
 
@@ -294,6 +296,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
+                      height: 45,
+                      width: 350,
                       color: Colors.white,
                       child: DropdownButton<String>(
                         isExpanded: true,
@@ -311,6 +315,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                           if (value != null) {
                             onCitySelected(value);
                           }
+                          multFields.clear();
                         },
                         hint: const Text('Şehir seçin'),
                         underline: const SizedBox(),
@@ -336,6 +341,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
+                      height: 45,
+                      width: 350,
                       color: Colors.white,
                       child: DropdownButton<String>(
                         isExpanded: true,
@@ -353,6 +360,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                           setState(() {
                             selectedDistrict = value;
                             fetchFields(value.toString());
+                            multFields.clear();
                           });
                         },
                         hint: const Text('İlçe seçin'),
@@ -374,36 +382,52 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   ),
                 ),
                 const SizedBox(height: 15),
+                // TODO: hint text eklenecek ve seçtiğin halı sahalar kutu halinde gözükecek
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      color: Colors.white,
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedField,
-                        items: fields.map((field) => DropdownMenuItem<String>(
-                          value: field,
-                          child: Text(
-                            field,
-                            style: GoogleFonts.inter(
-                              color: Colors.black
-                            ),
-                          )
-                        )).toList(),
-                         onChanged: (value) {
-                          setState(() {
-                            selectedField = value;
-                          });
-                         },
-                         hint: const Text('Halı Saha Seçin'),
-                         underline: const SizedBox(),
-                      ),
-                    ),
-                  ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        height: 45,
+                        width: 350,
+                        color: Colors.white,
+                        child: GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (context) {
+                              return StatefulBuilder(
+                                builder: (context, _setState) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: ListView(
+                                    children: fields.map((e) {
+                                    return CheckboxListTile(
+                                      title: Text(e),
+                                      value: multFields.contains(e),
+                                      onChanged: (isSelected) {
+                                        if (isSelected == true) {
+                                          multFields.add(e);
+                                        } else {
+                                          multFields.remove(e);
+                                        }
+                                        _setState(() {});
+                                        setState(() {}); 
+                                      },
+                                    );
+                                }).toList(),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
                 ),
-                const SizedBox(height: 20),
+              ),
+            ),
+          ),
+            const SizedBox(height: 20),
                 // SAAT BİLGİLERİNİ GİR
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
@@ -602,11 +626,11 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
 
   Future<void> fetchFields(String selectedDistrict) async {
-  var box = await Hive.openBox<FootballField>('fields');
+  var localDb = await Hive.openBox<FootballField>('football_fields');
 
   try {
     // looking if the selectedDistrict is in the districts
-    var field = box.values.firstWhere(
+    var field = localDb.values.firstWhere(
     (f) => f.city == selectedCity && f.district == selectedDistrict,
   );
   setState(() {
@@ -711,7 +735,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
           "sellerPrice": price,
           "city": selectedCity,
           "district": selectedDistrict,
-          'field': selectedField,
+          'fields': multFields,
           "imageUrls": imageUrls,
           'chosenDays': formattedData.keys.toList(),
           "selectedHoursByDay": formattedData,

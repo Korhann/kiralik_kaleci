@@ -18,10 +18,10 @@ class FootballField {
   });
 
   static Future<void> storeFields() async {
-  var box = await Hive.openBox<FootballField>('fields');
+  var localDb = await Hive.openBox<FootballField>('football_fields');
 
   // Clear existing data
-  await box.clear();
+  await localDb.clear();
 
   // Define data with cities and districts
   final List<FootballField> fields = [
@@ -721,7 +721,7 @@ class FootballField {
     ),
     FootballField(
       city: 'İstanbul',
-      district: 'Eyüp',
+      district: 'Eyüpsultan',
       fieldName: ['Rami Halı Saha','Eyüp Halı Saha','Akşemsettin SK Halı Saha','Eyüp Halı Saha','Alibeyköy Öztürkler Halı Saha','Pierre Loti Spor Tesisleri Halı Saha','Giresun Emeksan Spor Kulübü Halı Saha','Öz Alibeyköy Spor Kulübü Halı Saha','Alibeyköy Spor Kulübü Halı Saha']
     ),
     FootballField(
@@ -824,7 +824,7 @@ class FootballField {
 
   // Add data to the box
   for (var field in fields) {
-    await box.add(field);
+    await localDb.add(field);
   }
 }
 

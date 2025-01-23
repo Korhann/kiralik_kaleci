@@ -120,193 +120,219 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                       color: userorseller ? sellergrey: Colors.white,
                       height: 440,
                       width: double.infinity,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            child: Stack(
-                              children: [
-                                Image.network(
-                                  imageUrl,
-                                  height: 180,
-                                  width: double.infinity,
-                                  fit: BoxFit.contain,
-                                ),
-                                Positioned(
-                                  top: 15,
-                                  right: 25,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      _toggleFavorite(widget.sellerDetails, widget.sellerUid);
-                                    },
-                                    child: Icon(
-                                      Icons.favorite,
-                                      color: isFavorited ? Colors.red : Colors.grey,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              child: Stack(
+                                children: [
+                                  Image.network(
+                                    imageUrl,
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  Positioned(
+                                    top: 15,
+                                    right: 25,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        _toggleFavorite(widget.sellerDetails, widget.sellerUid);
+                                      },
+                                      child: Icon(
+                                        Icons.favorite,
+                                        color: isFavorited ? Colors.red : Colors.grey,
+                                      ),
                                     ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Row(
-                              children: [
-                                Text(
-                                  "${widget.sellerDetails['sellerFullName']}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w400,
-                                    color: userorseller ? Colors.white : Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 7),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(
-                              "${widget.sellerDetails['city']} ,${widget.sellerDetails['district']}",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w300,
-                                color: userorseller ? Colors.white : Colors.black,
+                                  )
+                                ],
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Column(
-                              children: [
-                                Text(
-                                  "Saatler",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: userorseller ? Colors.white : Colors.black,
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "${widget.sellerDetails['sellerFullName']}",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w400,
+                                      color: userorseller ? Colors.white : Colors.black,
+                                    ),
                                   ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 7),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Text(
+                                "${widget.sellerDetails['city']} ,${widget.sellerDetails['district']}",
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w300,
+                                  color: userorseller ? Colors.white : Colors.black,
                                 ),
-                                SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Print days horizontally
-                                      SizedBox(
-                                        height: 150,
-                                        width: double.infinity,
-                                        child: ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: days.length,
-                                          itemBuilder: (context, index) {
-                                            final day = days[index];
-                                            final hours = hoursByDay[day] ?? [];
-                                            return Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    day,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: userorseller ? Colors.white: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            // kullanıcı buradan kaleci seçecek
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 40,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  shrinkWrap: true,
+                                  itemCount: widget.sellerDetails['fields'].length,
+                                  itemBuilder: (context,int index) {
+                                    return Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20.0)
+                                      ),
+                                      color: green,
+                                      child: Center(child: Text('${widget.sellerDetails['fields'][index]}')),
+                                    );
+                                  },
+                                ),
+                              ),
+
+                            ),
+                            const SizedBox(height: 10),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "Saatler",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: userorseller ? Colors.white : Colors.black,
+                                    ),
+                                  ),
+                                  SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // Print days horizontally
+                                        SizedBox(
+                                          height: 150,
+                                          width: double.infinity,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: days.length,
+                                            itemBuilder: (context, index) {
+                                              final day = days[index];
+                                              final hours = hoursByDay[day] ?? [];
+                                              return Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      day,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: userorseller ? Colors.white: Colors.black,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(height: 7),
-                                                  SizedBox(
-                                                    height: 120,
-                                                    child: SingleChildScrollView(
-                                                      scrollDirection: Axis.vertical,
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: hours.map((hour) {
-                                                          // todo: dayHourKey ile db den aldığım saatleri karşılaştırıp ona göre rengini değiştirebilirim
-                                                          String dayHourKey = '$day $hour';
-                                                          bool isSelected = hourColors[dayHourKey] == Colors.grey;
-                                                          return GestureDetector(
-                                                            // renk sadece cyan ise seçilebilir
-                                                            onTap: hourColors[dayHourKey] == Colors.cyan
-                                                            ? () {
-                                                              setState(() {
-                                                                _selectedDay = day;
-                                                                _selectedHour = hour;
-                                                                // eğer available ise seçebilirsin, değilse seçemezsin
-                                                                hourColors.forEach((key,value) {
-                                                                  if (value != Colors.grey.shade600) {
-                                                                    hourColors[key] = Colors.cyan;
-                                                                  }
+                                                    const SizedBox(height: 7),
+                                                    SizedBox(
+                                                      height: 120,
+                                                      child: SingleChildScrollView(
+                                                        scrollDirection: Axis.vertical,
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: hours.map((hour) {
+                                                            // todo: dayHourKey ile db den aldığım saatleri karşılaştırıp ona göre rengini değiştirebilirim
+                                                            String dayHourKey = '$day $hour';
+                                                            bool isSelected = hourColors[dayHourKey] == Colors.grey;
+                                                            return GestureDetector(
+                                                              // renk sadece cyan ise seçilebilir
+                                                              onTap: hourColors[dayHourKey] == Colors.cyan
+                                                              ? () {
+                                                                setState(() {
+                                                                  _selectedDay = day;
+                                                                  _selectedHour = hour;
+                                                                  // eğer available ise seçebilirsin, değilse seçemezsin
+                                                                  hourColors.forEach((key,value) {
+                                                                    if (value != Colors.grey.shade600) {
+                                                                      hourColors[key] = Colors.cyan;
+                                                                    }
+                                                                  });
                                                                 });
-                                                              });
-                                                              hourColors[dayHourKey] = Colors.grey;
-                                                            } : null,
-                                                            child: Stack(
-                                                              children: [
-                                                                ClipRRect(
-                                                                borderRadius: BorderRadius.circular(10),
-                                                                child: Container(
-                                                                  margin: const EdgeInsets.symmetric(vertical: 3.0),
-                                                                  padding: const EdgeInsets.all(5),
-                                                                  color: hourColors[dayHourKey] ?? Colors.cyan,
-                                                                  child: Text(
-                                                                    hour,
-                                                                    style: GoogleFonts.inter(
-                                                                      fontSize: 14,
-                                                                      fontWeight: FontWeight.w400,
-                                                                      color: userorseller ? Colors.white : Colors.black,
+                                                                hourColors[dayHourKey] = Colors.grey;
+                                                              } : null,
+                                                              child: Stack(
+                                                                children: [
+                                                                  ClipRRect(
+                                                                  borderRadius: BorderRadius.circular(10),
+                                                                  child: Container(
+                                                                    margin: const EdgeInsets.symmetric(vertical: 3.0),
+                                                                    padding: const EdgeInsets.all(5),
+                                                                    color: hourColors[dayHourKey] ?? Colors.cyan,
+                                                                    child: Text(
+                                                                      hour,
+                                                                      style: GoogleFonts.inter(
+                                                                        fontSize: 14,
+                                                                        fontWeight: FontWeight.w400,
+                                                                        color: userorseller ? Colors.white : Colors.black,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                 ),
-                                                              ),
-                                                              if (isSelected)
-                                                                Positioned(
-                                                                  right: 0,
-                                                                  top: 0,
-                                                                  child: GestureDetector(
-                                                                    onTap: () {
-                                                                      setState(() {
-                                                                        _selectedDay = null;
-                                                                        _selectedHour = null;
-                                                                        hourColors[dayHourKey] = Colors.cyan;
-                                                                      });
-                                                                    },
-                                                                    child: Container(
-                                                                      padding: const EdgeInsets.all(4),
-                                                                      decoration: const BoxDecoration(
-                                                                        shape: BoxShape.circle,
-                                                                        color: Colors.red,
-                                                                      ),
-                                                                      child: const Icon(
-                                                                        Icons.close,
-                                                                        color: Colors.white,
-                                                                        size: 8,
+                                                                if (isSelected)
+                                                                  Positioned(
+                                                                    right: 0,
+                                                                    top: 0,
+                                                                    child: GestureDetector(
+                                                                      onTap: () {
+                                                                        setState(() {
+                                                                          _selectedDay = null;
+                                                                          _selectedHour = null;
+                                                                          hourColors[dayHourKey] = Colors.cyan;
+                                                                        });
+                                                                      },
+                                                                      child: Container(
+                                                                        padding: const EdgeInsets.all(4),
+                                                                        decoration: const BoxDecoration(
+                                                                          shape: BoxShape.circle,
+                                                                          color: Colors.red,
+                                                                        ),
+                                                                        child: const Icon(
+                                                                          Icons.close,
+                                                                          color: Colors.white,
+                                                                          size: 8,
+                                                                        ),
                                                                       ),
                                                                     ),
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                          );
-                                                        }).toList(),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            );
+                                                          }).toList(),
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          },
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
