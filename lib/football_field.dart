@@ -44,7 +44,7 @@ class FootballField {
     FootballField(
       city: 'Adana',
       district: 'Kozan',
-      fieldName: ['Kozan Ünsal Halı Saha', 'Gültekin Halı Saha'],
+      fieldName: ['Kozan Ünsal Halı Saha','Gültekin Halı Saha'],
     ),
     FootballField(
       city: 'Adana',

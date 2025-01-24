@@ -368,7 +368,6 @@ class _GetUserDataState extends State<GetUserData> {
   }
   if (fieldFilter != null && fieldFilter!.isNotEmpty) {
     filterquery = filterquery.where('sellerDetails.fields', arrayContains: fieldFilter);
-    print('yes it does');
   }
   if (daysFilter != null && daysFilter!.isNotEmpty) {
     filterquery = filterquery.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);

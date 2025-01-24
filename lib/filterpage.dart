@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FilterPage extends StatefulWidget {
   const FilterPage({super.key});
@@ -52,14 +53,24 @@ class _FilterPageState extends State<FilterPage> {
   @override
   void initState() {
     super.initState();
-    fetchCities();
-    FootballField.storeFields();
-    // if i dont do this city filter popps up again i dont know why
-    cityFilter = null;
+    // todo: halısahayı boş bırakınca hatayı veriyor kalkınca çöz
+    runMethods();
   }
 
-  void clearAllFilters() {
-    setState(() {
+  // if i dont run fetch cities first there is no element
+  void runMethods() async {
+    await fetchCities();
+    await loadPrefs();
+    FootballField.storeFields();
+  }
+
+  void clearAllFilters() async{
+      // to clear the shared prefs
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove('selectedCity');
+      await prefs.remove('selectedDistrict');
+      await prefs.remove('selectedField');
+      setState(() {
       nameFilter = null;
       cityFilter = null;
       districtFilter = null;
@@ -72,7 +83,7 @@ class _FilterPageState extends State<FilterPage> {
       _minPriceController.clear();
       _maxPriceController.clear();
       clearDays();
-    });
+      });
   }
 
   void clearDays() {
@@ -222,11 +233,13 @@ class _FilterPageState extends State<FilterPage> {
                               ),
                             ),
                           )).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              onCitySelected(value);
+                          onChanged: (value) async{
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
+                            await prefs.setString('selectedCity', value!);
+                            setState(() {
                               fieldFilter = null;
-                            }
+                              onCitySelected(value);
+                            });
                           },
                           hint: const Text('Şehir seçin'),
                           underline: const SizedBox(),
@@ -245,7 +258,7 @@ class _FilterPageState extends State<FilterPage> {
                         color: Colors.white,
                         child: DropdownButton<String>(
                           isExpanded: true,
-                          value: districtFilter,
+                          value: districts.contains(districtFilter) ? districtFilter : null,
                           items: districts.map((district) => DropdownMenuItem<String>(
                             value: district,
                             child: Text(
@@ -255,7 +268,9 @@ class _FilterPageState extends State<FilterPage> {
                               ),
                             ),
                           )).toList(),
-                          onChanged: (value) {
+                          onChanged: (value) async{
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
+                            await prefs.setString('selectedDistrict', value!);
                             setState(() {
                               districtFilter = value;
                               fetchFields(value.toString());
@@ -279,7 +294,7 @@ class _FilterPageState extends State<FilterPage> {
                         color: Colors.white,
                         child: DropdownButton<String>(
                           isExpanded: true,
-                          value: fieldFilter,
+                          value: fields.contains(fieldFilter) ? fieldFilter : null,
                           items: fields.map((field) => DropdownMenuItem<String>(
                             value: field,
                             child: Text(
@@ -289,7 +304,9 @@ class _FilterPageState extends State<FilterPage> {
                               ),
                             ),
                           )).toList(),
-                          onChanged: (value) {
+                          onChanged: (value) async{
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
+                            await prefs.setString('selectedField', value!);
                             setState(() {
                               fieldFilter = value;
                             });
@@ -551,7 +568,7 @@ class _FilterPageState extends State<FilterPage> {
       }
     }
   }
-  void onCitySelected(String selectedCityFilter) {
+  Future<void> onCitySelected(String selectedCityFilter) async{
     final city = cityData.firstWhere((city) => city['name'] == selectedCityFilter);
     if (city != null) {
       final districtsData = city['districts'];
@@ -570,22 +587,56 @@ class _FilterPageState extends State<FilterPage> {
   var localDb = await Hive.openBox<FootballField>('football_fields');
 
   try {
-    // looking if the selectedDistrict is in the districts
     var field = localDb.values.firstWhere(
-    (f) => f.city == cityFilter && f.district == selectedDistrict,
-  );
-  setState(() {
-    // adds what is in that specific district
-    fields = field.fieldName;
-    fieldFilter = null; 
-  });
+      (f) => f.city == cityFilter && f.district == selectedDistrict,
+    );
+    setState(() {
+      fields = field.fieldName.toSet().toList();
+      fieldFilter = null;
+      
+      // Retain the fieldFilter if it is valid for the new fields
+      if (!fields.contains(fieldFilter)) {
+        fieldFilter = null;
+      }
+    });
   } catch (e) {
     setState(() {
       fields = [];
       fieldFilter = null;
     });
-    }
   }
+}
+
+
+  // to show the user the selected data
+  Future<void> loadPrefs() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  String? savedCity = prefs.getString('selectedCity');
+  String? savedDistrict = prefs.getString('selectedDistrict');
+  String? savedField = prefs.getString('selectedField');
+
+  if (savedCity != null) {
+    // Load districts based on the saved city
+    await onCitySelected(savedCity); // Ensure districts are loaded before continuing
+  }
+
+  setState(() {
+    cityFilter = savedCity;
+    districtFilter = savedDistrict;
+  });
+
+  if (savedDistrict != null) {
+    // Fetch fields for the saved district
+    await fetchFields(savedDistrict);
+  }
+
+  setState(() {
+    fieldFilter = savedField; // Set fieldFilter only after fields are fetched
+  });
+}
+
+
 
   Widget _dayButton(String day, bool isPressed, VoidCallback onPressed) {
     return SizedBox(
