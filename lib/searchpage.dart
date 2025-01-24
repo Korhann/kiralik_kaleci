@@ -25,6 +25,7 @@ class _GetUserDataState extends State<GetUserData> {
   String? nameFilter;
   String? cityFilter;
   String? districtFilter;
+  String? fieldFilter;
   List<String> ?daysFilter;
   int? minFilter = 0;
   int? maxFilter = 0;
@@ -345,6 +346,7 @@ class _GetUserDataState extends State<GetUserData> {
         cityFilter = filter['cityFilter'];
         districtFilter = filter['districtFilter'];
         daysFilter = filter['daysFilter'];
+        fieldFilter = filter['fieldFilter'];
         minFilter = filter['minFilter'];
         maxFilter = filter['maxFilter'];
       });
@@ -363,6 +365,10 @@ class _GetUserDataState extends State<GetUserData> {
   }
   if (districtFilter != null && districtFilter!.isNotEmpty) {
     filterquery = filterquery.where('sellerDetails.district', isEqualTo: districtFilter);
+  }
+  if (fieldFilter != null && fieldFilter!.isNotEmpty) {
+    filterquery = filterquery.where('sellerDetails.fields', arrayContains: fieldFilter);
+    print('yes it does');
   }
   if (daysFilter != null && daysFilter!.isNotEmpty) {
     filterquery = filterquery.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);

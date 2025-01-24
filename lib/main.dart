@@ -6,7 +6,7 @@ import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/timer.dart';
 import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
-import 'package:hive/hive.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

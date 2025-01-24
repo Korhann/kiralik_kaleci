@@ -55,7 +55,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
   String? selectedCity;
   String? selectedDistrict;
   String? selectedField;
-  Set<String> multFields = Set.from([]);
+  Set<String> multFields = {};
   String? value1;
 
   bool isInserted = false;
@@ -665,13 +665,13 @@ class _SellerAddPageState extends State<SellerAddPage> {
     }
   }
 
+  // to populate with districts
   void onCitySelected(String selectedCity) {
     final city = cityData.firstWhere((city) => city['name'] == selectedCity);
     if (city != null) {
       final districtsData = city['districts'];
       if (districtsData != null) {
-        final List<String> districtNames = 
-    (districtsData as List<dynamic>).map((district) => district['name'].toString()).toList();
+        final List<String> districtNames = (districtsData as List<dynamic>).map((district) => district['name'].toString()).toList();
 
         setState(() {
           this.selectedCity = selectedCity;
