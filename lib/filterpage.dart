@@ -214,109 +214,194 @@ class _FilterPageState extends State<FilterPage> {
               ),
               const SizedBox(height: 15),
               Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        height: 45,
-                        width: 350,
-                        color: Colors.white,
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: cityFilter,
-                          items: cities.map((city) => DropdownMenuItem<String>(
-                            value: city,
-                            child: Text(
-                              city,
-                              style: GoogleFonts.inter(
-                                color: Colors.black
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 45,
+                      width: 350,
+                      color: Colors.white,
+                      child: Stack(
+                        children: [
+                          // Dropdown Button
+                          DropdownButton<String>(
+                            isExpanded: true,
+                            value: cityFilter,
+                            items: cities.map((city) => DropdownMenuItem<String>(
+                              value: city,
+                              child: Text(
+                                city,
+                                style: GoogleFonts.inter(color: Colors.black),
                               ),
+                            )).toList(),
+                            onChanged: (value) async {
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              // Reset district and field filters when city changes
+                              await prefs.remove('selectedDistrict');
+                              await prefs.remove('selectedField');
+                              await prefs.setString('selectedCity', value!);
+                              setState(() {
+                                // except the city they all have to be emptied
+                                cityFilter = value; 
+                                districtFilter = null; 
+                                fieldFilter = null; 
+                                districts.clear(); 
+                                fields.clear(); 
+                                // Fetch districts for the selected city
+                                onCitySelected(value);
+                              });
+                            },
+                            hint: const Text('Şehir seçin'),
+                            underline: const SizedBox(),
+                          ),
+                          // Clear Icon
+                          if (cityFilter != null)
+                          Positioned(
+                            right: 10,
+                            top: 0,
+                            bottom: 0,
+                            child: IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.grey),
+                              onPressed: () async {
+                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                await prefs.remove('selectedCity'); // Clear the selected city from prefs
+                                await prefs.remove('selectedDistrict');
+                                setState(() {
+                                  cityFilter = null;
+                                  districtFilter = null;
+                                  fieldFilter = null;
+                                  //cities.clear(); // Optional: Clear dependent data
+                                });
+                              },
                             ),
-                          )).toList(),
-                          onChanged: (value) async{
-                            SharedPreferences prefs = await SharedPreferences.getInstance();
-                            await prefs.setString('selectedCity', value!);
-                            setState(() {
-                              fieldFilter = null;
-                              onCitySelected(value);
-                            });
-                          },
-                          hint: const Text('Şehir seçin'),
-                          underline: const SizedBox(),
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                ),
               const SizedBox(height: 8),
-              Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        height: 45,
-                        width: 350,
-                        color: Colors.white,
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: districts.contains(districtFilter) ? districtFilter : null,
-                          items: districts.map((district) => DropdownMenuItem<String>(
-                            value: district,
-                            child: Text(
-                              district,
-                              style: GoogleFonts.inter(
-                                color: Colors.black,
-                              ),
-                            ),
-                          )).toList(),
-                          onChanged: (value) async{
-                            SharedPreferences prefs = await SharedPreferences.getInstance();
-                            await prefs.setString('selectedDistrict', value!);
-                            setState(() {
-                              districtFilter = value;
-                              fetchFields(value.toString());
-                              fieldFilter = null;
-                            });
-                          },
-                          hint: const Text('İlçe seçin'),
-                          underline: const SizedBox(),
-                        ),
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 8),
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        height: 45,
-                        width: 350,
-                        color: Colors.white,
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: fields.contains(fieldFilter) ? fieldFilter : null,
-                          items: fields.map((field) => DropdownMenuItem<String>(
-                            value: field,
-                            child: Text(
-                              field,
-                              style: GoogleFonts.inter(
-                                color: Colors.black,
-                              ),
-                            ),
-                          )).toList(),
-                          onChanged: (value) async{
-                            SharedPreferences prefs = await SharedPreferences.getInstance();
-                            await prefs.setString('selectedField', value!);
-                            setState(() {
-                              fieldFilter = value;
-                            });
-                          },
-                          hint: const Text('Halı Saha seçin'),
-                          underline: const SizedBox(),
-                        ),
-                      ),
-                    ),
-                  ),
+              
+  Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(10),
+    child: Container(
+      height: 45,
+      width: 350,
+      color: Colors.white,
+      child: Stack(
+        children: [
+          // Dropdown Button
+          DropdownButton<String>(
+            isExpanded: true,
+            value: districts.contains(districtFilter) ? districtFilter : null,
+            items: districts.map((district) => DropdownMenuItem<String>(
+              value: district,
+              child: Text(
+                district,
+                style: GoogleFonts.inter(
+                  color: Colors.black,
+                ),
+              ),
+            )).toList(),
+            onChanged: (value) async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('selectedDistrict', value!);
+              setState(() {
+                districtFilter = value;
+                fetchFields(value.toString());
+                fieldFilter = null;
+              });
+            },
+            hint: const Text('İlçe seçin'),
+            underline: const SizedBox(),
+          ),
+          // Clear Icon
+          if (districtFilter != null)
+            Positioned(
+              right: 10,
+              top: 0,
+              bottom: 0,
+              child: IconButton(
+                icon: const Icon(Icons.clear, color: Colors.grey),
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('selectedDistrict');
+                  await prefs.remove('selectedFields');
+                  setState(() {
+                    districtFilter = null;
+                    fieldFilter = null;
+                    fields.clear(); // Clear dependent data
+                  });
+                },
+              ),
+            ),
+        ],
+      ),
+    ),
+  ),
+),
+
+const SizedBox(height: 8),
+
+// Field Dropdown with Clear Icon
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(10),
+    child: Container(
+      height: 45,
+      width: 350,
+      color: Colors.white,
+      child: Stack(
+        children: [
+          // Dropdown Button
+          DropdownButton<String>(
+            isExpanded: true,
+            value: fields.contains(fieldFilter) ? fieldFilter : null,
+            items: fields.map((field) => DropdownMenuItem<String>(
+              value: field,
+              child: Text(
+                field,
+                style: GoogleFonts.inter(
+                  color: Colors.black,
+                ),
+              ),
+            )).toList(),
+            onChanged: (value) async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('selectedField', value!);
+              setState(() {
+                fieldFilter = value;
+              });
+            },
+            hint: const Text('Halı Saha seçin'),
+            underline: const SizedBox(),
+          ),
+          // Clear Icon
+          if (fieldFilter != null)
+            Positioned(
+              right: 10,
+              top: 0,
+              bottom: 0,
+              child: IconButton(
+                icon: const Icon(Icons.clear, color: Colors.grey),
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('selectedField');
+                  setState(() {
+                    fieldFilter = null;
+                  });
+                },
+              ),
+            ),
+        ],
+      ),
+    ),
+  ),
+),
+
               const SizedBox(height: 40),
               Padding(
                 padding: const EdgeInsets.only(left: 15),
