@@ -24,7 +24,6 @@ class PaymentPage extends StatefulWidget {
 
 class _PaymentPageState extends State<PaymentPage> {
 
-  //todo: Ödemeden sonra eğer ödeme başarılı ise randevularım a eklenecek.
   /*
   kullanıcı adı soyadı, seçili saat, seçili gün 
   */
@@ -114,6 +113,7 @@ class _PaymentPageState extends State<PaymentPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () async{
+                  // burada methodda status alıp onu true yada false olarak döndürebilirim
                   bool paymentSuccessful = await _processPayment();
                   if (paymentSuccessful) {
                     await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
@@ -248,6 +248,7 @@ class _PaymentPageState extends State<PaymentPage> {
       'selleruid': widget.sellerUid,
       'day': widget.selectedDay,
       'hour': widget.selectedHour,
+      'status': 'pending'
     };
 
     await _firestore.collection('Users')
@@ -275,9 +276,10 @@ class _PaymentPageState extends State<PaymentPage> {
     'buyerUid': currentuser,
     'day': widget.selectedDay,
     'hour': widget.selectedHour,
+    'status': 'pending'
   };
   
-  // Add appointment details to Firestore
+  // Add appointment details to Firestore to the seller account
   await _firestore
       .collection('Users')
       .doc(widget.sellerUid)

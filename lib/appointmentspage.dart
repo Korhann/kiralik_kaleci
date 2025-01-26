@@ -34,6 +34,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
 
   List<Map<String, dynamic>> appointments = [];
+  List<String> ?docs;
 
   @override
   void initState() {
@@ -98,37 +99,73 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final surname = appointmentDetails['surname'] ?? '';
                       final day = appointmentDetails['day'] ?? '';
                       final hour = appointmentDetails['hour'] ?? '';
+                      final docId = docs![index];
 
                       return Padding(
                         padding: const EdgeInsets.all(10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            color: Colors.white,
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.all(10),
-                              title: Text(
-                                '$name $surname',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              subtitle: Row(
-                                children: [
-                                  const Icon(Icons.calendar_month),
-                                  const SizedBox(width: 5),
-                                  Text('$day'),
-                                  const Spacer(),
-                                  const Icon(Icons.watch_later_outlined),
-                                  const SizedBox(width: 5),
-                                  Text('$hour')
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(10),
+    child: Container(
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            contentPadding: const EdgeInsets.all(10),
+            title: Text(
+              '$name $surname',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
+            subtitle: Row(
+              children: [
+                const Icon(Icons.calendar_month),
+                const SizedBox(width: 5),
+                Text('$day'),
+                const Spacer(),
+                const Icon(Icons.watch_later_outlined),
+                const SizedBox(width: 5),
+                Text('$hour'),
+              ],
+            ),
+          ),
+          userorseller ? 
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // Logic for approval
+                    approveAppointment(docId);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  child: const Text('Onayla'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Logic for rejection
+                    rejectAppointment(docId);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  child: const Text('Reddet'),
+                ),
+              ],
+            ),
+          ) : Container(),
+        ],
+      ),
+    ),
+  ),
+);
+
                     },
                   ),
           ],
@@ -152,10 +189,46 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .doc(currentuser)
           .collection('appointmentseller')
           .get();
+      
+      // get the doc id for updating a specific users appointment
+      setState(() {
+        docs = snapshot.docs.map((doc) => doc.id).toList();
+      });
     }
     setState(() {
       appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
     });
   }
+  Future<void> approveAppointment(String docId) async {
+  try {
+    await _firestore
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller')
+        .doc(docId)
+        .update({
+          'appointmentDetails.status': 'approved'
+        });
 
+    await _fetchAppointments();
+  } catch (e) {
+    print('Error approving appointment: $e');
+  }
+}
+  Future<void> rejectAppointment(String docId) async {
+    try {
+    await _firestore
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller')
+        .doc(docId)
+        .update({
+          'appointmentDetails.status': 'rejected'
+        });
+
+    await _fetchAppointments();
+  } catch (e) {
+    print('Error approving appointment: $e');
+  }
+  }
 }

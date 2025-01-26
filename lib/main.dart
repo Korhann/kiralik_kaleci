@@ -59,7 +59,7 @@ void callbackDispatcher() async{
     }
     DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // Adjust to UTC+3 for Turkey
     try {
-      if (now.weekday == DateTime.monday) {
+      if (now.weekday == DateTime.tuesday) {
       TimerService timerService = TimerService();
       AppointmentsPage appointmentsPage = AppointmentsPage();
 
