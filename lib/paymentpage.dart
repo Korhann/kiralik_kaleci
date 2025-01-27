@@ -32,6 +32,7 @@ class _PaymentPageState extends State<PaymentPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
   late String sellerFullName;
+  late final sellerAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -113,17 +114,20 @@ class _PaymentPageState extends State<PaymentPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () async{
-                  // burada methodda status alıp onu true yada false olarak döndürebilirim
-                  bool paymentSuccessful = await _processPayment();
-                  if (paymentSuccessful) {
+                  await appointmentBuyer();
+                  // after added to appointment seller I can check the status
+                  await appointmentSeller();
+                  // TODO: bu fonksiyonu satıcı onaylaması için 1 saat sonra çalıştır !!!
+                  await Future.delayed(const Duration(minutes: 1));
+                  bool status = await takeStatus();
+                  if (status) {
                     await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
-                    appointmentBuyer();
-                    appointmentSeller();
-                    Navigator.of(context).pop();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Ödeme Başarısız, lütfen tekrar deneyiniz'))
-                    );
+                    bool paymentSuccesful = await _processPayment();
+                    if (paymentSuccesful) {
+                      print('Ödeme başarılı');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ödeme Başarısız, lütfen tekrar deneyiniz')));
+                    }
                   }
               }, 
               style: buttonPrimary,
@@ -163,8 +167,6 @@ class _PaymentPageState extends State<PaymentPage> {
     ),
   );
 }
-
-
 
   Widget _price() {
     return StreamBuilder<DocumentSnapshot>(
@@ -242,7 +244,7 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     }
   }
-  void appointmentBuyer() async{
+  Future<void> appointmentBuyer() async{
     Map<String,String> appointmentDetails = {
       'name': sellerFullName,
       'selleruid': widget.sellerUid,
@@ -258,7 +260,7 @@ class _PaymentPageState extends State<PaymentPage> {
       'appointmentDetails': appointmentDetails
     });
   }
-  void appointmentSeller() async {
+  Future<void> appointmentSeller() async {
   String fullName;
   
   // Fetch user data once using `get()` to avoid the asynchronous issue
@@ -280,13 +282,38 @@ class _PaymentPageState extends State<PaymentPage> {
   };
   
   // Add appointment details to Firestore to the seller account
-  await _firestore
+  sellerAdd = await _firestore
       .collection('Users')
       .doc(widget.sellerUid)
       .collection('appointmentseller')
       .add({
     'appointmentDetails': appointmentDetails,
   });
+  // add sellerAdd to the database before the takeStatus is working
+  await sellerAdd;
 }
+  Future<bool> takeStatus() async {
+    if (sellerAdd == null) {
+      return false;
+    }
+    try {
+      final statusDoc = await _firestore
+      .collection('Users')
+      .doc(widget.sellerUid)
+      .collection('appointmentseller')
+      .doc(sellerAdd.id)
+      .get();
+
+      if (statusDoc.exists) {
+        final data = statusDoc.data();
+        final status = data?['appointmentDetails']['status'];
+        print(status);
+        return status == 'approved';
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
 
 }

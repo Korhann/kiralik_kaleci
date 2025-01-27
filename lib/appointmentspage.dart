@@ -99,7 +99,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final surname = appointmentDetails['surname'] ?? '';
                       final day = appointmentDetails['day'] ?? '';
                       final hour = appointmentDetails['hour'] ?? '';
-                      final docId = docs![index];
+                      final docId = docs?[index] ?? '';
 
                       return Padding(
                         padding: const EdgeInsets.all(10),
@@ -215,20 +215,33 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     print('Error approving appointment: $e');
   }
 }
+  // if the seller rejects, the appointment gets deleted (maybe just delete it without updating it)
   Future<void> rejectAppointment(String docId) async {
-    try {
+  try {
     await _firestore
         .collection('Users')
         .doc(currentuser)
         .collection('appointmentseller')
         .doc(docId)
         .update({
-          'appointmentDetails.status': 'rejected'
+          'appointmentDetails.status': 'rejected',
         });
 
+    //TODO: sonradan ekleyebilirsin
+    /*
+    await _firestore
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller')
+        .doc(docId)
+        .delete();
+    */
+
     await _fetchAppointments();
+    setState(() {});
   } catch (e) {
-    print('Error approving appointment: $e');
+    print('Error rejecting appointment: $e');
   }
-  }
+}
+
 }

@@ -17,10 +17,12 @@ void main() async {
   await Firebase.initializeApp();
 
   // Initialize WorkManager
+  /*
   await Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: true
   );
+  */
 
   // Register the periodic task
   const taskName = 'refreshAppointments';
@@ -64,8 +66,9 @@ void callbackDispatcher() async{
       AppointmentsPage appointmentsPage = AppointmentsPage();
 
       // seçili olan saatleri ve randevuları yenileyecek
-      await timerService.performWeeklyReset();
-      await appointmentsPage.deleteAppointments();
+      // todo: ŞİMDİLİK BUNLARI CANCELLA
+      //await timerService.performWeeklyReset();
+      //await appointmentsPage.deleteAppointments();
 
       print('Periodic task executed: $task at $now');
       } else {
