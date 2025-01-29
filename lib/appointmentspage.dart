@@ -10,31 +10,14 @@ class AppointmentsPage extends StatefulWidget {
 
   @override
   State<AppointmentsPage> createState() => _AppointmentsPageState();
-
-  // randevular da haftalık olaraka silinecek
-  Future<void> deleteAppointments() async{
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  String currentuser = FirebaseAuth.instance.currentUser!.uid;
-
-    var collectionBuyer = firestore.collection('Users').doc(currentuser).collection('appointmentbuyer');
-    var collectionSeller = firestore.collection('Users').doc(currentuser).collection('appointmentseller');
-    var appointmentsBuyer = await collectionBuyer.get();
-    var appointmentsSeller = await collectionSeller.get();
-    for (var doc in appointmentsBuyer.docs) {
-      await doc.reference.delete();
-    }
-    for (var doc in appointmentsSeller.docs) {
-      await doc.reference.delete();
-    }
-  }
 }
-class _AppointmentsPageState extends State<AppointmentsPage> {
 
+class _AppointmentsPageState extends State<AppointmentsPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
 
   List<Map<String, dynamic>> appointments = [];
-  List<String> ?docs;
+  List<String>? docs;
 
   @override
   void initState() {
@@ -69,7 +52,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 ),
               ),
             ),
-            // Randevu yoksa bu mesajı göster
             appointments.isEmpty
                 ? Center(
                     child: Padding(
@@ -99,73 +81,80 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final surname = appointmentDetails['surname'] ?? '';
                       final day = appointmentDetails['day'] ?? '';
                       final hour = appointmentDetails['hour'] ?? '';
+                      final status = appointmentDetails['status'] ?? 'pending';
                       final docId = docs?[index] ?? '';
+
+                      // Card background color based on status
+                      Color cardColor = Colors.white;
+                      if (status == 'approved') {
+                        cardColor = Colors.green.shade200;
+                      } else if (status == 'rejected') {
+                        cardColor = Colors.red.shade200;
+                      }
 
                       return Padding(
                         padding: const EdgeInsets.all(10),
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(10),
-    child: Container(
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            contentPadding: const EdgeInsets.all(10),
-            title: Text(
-              '$name $surname',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                color: Colors.black,
-              ),
-            ),
-            subtitle: Row(
-              children: [
-                const Icon(Icons.calendar_month),
-                const SizedBox(width: 5),
-                Text('$day'),
-                const Spacer(),
-                const Icon(Icons.watch_later_outlined),
-                const SizedBox(width: 5),
-                Text('$hour'),
-              ],
-            ),
-          ),
-          userorseller ? 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Logic for approval
-                    approveAppointment(docId);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
-                  child: const Text('Onayla'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Logic for rejection
-                    rejectAppointment(docId);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
-                  child: const Text('Reddet'),
-                ),
-              ],
-            ),
-          ) : Container(),
-        ],
-      ),
-    ),
-  ),
-);
-
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            color: cardColor,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ListTile(
+                                  contentPadding: const EdgeInsets.all(10),
+                                  title: Text(
+                                    '$name $surname',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  subtitle: Row(
+                                    children: [
+                                      const Icon(Icons.calendar_month),
+                                      const SizedBox(width: 5),
+                                      Text('$day'),
+                                      const Spacer(),
+                                      const Icon(Icons.watch_later_outlined),
+                                      const SizedBox(width: 5),
+                                      Text('$hour'),
+                                    ],
+                                  ),
+                                ),
+                                // Show buttons only if status is pending
+                                if (userorseller && status == 'pending') 
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            await approveAppointment(docId, index);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.green,
+                                          ),
+                                          child: const Text('Onayla'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            await rejectAppointment(docId, index);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                          ),
+                                          child: const Text('Reddet'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
                     },
                   ),
           ],
@@ -190,58 +179,57 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .collection('appointmentseller')
           .get();
       
-      // get the doc id for updating a specific users appointment
+      // Get document IDs for updating a specific user's appointment
       setState(() {
         docs = snapshot.docs.map((doc) => doc.id).toList();
       });
     }
+    
     setState(() {
       appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
     });
   }
-  Future<void> approveAppointment(String docId) async {
-  try {
-    await _firestore
-        .collection('Users')
-        .doc(currentuser)
-        .collection('appointmentseller')
-        .doc(docId)
-        .update({
-          'appointmentDetails.status': 'approved'
-        });
 
-    await _fetchAppointments();
-  } catch (e) {
-    print('Error approving appointment: $e');
+  // Approve Appointment - Updates status to 'approved'
+  Future<void> approveAppointment(String docId, int index) async {
+    try {
+      await _firestore
+          .collection('Users')
+          .doc(currentuser)
+          .collection('appointmentseller')
+          .doc(docId)
+          .update({
+            'appointmentDetails.status': 'approved'
+          });
+
+      
+      setState(() {
+        appointments[index]['appointmentDetails']['status'] = 'approved';
+      });
+
+    } catch (e) {
+      print('Error approving appointment: $e');
+    }
   }
-}
-  // if the seller rejects, the appointment gets deleted (maybe just delete it without updating it)
-  Future<void> rejectAppointment(String docId) async {
-  try {
-    await _firestore
-        .collection('Users')
-        .doc(currentuser)
-        .collection('appointmentseller')
-        .doc(docId)
-        .update({
-          'appointmentDetails.status': 'rejected',
-        });
 
-    //TODO: sonradan ekleyebilirsin
-    /*
-    await _firestore
-        .collection('Users')
-        .doc(currentuser)
-        .collection('appointmentseller')
-        .doc(docId)
-        .delete();
-    */
+  // Reject Appointment - Updates status to 'rejected'
+  Future<void> rejectAppointment(String docId, int index) async {
+    try {
+      await _firestore
+          .collection('Users')
+          .doc(currentuser)
+          .collection('appointmentseller')
+          .doc(docId)
+          .update({
+            'appointmentDetails.status': 'rejected'
+          });
 
-    await _fetchAppointments();
-    setState(() {});
-  } catch (e) {
-    print('Error rejecting appointment: $e');
+      setState(() {
+        appointments[index]['appointmentDetails']['status'] = 'rejected';
+      });
+
+    } catch (e) {
+      print('Error rejecting appointment: $e');
+    }
   }
-}
-
 }
