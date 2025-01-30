@@ -2,9 +2,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:workmanager/workmanager.dart';
 
 class PaymentPage extends StatefulWidget {
   final String sellerUid;
@@ -17,6 +19,7 @@ class PaymentPage extends StatefulWidget {
     required this.selectedDay,
     required this.selectedHour
   });
+
 
   @override
   State<PaymentPage> createState() => _PaymentPageState();
@@ -34,6 +37,13 @@ class _PaymentPageState extends State<PaymentPage> {
   late String sellerFullName;
   late final sellerAdd;
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,22 +123,26 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
+                // burada bir method oluştur ve onun içinde çalıştır
                 onPressed: () async{
+                  print(widget.selectedDay);
+                  print(widget.selectedHour);
+                  print(widget.sellerUid);
                   await appointmentBuyer();
-                  // after added to appointment seller I can check the status
                   await appointmentSeller();
-                  // TODO: bu fonksiyonu satıcı onaylaması için 1 saat sonra çalıştır !!!
-                  await Future.delayed(const Duration(minutes: 1));
-                  bool status = await takeStatus();
-                  if (status) {
-                    await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
-                    bool paymentSuccesful = await _processPayment();
-                    if (paymentSuccesful) {
-                      print('Ödeme başarılı');
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ödeme Başarısız, lütfen tekrar deneyiniz')));
-                    }
-                  }
+                  const taskName = 'checkStatus';
+                  // selleradd i de eklemem lazım 
+                  await Workmanager().registerOneOffTask(
+                    'checkStatus_${widget.selectedDay}_${widget.selectedHour}',
+                    taskName,
+                    inputData: {
+                      'sellerUid': widget.sellerUid,
+                      'selectedDay': widget.selectedDay,
+                      'selectedHour': widget.selectedHour,
+                      'currentUser': currentuser
+                    },
+                    initialDelay: const Duration(minutes: 15)
+                  );
               }, 
               style: buttonPrimary,
               child: Text(
@@ -196,13 +210,6 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     );
   }
-  // ÖDEME BURAYA EKLENECEK
-  Future<bool> _processPayment() async {
-
-    // Simulate payment process (replace this with actual payment gateway logic)
-    await Future.delayed(const Duration(seconds: 2));
-    return true; // Return true if payment is successful
-  }
 
   Future<void> _markHourAsTaken(String day, String hourTitle) async {
     DocumentReference userRef = FirebaseFirestore.instance.collection("Users").doc(widget.sellerUid);
@@ -212,25 +219,18 @@ class _PaymentPageState extends State<PaymentPage> {
 
     if (snapshot.exists) {
       Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-
       if (data.containsKey('sellerDetails')) {
         Map<String, dynamic> sellerDetails = data['sellerDetails'];
-
         if (sellerDetails.containsKey('selectedHoursByDay')) {
           Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
-
           if (selectedHoursByDay.containsKey(day)) {
             List<dynamic> hours = selectedHoursByDay[day];
-            print('hours: $hours');
-
             for (int i = 0; i < hours.length; i++) {
               // ÖRNEĞİN PAZARTESİ İÇİN SEÇENEK 3 SAAT VARSA SEÇİLEN HANGİSİ DİYE BAKIYOR
               Map<String, dynamic> hour = hours[i];
-
               if (hour['title'] == hourTitle) {
                 // Mark the hour as taken
                 hour['istaken'] = true;
-
                 // Update Firestore with the new data
                 selectedHoursByDay[day] = hours;
                 await userRef.update({
@@ -244,6 +244,15 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     }
   }
+
+  // ÖDEME BURAYA EKLENECEK
+  Future<bool> _processPayment() async {
+
+    // Simulate payment process (replace this with actual payment gateway logic)
+    await Future.delayed(const Duration(seconds: 2));
+    return true; // Return true if payment is successful
+  }
+
   Future<void> appointmentBuyer() async{
     Map<String,String> appointmentDetails = {
       'name': sellerFullName,
@@ -315,5 +324,16 @@ class _PaymentPageState extends State<PaymentPage> {
       return false;
     }
   }
-
+  Future<void> takeAppointment() async {
+    bool status = await takeStatus();
+    if (status) {
+      await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
+      bool paymentSuccesful = await _processPayment();
+      if (paymentSuccesful) {
+        print('Successfull');
+      } else {
+        print('Not succesfull');
+      }
+    }
+  }
 }

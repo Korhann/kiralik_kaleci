@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
+import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/timer.dart';
 import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
@@ -17,14 +19,12 @@ void main() async {
   await Firebase.initializeApp();
 
   // Initialize WorkManager
-  /*
   await Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: true
   );
-  */
-
-  // Register the periodic task
+  
+  // task for refreshin appointments on weekly basis
   const taskName = 'refreshAppointments';
   Workmanager().cancelByUniqueName(taskName); // Clear previous tasks to avoid conflicts
   await Workmanager().registerPeriodicTask(
@@ -50,34 +50,102 @@ class MyApp extends StatelessWidget {
 
 // Bunu bir daha dene ve neyi ekleyince çalıştığını anla !!!
 @pragma('vm:entry-point')
-void callbackDispatcher() async{
+void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    // Initialize Firebase for the background isolate
+    print(inputData?.values);
     try {
-      await Firebase.initializeApp();
-    } catch (e) {
-      print("Firebase initialization failed: $e");
-      return Future.value(false);
-    }
-    DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // Adjust to UTC+3 for Turkey
-    try {
-      if (now.weekday == DateTime.tuesday) {
-      TimerService timerService = TimerService();
-      AppointmentsPage appointmentsPage = AppointmentsPage();
+      await Firebase.initializeApp(); // Ensure Firebase is initialized in the background
 
-      // seçili olan saatleri ve randevuları yenileyecek
-      // todo: ŞİMDİLİK BUNLARI CANCELLA
-      //await timerService.performWeeklyReset();
-      //await appointmentsPage.deleteAppointments();
-
-      print('Periodic task executed: $task at $now');
+      if (task == 'refreshAppointments') {
+        print('1');
+        await _handleRefreshAppointments();
+      } else if (task == 'checkStatus') {
+        print('2');
+        await _handleTakeAppointment(inputData);
       } else {
-      print('Periodic task not executed: $task at $now');
+        print('Unknown task: $task');
       }
     } catch (e) {
-      print('Error code days $e');
+      print('Error in background task: $e');
     }
-
     return Future.value(true);
   });
 }
+Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
+  print(inputData?.values);
+  try {
+    if (inputData == null) {
+      print("No input data provided for task.");
+      return;
+    }
+
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String sellerUid = inputData['sellerUid'];
+    String selectedDay = inputData['selectedDay'];
+    String selectedHour = inputData['selectedHour'];
+    String currentUser = inputData['currentUser'];
+    print(sellerUid);
+    print(selectedDay);
+    print(selectedHour);
+    print(currentUser);
+
+    // Check appointment status
+    DocumentSnapshot statusDoc = await firestore
+        .collection('Users')
+        .doc(sellerUid)
+        .collection('appointmentseller')
+        .where('appointmentDetails.buyerUid', isEqualTo: currentUser)
+        .where('appointmentDetails.day', isEqualTo: selectedDay)
+        .where('appointmentDetails.hour', isEqualTo: selectedHour)
+        .limit(1)
+        .get()
+        .then((snapshot) => snapshot.docs.first);
+      
+
+    if (statusDoc.exists) {
+      String status = statusDoc['appointmentDetails']['status'];
+      if (status == 'approved') {
+        print('APPROVED MANNNDEM');
+        // Mark hour as taken
+        await firestore.collection("Users").doc(sellerUid).update({
+          'sellerDetails.selectedHoursByDay.$selectedDay': FieldValue.arrayUnion([
+            {'title': selectedHour, 'istaken': true}
+          ])
+        });
+
+        // ÖDEME BURADA ALINACAK
+        bool paymentSuccessful = true; // Ödeme sistemi ile değiştir
+        if (paymentSuccessful) {
+          print('Payment successful!');
+        } else {
+          print('Payment failed!');
+        }
+      } else {
+        print('Appointment is still pending.');
+      }
+    }
+  } catch (e) {
+    print('Error processing appointment: $e');
+  }
+}
+Future<void> _handleRefreshAppointments() async {
+  try {
+    DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // UTC+3 for Turkey
+
+    if (now.weekday == DateTime.tuesday) {
+      TimerService timerService = TimerService();
+      AppointmentsPage appointmentsPage = AppointmentsPage();
+
+      // Refresh all time slots and delete old appointments
+      // await timerService.performWeeklyReset();
+      // await appointmentsPage.deleteAppointments();
+
+      print('Appointments refreshed successfully.');
+    } else {
+      print('Not Tuesday, skipping refresh.');
+    }
+  } catch (e) {
+    print('Error refreshing appointments: $e');
+  }
+}
+
