@@ -42,7 +42,6 @@ class _PaymentPageState extends State<PaymentPage> {
     // TODO: implement initState
     super.initState();
   }
-
   
   @override
   Widget build(BuildContext context) {
@@ -133,7 +132,7 @@ class _PaymentPageState extends State<PaymentPage> {
                   const taskName = 'checkStatus';
                   // selleradd i de eklemem lazım 
                   await Workmanager().registerOneOffTask(
-                    'checkStatus_${widget.selectedDay}_${widget.selectedHour}',
+                    taskName,
                     taskName,
                     inputData: {
                       'sellerUid': widget.sellerUid,
@@ -143,6 +142,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     },
                     initialDelay: const Duration(minutes: 15)
                   );
+                  print(DateTime.now());
               }, 
               style: buttonPrimary,
               child: Text(

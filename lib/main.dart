@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    print(inputData?.values);
+    print(inputData?.values ?? 'no data in lsitttt');
     try {
       await Firebase.initializeApp(); // Ensure Firebase is initialized in the background
 
@@ -72,7 +72,8 @@ void callbackDispatcher() {
   });
 }
 Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
-  print(inputData?.values);
+  // todo: yarın direkt fonksiyonu buradan çalıştırarak dene
+  print(inputData?.values ?? 'no data in here');
   try {
     if (inputData == null) {
       print("No input data provided for task.");
