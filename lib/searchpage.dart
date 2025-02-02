@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
@@ -34,6 +35,7 @@ class _GetUserDataState extends State<GetUserData> {
   void initState() {
     super.initState();
     _userStream = _firestore.collection("Users").snapshots();
+    userorseller = false;
     }
 
     @override

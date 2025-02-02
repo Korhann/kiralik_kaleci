@@ -13,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kiralik_kaleci/football_field.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -69,6 +70,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
     super.initState();
     fetchCities();
     FootballField.storeFields();
+    userorseller = true;
   }
 
   @override

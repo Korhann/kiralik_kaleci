@@ -10,6 +10,8 @@ import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
 
 
+// TODO: UYGULAMA KAPALIYKEN NORMAL FLUTTER RUN DA WORKMANAGER ÇALIŞIYOR MU DİYE BAK !!!!!!!!!!!!!!!!
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
@@ -24,7 +26,7 @@ void main() async {
     isInDebugMode: true
   );
   
-  // task for refreshin appointments on weekly basis
+  // todo: this works every 15 mins instead of one day
   const taskName = 'refreshAppointments';
   Workmanager().cancelByUniqueName(taskName); // Clear previous tasks to avoid conflicts
   await Workmanager().registerPeriodicTask(
@@ -52,7 +54,6 @@ class MyApp extends StatelessWidget {
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    print(inputData?.values ?? 'no data in lsitttt');
     try {
       await Firebase.initializeApp(); // Ensure Firebase is initialized in the background
 
@@ -73,7 +74,6 @@ void callbackDispatcher() {
 }
 Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
   // todo: yarın direkt fonksiyonu buradan çalıştırarak dene
-  print(inputData?.values ?? 'no data in here');
   try {
     if (inputData == null) {
       print("No input data provided for task.");
@@ -118,8 +118,6 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
         bool paymentSuccessful = true; // Ödeme sistemi ile değiştir
         if (paymentSuccessful) {
           print('Payment successful!');
-        } else {
-          print('Payment failed!');
         }
       } else {
         print('Appointment is still pending.');

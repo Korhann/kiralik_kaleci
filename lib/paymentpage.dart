@@ -20,7 +20,6 @@ class PaymentPage extends StatefulWidget {
     required this.selectedHour
   });
 
-
   @override
   State<PaymentPage> createState() => _PaymentPageState();
 }
@@ -211,7 +210,7 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-  Future<void> _markHourAsTaken(String day, String hourTitle) async {
+  Future<void> markHourAsTaken(String day, String hourTitle) async {
     DocumentReference userRef = FirebaseFirestore.instance.collection("Users").doc(widget.sellerUid);
 
     // Get the existing document
@@ -327,7 +326,7 @@ class _PaymentPageState extends State<PaymentPage> {
   Future<void> takeAppointment() async {
     bool status = await takeStatus();
     if (status) {
-      await _markHourAsTaken(widget.selectedDay, widget.selectedHour);
+      await markHourAsTaken(widget.selectedDay, widget.selectedHour);
       bool paymentSuccesful = await _processPayment();
       if (paymentSuccesful) {
         print('Successfull');

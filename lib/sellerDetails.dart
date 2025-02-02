@@ -34,6 +34,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   Map<String, Color> hourColors = {};
   String? _selectedDay;
   String? _selectedHour;
+  String? _selectedField;
   List<String> orderedDays = [
     'Pazartesi',
     'Salı',
@@ -189,17 +190,32 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                   shrinkWrap: true,
                                   itemCount: widget.sellerDetails['fields'].length,
                                   itemBuilder: (context,int index) {
-                                    return Card(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20.0)
+                                    String field = widget.sellerDetails['fields'][index];
+                                    bool isSelected = _selectedField == field;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedField = field;
+                                        });
+                                      },
+                                      child: Card(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20.0)
+                                        ),
+                                        color: isSelected ? Colors.grey : green,
+                                        child: Center(
+                                          child: Text(
+                                            field,
+                                            style: TextStyle(
+                                              color: Colors.black
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                      color: green,
-                                      child: Center(child: Text('${widget.sellerDetails['fields'][index]}')),
                                     );
                                   },
                                 ),
                               ),
-
                             ),
                             const SizedBox(height: 10),
                             Padding(
@@ -387,10 +403,10 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    if (_selectedDay == null && _selectedHour == null) {
+                    if (_selectedDay == null || _selectedHour == null || _selectedField == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Saat ve gün seçiniz'),
+                          content: Text('Saat, gün ve saha seçiniz'),
                           backgroundColor: Colors.red,
                         )
                       );

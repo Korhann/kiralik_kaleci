@@ -1,3 +1,3 @@
 
-// renk belirlemek için
+// eğer true ise seller false ise user
 bool userorseller = false;
