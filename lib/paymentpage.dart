@@ -153,6 +153,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     },
                     initialDelay: const Duration(minutes: 15)
                   );
+
                   print(DateTime.now());
               }, 
               style: buttonPrimary,

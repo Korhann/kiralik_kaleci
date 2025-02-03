@@ -5,8 +5,8 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
-import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/timer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
 
@@ -90,10 +90,6 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
     String selectedDay = inputData['selectedDay'];
     String selectedHour = inputData['selectedHour'];
     String currentUser = inputData['currentUser'];
-    print(sellerUid);
-    print(selectedDay);
-    print(selectedHour);
-    print(currentUser);
 
     // Check appointment status
     DocumentSnapshot statusDoc = await firestore
