@@ -426,6 +426,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                           sellerUid: widget.sellerUid,
                           selectedDay: _selectedDay!,
                           selectedHour: _selectedHour!,
+                          selectedField: _selectedField!,
                         )
                       ),
                     );

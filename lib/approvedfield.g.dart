@@ -1,38 +1,32 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'football_field.dart';
+part of 'approvedfield.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class FootballFieldAdapter extends TypeAdapter<FootballField> {
+class ApprovedFieldAdapter extends TypeAdapter<ApprovedField> {
   @override
   final int typeId = 0;
 
   @override
-  FootballField read(BinaryReader reader) {
+  ApprovedField read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return FootballField(
-      city: fields[0] as String,
-      district: fields[1] as String,
-      fieldName: (fields[2] as List).cast<String>(),
+    return ApprovedField(
+      fields: (fields[0] as List).cast<String>(),
     );
   }
 
   @override
-  void write(BinaryWriter writer, FootballField obj) {
+  void write(BinaryWriter writer, ApprovedField obj) {
     writer
-      ..writeByte(3)
-      ..writeByte(0)
-      ..write(obj.city)
       ..writeByte(1)
-      ..write(obj.district)
-      ..writeByte(2)
-      ..write(obj.fieldName);
+      ..writeByte(0)
+      ..write(obj.fields);
   }
 
   @override
@@ -41,7 +35,7 @@ class FootballFieldAdapter extends TypeAdapter<FootballField> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is FootballFieldAdapter &&
+      other is ApprovedFieldAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

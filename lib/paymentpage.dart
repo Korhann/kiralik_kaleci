@@ -12,12 +12,14 @@ class PaymentPage extends StatefulWidget {
   final String sellerUid;
   final String selectedDay;
   final String selectedHour;
+  final String selectedField;
 
   const PaymentPage({
     super.key,
     required this.sellerUid,
     required this.selectedDay,
-    required this.selectedHour
+    required this.selectedHour,
+    required this.selectedField
   });
 
   @override
@@ -61,7 +63,7 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 10),
             Container(
               width: double.infinity,
-              height: 200,
+              height: 220,
               color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -88,7 +90,20 @@ class _PaymentPageState extends State<PaymentPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 15),
+                    Text(
+                      'Seçilen saha',
+                      style: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: EdgeInsets.only(right: 20),
+                      child: _selectedField(),
+                    ),
+                    const SizedBox(height: 15),
                     Text(
                       'Ödenecek Tutar',
                       style: GoogleFonts.inter(
@@ -123,9 +138,6 @@ class _PaymentPageState extends State<PaymentPage> {
               child: ElevatedButton(
                 // burada bir method oluştur ve onun içinde çalıştır
                 onPressed: () async{
-                  print(widget.selectedDay);
-                  print(widget.selectedHour);
-                  print(widget.sellerUid);
                   await appointmentBuyer();
                   await appointmentSeller();
                   const taskName = 'checkStatus';
@@ -157,6 +169,17 @@ class _PaymentPageState extends State<PaymentPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _selectedField() {
+    return Text(
+      widget.selectedField,
+      style: GoogleFonts.inter(
+      fontSize: 15,
+      fontWeight: FontWeight.normal,
+      color: Colors.black,
+    ),
     );
   }
 
@@ -258,7 +281,7 @@ class _PaymentPageState extends State<PaymentPage> {
       'selleruid': widget.sellerUid,
       'day': widget.selectedDay,
       'hour': widget.selectedHour,
-      'status': 'pending'
+      'field': widget.selectedField,
     };
 
     await _firestore.collection('Users')
@@ -286,6 +309,7 @@ class _PaymentPageState extends State<PaymentPage> {
     'buyerUid': currentuser,
     'day': widget.selectedDay,
     'hour': widget.selectedHour,
+    'field':widget.selectedField,
     'status': 'pending'
   };
   

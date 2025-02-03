@@ -99,6 +99,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final surname = appointmentDetails['surname'] ?? '';
                       final day = appointmentDetails['day'] ?? '';
                       final hour = appointmentDetails['hour'] ?? '';
+                      final field = appointmentDetails['field'] ?? '';
                       final status = appointmentDetails['status'] ?? 'pending';
                       final docId = docs?[index] ?? '';
 
@@ -128,17 +129,29 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                       color: Colors.black,
                                     ),
                                   ),
-                                  subtitle: Row(
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(Icons.calendar_month),
-                                      const SizedBox(width: 5),
-                                      Text('$day'),
-                                      const Spacer(),
-                                      const Icon(Icons.watch_later_outlined),
-                                      const SizedBox(width: 5),
-                                      Text('$hour'),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.calendar_month),
+                                          const SizedBox(width: 5),
+                                          Text('$day'),
+                                          const Spacer(),
+                                          const Icon(Icons.watch_later_outlined),
+                                          const SizedBox(width: 5),
+                                          Text('$hour'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.location_on),
+                                          const SizedBox(width: 5),
+                                          Text('$field')
+                                        ],
+                                      )
                                     ],
-                                  ),
+                                  )
                                 ),
                                 // Show buttons only if status is pending
                                 if (userorseller && status == 'pending') 

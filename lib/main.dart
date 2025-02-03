@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
@@ -18,6 +19,10 @@ void main() async {
 
   await Hive.deleteBoxFromDisk('football_fields');
   Hive.registerAdapter(FootballFieldAdapter());
+
+  await Hive.deleteBoxFromDisk('approved_fields');
+  Hive.registerAdapter(ApprovedFieldAdapter());
+  
   await Firebase.initializeApp();
 
   // Initialize WorkManager

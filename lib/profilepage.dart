@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
+import 'package:kiralik_kaleci/approvedfields.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/policiespage.dart';
@@ -249,6 +250,34 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),  
+              ),
+              Container(height: 1,color: Colors.black),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ApprovedFields())
+                  );
+                },
+                child: Container(
+                    height: 60,
+                    width: double.infinity,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Onaylı Halı Sahalar",
+                            style: GoogleFonts.roboto(
+                              fontSize: 22, fontWeight: FontWeight.w500),
+                          ),
+                          const Icon(Icons.location_on, size: 24)
+                        ],
+                      ),
+                    ),
+                  ),
               ),
               Container(height: 1,color: Colors.black),
               GestureDetector(
