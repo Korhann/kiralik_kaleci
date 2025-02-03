@@ -8,7 +8,7 @@ part of 'approvedfield.dart';
 
 class ApprovedFieldAdapter extends TypeAdapter<ApprovedField> {
   @override
-  final int typeId = 0;
+  final int typeId = 1;
 
   @override
   ApprovedField read(BinaryReader reader) {

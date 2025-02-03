@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 part 'approvedfield.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class ApprovedField {
   @HiveField(0)
   final List<String> fields;
