@@ -5,6 +5,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
+import 'package:kiralik_kaleci/notificationservice.dart';
 import 'package:kiralik_kaleci/timer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:workmanager/workmanager.dart';
@@ -16,6 +17,7 @@ import 'appointmentspage.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  await NotificationService().initNotification();
 
   await Hive.deleteBoxFromDisk('football_fields');
   Hive.registerAdapter(FootballFieldAdapter());
@@ -61,7 +63,7 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
       await Firebase.initializeApp(); // Ensure Firebase is initialized in the background
-
+      
       if (task == 'refreshAppointments') {
         print('1');
         await _handleRefreshAppointments();
