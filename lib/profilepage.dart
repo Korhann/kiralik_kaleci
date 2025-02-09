@@ -194,7 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 10),
               GestureDetector(
-                onTap: () {
+                onTap: () async{
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AppointmentsPage())

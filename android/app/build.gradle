@@ -23,8 +23,10 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+        // old version was JAVAVersion.VERSION_17
     }
 
     kotlinOptions {
@@ -66,6 +68,8 @@ dependencies {
 
     // Multidex support
     implementation 'androidx.multidex:multidex:2.0.1'
-
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
     // (Optional) Add other dependencies here as needed
+    implementation 'androidx.window:window:1.0.0'
+    implementation 'androidx.window:window-java:1.0.0'
 }

@@ -1,23 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
+import 'package:kiralik_kaleci/fcmService.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
-import 'package:kiralik_kaleci/notificationservice.dart';
 import 'package:kiralik_kaleci/timer.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
 
 
-// TODO: UYGULAMA KAPALIYKEN NORMAL FLUTTER RUN DA WORKMANAGER ÇALIŞIYOR MU DİYE BAK !!!!!!!!!!!!!!!!
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  await NotificationService().initNotification();
 
   await Hive.deleteBoxFromDisk('football_fields');
   Hive.registerAdapter(FootballFieldAdapter());
@@ -26,6 +23,7 @@ void main() async {
   Hive.registerAdapter(ApprovedFieldAdapter());
   
   await Firebase.initializeApp();
+  await FCMService().initNotifications();
 
   // Initialize WorkManager
   await Workmanager().initialize(
@@ -79,6 +77,10 @@ void callbackDispatcher() {
     return Future.value(true);
   });
 }
+Future<void> sendCustomNotification(String selectedDay, String selectedHour) async{
+  //FCMService().sendCustomNotification(selectedDay,selectedHour);
+}
+
 Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
   // todo: yarın direkt fonksiyonu buradan çalıştırarak dene
   try {
@@ -92,6 +94,7 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
     String selectedDay = inputData['selectedDay'];
     String selectedHour = inputData['selectedHour'];
     String currentUser = inputData['currentUser'];
+
 
     // Check appointment status
     DocumentSnapshot statusDoc = await firestore
@@ -109,7 +112,7 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
     if (statusDoc.exists) {
       String status = statusDoc['appointmentDetails']['status'];
       if (status == 'approved') {
-        print('APPROVED MANNNDEM');
+        print('APPROVED');
         // Mark hour as taken
         await firestore.collection("Users").doc(sellerUid).update({
           'sellerDetails.selectedHoursByDay.$selectedDay': FieldValue.arrayUnion([
@@ -120,6 +123,9 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
         // ÖDEME BURADA ALINACAK
         bool paymentSuccessful = true; // Ödeme sistemi ile değiştir
         if (paymentSuccessful) {
+          // TODO: BİLDİRİM GÖNDER selectedDay, selectedHour, selectedField
+          String text = '';
+          await sendCustomNotification(selectedDay,selectedHour);
           print('Payment successful!');
         }
       } else {
@@ -150,4 +156,5 @@ Future<void> _handleRefreshAppointments() async {
     print('Error refreshing appointments: $e');
   }
 }
+
 

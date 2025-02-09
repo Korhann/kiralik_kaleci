@@ -2,9 +2,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kiralik_kaleci/notificationservice.dart';
+import 'package:kiralik_kaleci/fcmService.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:workmanager/workmanager.dart';
@@ -43,7 +42,7 @@ class _PaymentPageState extends State<PaymentPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    NotificationService().showNotification(1, 'Randevunuz onaylandı', 'Detaylar ektedir');
+    FCMService().sendCustomNotification('Cumartesi', '9-10');
   }
   
   @override
