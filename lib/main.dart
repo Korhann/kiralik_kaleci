@@ -124,7 +124,7 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
         bool paymentSuccessful = true; // Ödeme sistemi ile değiştir
         if (paymentSuccessful) {
           // TODO: BİLDİRİM GÖNDER selectedDay, selectedHour, selectedField
-          String text = '';
+          String text = '${'Randevunuz onaylanmıştır. \n $selectedDay $selectedHour'}';
           await sendCustomNotification(selectedDay,selectedHour);
           print('Payment successful!');
         }
