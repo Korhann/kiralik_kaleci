@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -7,10 +8,11 @@ import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/fcmService.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
+import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/timer.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,19 +23,30 @@ void main() async {
 
   await Hive.deleteBoxFromDisk('approved_fields');
   Hive.registerAdapter(ApprovedFieldAdapter());
-  
+
   await Firebase.initializeApp();
-  await FCMService().initNotifications();
+  //await FCMService().initNotifications(); TODO
+
+  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+
+  OneSignal.initialize("de08ba6c-7f05-4304-90ac-a3c3c1f6b94d");
+
+// The promptForPushNotificationsWithUserResponse function will show the iOS or Android push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
+  OneSignal.Notifications.requestPermission(true);
+
+  PushHelper.updateNotificationToken();
+
+  // if(FirebaseAuth.instance.currentUser?.email != null){ TODO
+  //   PushHelper.sendPushBefore(targetEmail: FirebaseAuth.instance.currentUser!.email!, text: 'Deneme');
+  // }
 
   // Initialize WorkManager
-  await Workmanager().initialize(
-    callbackDispatcher,
-    isInDebugMode: true
-  );
-  
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+
   // todo: this works every 15 mins instead of one day
   const taskName = 'refreshAppointments';
-  Workmanager().cancelByUniqueName(taskName); // Clear previous tasks to avoid conflicts
+  Workmanager()
+      .cancelByUniqueName(taskName); // Clear previous tasks to avoid conflicts
   await Workmanager().registerPeriodicTask(
     taskName,
     taskName,
@@ -60,8 +73,9 @@ class MyApp extends StatelessWidget {
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
-      await Firebase.initializeApp(); // Ensure Firebase is initialized in the background
-      
+      await Firebase
+          .initializeApp(); // Ensure Firebase is initialized in the background
+
       if (task == 'refreshAppointments') {
         print('1');
         await _handleRefreshAppointments();
@@ -77,7 +91,9 @@ void callbackDispatcher() {
     return Future.value(true);
   });
 }
-Future<void> sendCustomNotification(String selectedDay, String selectedHour) async{
+
+Future<void> sendCustomNotification(
+    String selectedDay, String selectedHour) async {
   //FCMService().sendCustomNotification(selectedDay,selectedHour);
 }
 
@@ -95,7 +111,6 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
     String selectedHour = inputData['selectedHour'];
     String currentUser = inputData['currentUser'];
 
-
     // Check appointment status
     DocumentSnapshot statusDoc = await firestore
         .collection('Users')
@@ -107,7 +122,6 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
         .limit(1)
         .get()
         .then((snapshot) => snapshot.docs.first);
-      
 
     if (statusDoc.exists) {
       String status = statusDoc['appointmentDetails']['status'];
@@ -115,7 +129,8 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
         print('APPROVED');
         // Mark hour as taken
         await firestore.collection("Users").doc(sellerUid).update({
-          'sellerDetails.selectedHoursByDay.$selectedDay': FieldValue.arrayUnion([
+          'sellerDetails.selectedHoursByDay.$selectedDay':
+              FieldValue.arrayUnion([
             {'title': selectedHour, 'istaken': true}
           ])
         });
@@ -124,8 +139,12 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
         bool paymentSuccessful = true; // Ödeme sistemi ile değiştir
         if (paymentSuccessful) {
           // TODO: BİLDİRİM GÖNDER selectedDay, selectedHour, selectedField
-          String text = '${'Randevunuz onaylanmıştır. \n $selectedDay $selectedHour'}';
-          await sendCustomNotification(selectedDay,selectedHour);
+          String text =
+              '${'Randevunuz onaylanmıştır. \n $selectedDay $selectedHour'}';
+
+          PushHelper.sendPushBefore(userId: currentUser, text: text);
+
+          await sendCustomNotification(selectedDay, selectedHour);
           print('Payment successful!');
         }
       } else {
@@ -136,9 +155,12 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
     print('Error processing appointment: $e');
   }
 }
+
 Future<void> _handleRefreshAppointments() async {
   try {
-    DateTime now = DateTime.now().toUtc().add(const Duration(hours: 3)); // UTC+3 for Turkey
+    DateTime now = DateTime.now()
+        .toUtc()
+        .add(const Duration(hours: 3)); // UTC+3 for Turkey
 
     if (now.weekday == DateTime.tuesday) {
       TimerService timerService = TimerService();
@@ -156,5 +178,3 @@ Future<void> _handleRefreshAppointments() async {
     print('Error refreshing appointments: $e');
   }
 }
-
-
