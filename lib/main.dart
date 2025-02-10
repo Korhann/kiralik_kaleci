@@ -5,7 +5,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
-import 'package:kiralik_kaleci/fcmService.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
@@ -34,10 +33,9 @@ void main() async {
 // The promptForPushNotificationsWithUserResponse function will show the iOS or Android push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
   OneSignal.Notifications.requestPermission(true);
 
-  PushHelper.updateNotificationToken();
 
-  // if(FirebaseAuth.instance.currentUser?.email != null){ TODO
-  //   PushHelper.sendPushBefore(targetEmail: FirebaseAuth.instance.currentUser!.email!, text: 'Deneme');
+  // if(FirebaseAuth.instance.currentUser?.email != null){ 
+  //   PushHelper.sendPushBefore(userId: '', text: 'Deneme'); TODO deneme bildirimi
   // }
 
   // Initialize WorkManager
@@ -142,7 +140,8 @@ Future<void> _handleTakeAppointment(Map<String, dynamic>? inputData) async {
           String text =
               '${'Randevunuz onaylanmıştır. \n $selectedDay $selectedHour'}';
 
-          PushHelper.sendPushBefore(userId: currentUser, text: text);
+          PushHelper.sendPushBefore(userId: currentUser, text: text); // burada bildirim gönderiliyor
+
 
           await sendCustomNotification(selectedDay, selectedHour);
           print('Payment successful!');
