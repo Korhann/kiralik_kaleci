@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
-import 'package:kiralik_kaleci/paymentpage.dart';
+import 'package:kiralik_kaleci/apptRequest.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -422,7 +422,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                       Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PaymentPage(
+                        builder: (context) => ApptRequest(
                           sellerUid: widget.sellerUid,
                           selectedDay: _selectedDay!,
                           selectedHour: _selectedHour!,

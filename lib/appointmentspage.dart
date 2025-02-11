@@ -254,7 +254,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             appointmentData[appointmentDetails]['field']
           );
 
-          await PushHelper.sendPushBefore(userId: buyerUid, text:'Randevu başarılı. Ödeme yapınız \n ${notificationModel.notification()}');
+          await PushHelper.sendPushBefore(userId: buyerUid, text:'Randevu başarılı. Ödeme yapınız \n ${notificationModel.notification()}', page: '/details');
         } else {
           print('appointment details does not exist');
         }

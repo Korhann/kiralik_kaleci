@@ -11,14 +11,14 @@ import 'bildirim_model.dart';
 class PushHelper {
   //Writen by Hakan Kayacı
 
-  static Future<void> sendPushBefore({required String userId, required String text}) async {
+  static Future<void> sendPushBefore({required String userId, required String text, required String page}) async {
     final userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
     final userData = userSnapshot.data();
     if(userData != null){
       String? notificationToken = userData['notificationToken'];
-      print('SELLER TOKEN $notificationToken');
+
     if (notificationToken != null) {
-      sendPush(text: text, id: notificationToken);
+      sendPush(text: text, id: notificationToken, page: page);
       //_writePush(text: text, targetEmail: targetEmail); Gönderilen bildirim sisteme kaydedilecekse çalışmalı.
     } else {
       print('notification token is null');
@@ -74,7 +74,7 @@ class PushHelper {
     //         bildirimmodel: BildirimModel(id, text, Timestamp.now())));
   }
 
-  static Future<void> sendPush({required String text, required String id}) async {
+  static Future<void> sendPush({required String text, required String id, required String page}) async {
     // ignore: unused_local_variable
     var result = await http.post(Uri.parse('https://onesignal.com/api/v1/notifications'),
             headers: {
@@ -85,8 +85,11 @@ class PushHelper {
             },
             body: jsonEncode({
               "app_id": "de08ba6c-7f05-4304-90ac-a3c3c1f6b94d",
-              "include_subscription_ids": ["$id"],
-              "contents": {"en": "$text"}
+              "include_subscription_ids": [id],
+              "contents": {"en": text},
+              'data': {
+                'page':page
+              }
             }));
   }
 

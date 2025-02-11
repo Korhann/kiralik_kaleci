@@ -1,17 +1,21 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/notification/push_helper.dart';
+import 'package:kiralik_kaleci/notification_model.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:workmanager/workmanager.dart';
 
-
-class PaymentPage extends StatefulWidget {
+class ApptRequest extends StatefulWidget {
   final String sellerUid;
   final String selectedDay;
   final String selectedHour;
   final String selectedField;
-  const PaymentPage({
+
+  const ApptRequest({
     super.key,
     required this.sellerUid,
     required this.selectedDay,
@@ -20,16 +24,28 @@ class PaymentPage extends StatefulWidget {
   });
 
   @override
-  State<PaymentPage> createState() => _PaymentPageState();
+  State<ApptRequest> createState() => _ApptRequestState();
 }
 
-class _PaymentPageState extends State<PaymentPage> {
+class _ApptRequestState extends State<ApptRequest> {
 
+  /*
+  kullanıcı adı soyadı, seçili saat, seçili gün 
+  */
+
+  // referanslar
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
   late String sellerFullName;
   late final sellerAdd;
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  //TODO: Ödeme burada initstate de kontrol edilip oradan paymentpage ya geçilebilir
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,11 +140,29 @@ class _PaymentPageState extends State<PaymentPage> {
               child: ElevatedButton(
                 // burada bir method oluştur ve onun içinde çalıştır
                 onPressed: () async{
-                  
+                  await appointmentBuyer();
+                  await appointmentSeller();
+                  // const taskName = 'checkStatus';
+                  // // selleradd i de eklemem lazım 
+                  // await Workmanager().registerOneOffTask(
+                  //   taskName,
+                  //   taskName,
+                  //   inputData: {
+                  //     'sellerUid': widget.sellerUid,
+                  //     'selectedDay': widget.selectedDay,
+                  //     'selectedHour': widget.selectedHour,
+                  //     'currentUser': currentuser
+                  //   },
+                  //   initialDelay: const Duration(minutes: 15)
+                  // );
+                  NotificationModel notificationModel = NotificationModel(widget.selectedHour, widget.selectedDay, widget.selectedField);
+                  await PushHelper.sendPushBefore(userId: widget.sellerUid, text: notificationModel.notification(),page: '/appointmentsPage');
+
+                  print(DateTime.now().toUtc());
               }, 
               style: buttonPrimary,
               child: Text(
-                'Ödeme',
+                'Randevu Talebi Gönder',
                 style: GoogleFonts.inter(
                   fontSize: 26,
                   fontWeight: FontWeight.w600,
@@ -142,6 +176,7 @@ class _PaymentPageState extends State<PaymentPage> {
       ),
     );
   }
+
   Widget _selectedField() {
     return Text(
       widget.selectedField,
@@ -202,6 +237,41 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     );
   }
+
+  Future<void> markHourAsTaken(String day, String hourTitle) async {
+    DocumentReference userRef = FirebaseFirestore.instance.collection("Users").doc(widget.sellerUid);
+
+    // Get the existing document
+    DocumentSnapshot snapshot = await userRef.get();
+
+    if (snapshot.exists) {
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      if (data.containsKey('sellerDetails')) {
+        Map<String, dynamic> sellerDetails = data['sellerDetails'];
+        if (sellerDetails.containsKey('selectedHoursByDay')) {
+          Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
+          if (selectedHoursByDay.containsKey(day)) {
+            List<dynamic> hours = selectedHoursByDay[day];
+            for (int i = 0; i < hours.length; i++) {
+              // ÖRNEĞİN PAZARTESİ İÇİN SEÇENEK 3 SAAT VARSA SEÇİLEN HANGİSİ DİYE BAKIYOR
+              Map<String, dynamic> hour = hours[i];
+              if (hour['title'] == hourTitle) {
+                // Mark the hour as taken
+                hour['istaken'] = true;
+                // Update Firestore with the new data
+                selectedHoursByDay[day] = hours;
+                await userRef.update({
+                  'sellerDetails.selectedHoursByDay': selectedHoursByDay
+                });
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   // ÖDEME BURAYA EKLENECEK
   Future<bool> _processPayment() async {
 
@@ -209,7 +279,56 @@ class _PaymentPageState extends State<PaymentPage> {
     await Future.delayed(const Duration(seconds: 2));
     return true; // Return true if payment is successful
   }
+
+  Future<void> appointmentBuyer() async{
+    Map<String,String> appointmentDetails = {
+      'name': sellerFullName,
+      'selleruid': widget.sellerUid,
+      'day': widget.selectedDay,
+      'hour': widget.selectedHour,
+      'field': widget.selectedField,
+    };
+
+    await _firestore.collection('Users')
+    .doc(currentuser)
+    .collection('appointmentbuyer')
+    .add({
+      'appointmentDetails': appointmentDetails
+    });
+  }
+  Future<void> appointmentSeller() async {
+  String fullName;
   
+  // Fetch user data once using `get()` to avoid the asynchronous issue
+  final snapshot = await _firestore.collection('Users').doc(currentuser).get();
+  if (snapshot.exists) {
+    final userdata = snapshot.data();
+    fullName = userdata!['fullName'] ?? '';
+  } else {
+    throw Exception("User data not found"); 
+  }
+
+  // Create the appointmentDetails map with the fetched data
+  Map<String, String> appointmentDetails = {
+    'fullName': fullName,
+    'buyerUid': currentuser,
+    'day': widget.selectedDay,
+    'hour': widget.selectedHour,
+    'field':widget.selectedField,
+    'status': 'pending'
+  };
+  
+  // Add appointment details to Firestore to the seller account
+  sellerAdd = await _firestore
+      .collection('Users')
+      .doc(widget.sellerUid)
+      .collection('appointmentseller')
+      .add({
+    'appointmentDetails': appointmentDetails,
+  });
+  // add sellerAdd to the database before the takeStatus is working
+  await sellerAdd;
+}
   Future<bool> takeStatus() async {
     if (sellerAdd == null) {
       return false;
@@ -231,6 +350,18 @@ class _PaymentPageState extends State<PaymentPage> {
       return false;
     } catch (e) {
       return false;
+    }
+  }
+  Future<void> takeAppointment() async {
+    bool status = await takeStatus();
+    if (status) {
+      await markHourAsTaken(widget.selectedDay, widget.selectedHour);
+      bool paymentSuccesful = await _processPayment();
+      if (paymentSuccesful) {
+        print('Successfull');
+      } else {
+        print('Not succesfull');
+      }
     }
   }
 }

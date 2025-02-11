@@ -7,6 +7,8 @@ import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
+import 'package:kiralik_kaleci/apptRequest.dart';
+import 'package:kiralik_kaleci/selleribanpage.dart';
 import 'package:kiralik_kaleci/timer.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:workmanager/workmanager.dart';
@@ -31,6 +33,8 @@ void main() async {
 // The promptForPushNotificationsWithUserResponse function will show the iOS or Android push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
   OneSignal.Notifications.requestPermission(true);
 
+  setupNotificationListener();
+
   // // Initialize WorkManager
   // await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
 
@@ -48,14 +52,41 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  static final navigatorKey = GlobalKey<NavigatorState>();
+
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MainPage(),
+      navigatorKey: navigatorKey,
+      title: 'Kalecim',
+      initialRoute: '/',
+      routes: {
+        '/':(context) => const MainPage(),
+        '/appointmentsPage': (context) => const AppointmentsPage(),
+        '/details': (context) => const SellerIbanPage()
+      },
     );
   }
+}
+
+void setupNotificationListener() {
+  OneSignal.Notifications.addClickListener((event) {
+    final data = event.notification.additionalData;
+    String? page = data?['page'];
+
+    if (page != null) {
+      print("Navigating to: $page");
+
+      BuildContext? context = MyApp.navigatorKey.currentContext;
+      if (context != null) {
+        // ✅ This clears the navigation stack and opens the new page
+        Navigator.pushNamedAndRemoveUntil(context, page, (route) => false);
+      }
+    }
+  });
 }
 
 
