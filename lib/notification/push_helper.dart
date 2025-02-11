@@ -11,17 +11,20 @@ import 'bildirim_model.dart';
 class PushHelper {
   //Writen by Hakan Kayacı
 
-  static Future<void> sendPushBefore(
-      {required String userId, required String text}) async {
+  static Future<void> sendPushBefore({required String userId, required String text}) async {
     final userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-
     final userData = userSnapshot.data();
     if(userData != null){
-       String? notificationToken = userData['notificationToken'];
+      String? notificationToken = userData['notificationToken'];
+      print('SELLER TOKEN $notificationToken');
     if (notificationToken != null) {
       sendPush(text: text, id: notificationToken);
       //_writePush(text: text, targetEmail: targetEmail); Gönderilen bildirim sisteme kaydedilecekse çalışmalı.
+    } else {
+      print('notification token is null');
     }
+    } else {
+      print('user data is null');
     }
 
    
@@ -71,16 +74,14 @@ class PushHelper {
     //         bildirimmodel: BildirimModel(id, text, Timestamp.now())));
   }
 
-  static Future<void> sendPush(
-      {required String text, required String id}) async {
+  static Future<void> sendPush({required String text, required String id}) async {
     // ignore: unused_local_variable
-    var result =
-        await http.post(Uri.parse('https://onesignal.com/api/v1/notifications'),
+    var result = await http.post(Uri.parse('https://onesignal.com/api/v1/notifications'),
             headers: {
               'Authorization':
-                  'Basic os_v2_app_3yelu3d7avbqjefmupb4d5vzjxjas7kxnl4eevn5xaemshhaylxa5w23bitnhdtsjtfwtsknpp5yldb4d4lbxok32yf4pkyiulp67vi',
-              'accept': 'application/json',
-              'Content-Type': 'application/json'
+                'Basic os_v2_app_3yelu3d7avbqjefmupb4d5vzjxjas7kxnl4eevn5xaemshhaylxa5w23bitnhdtsjtfwtsknpp5yldb4d4lbxok32yf4pkyiulp67vi',
+                'accept': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: jsonEncode({
               "app_id": "de08ba6c-7f05-4304-90ac-a3c3c1f6b94d",
@@ -114,7 +115,11 @@ class PushHelper {
           }).onError((error, stackTrace) {
             debugPrint('oneSignal: $error');
           });
+        } else {
+          print('its empty');
         }
+      } else {
+        print('email is null');
       }
     });
   }

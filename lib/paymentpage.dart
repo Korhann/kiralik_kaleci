@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kiralik_kaleci/fcmService.dart';
+import 'package:kiralik_kaleci/notification/push_helper.dart';
+import 'package:kiralik_kaleci/notification_model.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:workmanager/workmanager.dart';
@@ -42,7 +43,6 @@ class _PaymentPageState extends State<PaymentPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    FCMService().sendCustomNotification('Cumartesi', '9-10');
   }
   
   @override
@@ -141,25 +141,27 @@ class _PaymentPageState extends State<PaymentPage> {
                 onPressed: () async{
                   await appointmentBuyer();
                   await appointmentSeller();
-                  const taskName = 'checkStatus';
-                  // selleradd i de eklemem lazım 
-                  await Workmanager().registerOneOffTask(
-                    taskName,
-                    taskName,
-                    inputData: {
-                      'sellerUid': widget.sellerUid,
-                      'selectedDay': widget.selectedDay,
-                      'selectedHour': widget.selectedHour,
-                      'currentUser': currentuser
-                    },
-                    initialDelay: const Duration(minutes: 15)
-                  );
+                  // const taskName = 'checkStatus';
+                  // // selleradd i de eklemem lazım 
+                  // await Workmanager().registerOneOffTask(
+                  //   taskName,
+                  //   taskName,
+                  //   inputData: {
+                  //     'sellerUid': widget.sellerUid,
+                  //     'selectedDay': widget.selectedDay,
+                  //     'selectedHour': widget.selectedHour,
+                  //     'currentUser': currentuser
+                  //   },
+                  //   initialDelay: const Duration(minutes: 15)
+                  // );
+                  NotificationModel notificationModel = NotificationModel(widget.selectedHour, widget.selectedDay, widget.selectedField);
+                  await PushHelper.sendPushBefore(userId: widget.sellerUid, text: notificationModel.notification());
 
-                  print(DateTime.now());
+                  print(DateTime.now().toUtc());
               }, 
               style: buttonPrimary,
               child: Text(
-                'Ödeme',
+                'Talep Gönder',
                 style: GoogleFonts.inter(
                   fontSize: 30,
                   fontWeight: FontWeight.w600,

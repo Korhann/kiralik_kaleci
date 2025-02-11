@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/notification/push_helper.dart';
+import 'package:kiralik_kaleci/notification_model.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'globals.dart';
 
@@ -223,6 +225,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   // Approve Appointment - Updates status to 'approved'
   Future<void> approveAppointment(String docId, int index) async {
+    String appointmentDetails = 'appointmentDetails';
     try {
       await _firestore
           .collection('Users')
@@ -232,6 +235,33 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .update({
             'appointmentDetails.status': 'approved'
           });
+      DocumentSnapshot<Map<String,dynamic>> documentSnapshot = await _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentseller')
+      .doc(docId)
+      .get();
+      
+      if (documentSnapshot.exists) {
+        Map<String, dynamic>? appointmentData = documentSnapshot.data();
+        if (appointmentData != null && appointmentData.containsKey('appointmentDetails')) {
+          String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
+          print('1 $buyerUid');
+
+          NotificationModel notificationModel = NotificationModel(
+            appointmentData[appointmentDetails]['hour'], 
+            appointmentData[appointmentDetails]['day'],
+            appointmentData[appointmentDetails]['field']
+          );
+
+          await PushHelper.sendPushBefore(userId: buyerUid, text:'Randevu başarılı. Ödeme yapınız \n ${notificationModel.notification()}');
+        } else {
+          print('appointment details does not exist');
+        }
+      } else {
+        print('document snapshot does not exist');
+      }
+
 
       
       setState(() {

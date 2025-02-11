@@ -552,6 +552,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 FieldValue.arrayUnion([{'title': title, 'istaken': false}])
               });
 
+              // buradada günü geçti yani alındı olarak işaretliyor
               await FirebaseFirestore.instance
               .collection('Users')
               .doc(userId)
