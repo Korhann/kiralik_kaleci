@@ -43,8 +43,6 @@ class _ApptRequestState extends State<ApptRequest> {
   void initState() {
     super.initState();
   }
-
-  //TODO: Ödeme burada initstate de kontrol edilip oradan paymentpage ya geçilebilir
   
   @override
   Widget build(BuildContext context) {

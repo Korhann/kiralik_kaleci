@@ -11,14 +11,14 @@ import 'bildirim_model.dart';
 class PushHelper {
   //Writen by Hakan Kayacı
 
-  static Future<void> sendPushBefore({required String userId, required String text, required String page}) async {
+  static Future<void> sendPushBefore({required String userId,required String text,required String page}) async {
     final userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
     final userData = userSnapshot.data();
     if(userData != null){
       String? notificationToken = userData['notificationToken'];
 
     if (notificationToken != null) {
-      sendPush(text: text, id: notificationToken, page: page);
+      sendPush(text: text, id: notificationToken, data: {'page':page});
       //_writePush(text: text, targetEmail: targetEmail); Gönderilen bildirim sisteme kaydedilecekse çalışmalı.
     } else {
       print('notification token is null');
@@ -26,8 +26,35 @@ class PushHelper {
     } else {
       print('user data is null');
     }
+  }
 
-   
+  static Future<void> sendPushPayment({
+    required String buyerUid,
+    required String selectedDay,
+    required String selectedHour,
+    required String selectedField
+  }) async{
+    final userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(buyerUid).get();
+    final userData = userSnapshot.data();
+
+    if (userData != null) {
+      String? notificationToken = userData['notificationToken'];
+      if (notificationToken != null) {
+        print('1 $buyerUid');
+        print('2 $selectedDay');
+        sendPush(
+          text: 'Ödeme yapınız',
+          id: notificationToken,
+          data :{
+            'page': 'payment',
+            'sellerUid':buyerUid,
+            'selectedDay':selectedDay,
+            'selectedHour':selectedHour,
+            'selectedField':selectedField
+          }
+        );
+      }
+    }
   }
 
   static Future<void> deleteAllPushes({required List<BildirimModel> bm}) {
@@ -74,7 +101,7 @@ class PushHelper {
     //         bildirimmodel: BildirimModel(id, text, Timestamp.now())));
   }
 
-  static Future<void> sendPush({required String text, required String id, required String page}) async {
+  static Future<void> sendPush({required String text, required String id, required Map<String,dynamic> data}) async {
     // ignore: unused_local_variable
     var result = await http.post(Uri.parse('https://onesignal.com/api/v1/notifications'),
             headers: {
@@ -87,9 +114,7 @@ class PushHelper {
               "app_id": "de08ba6c-7f05-4304-90ac-a3c3c1f6b94d",
               "include_subscription_ids": [id],
               "contents": {"en": text},
-              'data': {
-                'page':page
-              }
+              'data': data
             }));
   }
 

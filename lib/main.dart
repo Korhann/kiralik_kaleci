@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/apptRequest.dart';
+import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/selleribanpage.dart';
 import 'package:kiralik_kaleci/timer.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -66,7 +67,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/':(context) => const MainPage(),
         '/appointmentsPage': (context) => const AppointmentsPage(),
-        '/details': (context) => const SellerIbanPage()
+        '/details': (context) => const SellerIbanPage(),
+        //'/paymentPage': (context) => const PaymentPage(sellerUid: sellerUid, selectedDay: selectedDay, selectedHour: selectedHour, selectedField: selectedField)
       },
     );
   }
@@ -82,12 +84,32 @@ void setupNotificationListener() {
 
       BuildContext? context = MyApp.navigatorKey.currentContext;
       if (context != null) {
-        // ✅ This clears the navigation stack and opens the new page
-        Navigator.pushNamedAndRemoveUntil(context, page, (route) => false);
+        if (page == "payment") {
+          // Extract required data from the notification payload
+          String sellerUid = data?['sellerUid'] ?? '';
+          String selectedDay = data?['selectedDay'] ?? '';
+          String selectedHour = data?['selectedHour'] ?? '';
+          String selectedField = data?['selectedField'] ?? '';
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PaymentPage(
+                sellerUid: sellerUid,
+                selectedDay: selectedDay,
+                selectedHour: selectedHour,
+                selectedField: selectedField,
+              ),
+            ),
+          );
+        } else {
+          Navigator.pushNamedAndRemoveUntil(context, page, (route) => false);
+        }
       }
     }
   });
 }
+
 
 
 // // Bunu bir daha dene ve neyi ekleyince çalıştığını anla !!!

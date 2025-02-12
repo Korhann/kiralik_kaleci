@@ -248,13 +248,22 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
           print('1 $buyerUid');
 
-          NotificationModel notificationModel = NotificationModel(
-            appointmentData[appointmentDetails]['hour'], 
-            appointmentData[appointmentDetails]['day'],
-            appointmentData[appointmentDetails]['field']
+          // NotificationModel notificationModel = NotificationModel(
+          //   appointmentData[appointmentDetails]['hour'], 
+          //   appointmentData[appointmentDetails]['day'],
+          //   appointmentData[appointmentDetails]['field']
+          // );
+          
+          String hour = appointmentData[appointmentDetails]['hour'];
+          String day = appointmentData[appointmentDetails]['day'];
+          String field = appointmentData[appointmentDetails]['field'];
+          // alıcı ödeme yapması için bildirim gönder
+          await PushHelper.sendPushPayment(
+            buyerUid: buyerUid,
+            selectedDay: day,
+            selectedHour: hour,
+            selectedField: field
           );
-
-          await PushHelper.sendPushBefore(userId: buyerUid, text:'Randevu başarılı. Ödeme yapınız \n ${notificationModel.notification()}', page: '/details');
         } else {
           print('appointment details does not exist');
         }

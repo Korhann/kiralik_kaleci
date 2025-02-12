@@ -7,16 +7,17 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 
 
 class PaymentPage extends StatefulWidget {
-  final String sellerUid;
-  final String selectedDay;
-  final String selectedHour;
-  final String selectedField;
+  // TODO: required çıkarılıp bunlar optional yapılarbilir !! (CHATGPT çözümüne bak)
+  final String? sellerUid;
+  final String? selectedDay;
+  final String? selectedHour;
+  final String? selectedField;
   const PaymentPage({
     super.key,
-    required this.sellerUid,
-    required this.selectedDay,
-    required this.selectedHour,
-    required this.selectedField
+    this.sellerUid,
+    this.selectedDay,
+    this.selectedHour,
+    this.selectedField
   });
 
   @override
@@ -144,7 +145,7 @@ class _PaymentPageState extends State<PaymentPage> {
   }
   Widget _selectedField() {
     return Text(
-      widget.selectedField,
+      widget.selectedField!,
       style: GoogleFonts.inter(
       fontSize: 15,
       fontWeight: FontWeight.normal,
@@ -155,7 +156,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
   Widget _selectedDay() {
   return Text(
-    widget.selectedDay,
+    widget.selectedDay!,
     style: GoogleFonts.inter(
       fontSize: 15,
       fontWeight: FontWeight.normal,
@@ -165,7 +166,7 @@ class _PaymentPageState extends State<PaymentPage> {
 }
   Widget _selectedHour() {
   return Text(
-    widget.selectedHour,
+    widget.selectedHour!,
     style: GoogleFonts.inter(
       fontSize: 15,
       fontWeight: FontWeight.normal,
