@@ -246,19 +246,21 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         Map<String, dynamic>? appointmentData = documentSnapshot.data();
         if (appointmentData != null && appointmentData.containsKey('appointmentDetails')) {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
-          print('1 $buyerUid');
+          
 
           // NotificationModel notificationModel = NotificationModel(
           //   appointmentData[appointmentDetails]['hour'], 
           //   appointmentData[appointmentDetails]['day'],
           //   appointmentData[appointmentDetails]['field']
           // );
-          
+
           String hour = appointmentData[appointmentDetails]['hour'];
           String day = appointmentData[appointmentDetails]['day'];
           String field = appointmentData[appointmentDetails]['field'];
+
           // alıcı ödeme yapması için bildirim gönder
           await PushHelper.sendPushPayment(
+            sellerUid: currentuser,
             buyerUid: buyerUid,
             selectedDay: day,
             selectedHour: hour,

@@ -29,6 +29,7 @@ class PushHelper {
   }
 
   static Future<void> sendPushPayment({
+    required String sellerUid,
     required String buyerUid,
     required String selectedDay,
     required String selectedHour,
@@ -40,14 +41,13 @@ class PushHelper {
     if (userData != null) {
       String? notificationToken = userData['notificationToken'];
       if (notificationToken != null) {
-        print('1 $buyerUid');
-        print('2 $selectedDay');
         sendPush(
           text: 'Ödeme yapınız',
           id: notificationToken,
           data :{
             'page': 'payment',
-            'sellerUid':buyerUid,
+            'sellerUid': sellerUid,
+            'buyerUid':buyerUid,
             'selectedDay':selectedDay,
             'selectedHour':selectedHour,
             'selectedField':selectedField

@@ -9,12 +9,14 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 class PaymentPage extends StatefulWidget {
   // TODO: required çıkarılıp bunlar optional yapılarbilir !! (CHATGPT çözümüne bak)
   final String? sellerUid;
+  final String? buyerUid;
   final String? selectedDay;
   final String? selectedHour;
   final String? selectedField;
   const PaymentPage({
     super.key,
     this.sellerUid,
+    this.buyerUid,
     this.selectedDay,
     this.selectedHour,
     this.selectedField
@@ -30,6 +32,12 @@ class _PaymentPageState extends State<PaymentPage> {
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
   late String sellerFullName;
   late final sellerAdd;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,8 +133,12 @@ class _PaymentPageState extends State<PaymentPage> {
               child: ElevatedButton(
                 // burada bir method oluştur ve onun içinde çalıştır
                 onPressed: () async{
-                  
-              }, 
+                  _processPayment();
+                  bool isSuccess = await _processPayment();
+                  if (isSuccess) {
+                    await _markHourTaken();
+                  }
+                }, 
               style: buttonPrimary,
               child: Text(
                 'Ödeme',
@@ -210,28 +222,17 @@ class _PaymentPageState extends State<PaymentPage> {
     await Future.delayed(const Duration(seconds: 2));
     return true; // Return true if payment is successful
   }
-  
-  Future<bool> takeStatus() async {
-    if (sellerAdd == null) {
-      return false;
-    }
-    try {
-      final statusDoc = await _firestore
-      .collection('Users')
-      .doc(widget.sellerUid)
-      .collection('appointmentseller')
-      .doc(sellerAdd.id)
-      .get();
 
-      if (statusDoc.exists) {
-        final data = statusDoc.data();
-        final status = data?['appointmentDetails']['status'];
-        print(status);
-        return status == 'approved';
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
+  // burada sorun widget.selleruid satıcının değil alıcının,o yüzden alındı olarak işaretlemiyor !
+  Future<void> _markHourTaken() async {
+    print('CHOSEN HOUR ${widget.selectedDay}, ${widget.selectedHour}, ${widget.sellerUid}');
+    await _firestore.collection("Users").doc(widget.sellerUid).update({
+      'sellerDetails.selectedHoursByDay.${widget.selectedDay}':
+        FieldValue.arrayUnion([
+          {'title': widget.selectedHour, 'istaken': true}
+        ])
+    });
   }
+
+  // refresh appointments nasıl haftalık yapılcağını çöz serverdan olabilir
 }
