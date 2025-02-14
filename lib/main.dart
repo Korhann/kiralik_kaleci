@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -7,12 +5,9 @@ import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
-import 'package:kiralik_kaleci/apptRequest.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/selleribanpage.dart';
-import 'package:kiralik_kaleci/timer.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:workmanager/workmanager.dart';
 import 'appointmentspage.dart';
 
 void main() async {

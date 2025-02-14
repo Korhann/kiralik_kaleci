@@ -213,15 +213,18 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .get();
       
       // Get document IDs for updating a specific user's appointment
-      setState(() {
+      if (mounted) {
+        setState(() {
         docs = snapshot.docs.map((doc) => doc.id).toList();
       });
+      }
     }
-    
-    setState(() {
+    if (mounted) {
+      setState(() {
       appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
     });
   }
+    }
 
   // Approve Appointment - Updates status to 'approved'
   Future<void> approveAppointment(String docId, int index) async {

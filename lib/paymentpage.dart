@@ -133,7 +133,6 @@ class _PaymentPageState extends State<PaymentPage> {
               child: ElevatedButton(
                 // burada bir method oluştur ve onun içinde çalıştır
                 onPressed: () async{
-                  _processPayment();
                   bool isSuccess = await _processPayment();
                   if (isSuccess) {
                     await _markHourTaken();
@@ -217,13 +216,13 @@ class _PaymentPageState extends State<PaymentPage> {
   }
   // ÖDEME BURAYA EKLENECEK
   Future<bool> _processPayment() async {
-
+    print('its making it work');
     // Simulate payment process (replace this with actual payment gateway logic)
     await Future.delayed(const Duration(seconds: 2));
     return true; // Return true if payment is successful
   }
 
-  // burada sorun widget.selleruid satıcının değil alıcının,o yüzden alındı olarak işaretlemiyor !
+  
   Future<void> _markHourTaken() async {
     print('CHOSEN HOUR ${widget.selectedDay}, ${widget.selectedHour}, ${widget.sellerUid}');
     await _firestore.collection("Users").doc(widget.sellerUid).update({
