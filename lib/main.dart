@@ -97,8 +97,6 @@ void setupNotificationListener() {
               ),
             ),
           );
-        } else {
-          Navigator.pushNamedAndRemoveUntil(context, page, (route) => false);
         }
       }
     }

@@ -411,7 +411,7 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
-  // appointmentpage ya göndermek için aldım ama 2 tane var nasıl yapacağına karar ver
+  //todo: FirebaseException ([cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.)
   Future<void> getSellerUid() async {
 
   CollectionReference collectionReference = _firestore

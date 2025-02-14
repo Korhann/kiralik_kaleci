@@ -48,6 +48,7 @@ class _PaymentPageState extends State<PaymentPage> {
         backgroundColor: background,
         leading: IconButton(
           onPressed: () {
+            // todo: burada popUntil kullanılabilir, metodlara bak
             Navigator.of(context).pop();
         }, icon: const Icon(Icons.arrow_back, color: Colors.black)),
       ),
@@ -224,13 +225,25 @@ class _PaymentPageState extends State<PaymentPage> {
 
   
   Future<void> _markHourTaken() async {
-    print('CHOSEN HOUR ${widget.selectedDay}, ${widget.selectedHour}, ${widget.sellerUid}');
-    await _firestore.collection("Users").doc(widget.sellerUid).update({
-      'sellerDetails.selectedHoursByDay.${widget.selectedDay}':
-        FieldValue.arrayUnion([
-          {'title': widget.selectedHour, 'istaken': true}
-        ])
-    });
+    DocumentReference docref = _firestore.collection('Users').doc(widget.sellerUid);
+
+    try {
+      DocumentSnapshot sellerDoc = await docref.get();
+      if (!sellerDoc.exists) {
+        return;
+      }
+      Map<String,dynamic>? sellerData = sellerDoc.data() as Map<String,dynamic>;
+      List<dynamic> hourList = List.from(sellerData['sellerDetails']['selectedHoursByDay'][widget.selectedDay]);
+      for (var hour in hourList) {
+        if (hour['title'] == widget.selectedHour) {
+          hour['istaken'] = true;
+          break;
+        }
+      }
+      await docref.update({'sellerDetails.selectedHoursByDay.${widget.selectedDay}':hourList});
+    } catch (e) {
+      print('Error $e');
+    }
   }
 
   // refresh appointments nasıl haftalık yapılcağını çöz serverdan olabilir
