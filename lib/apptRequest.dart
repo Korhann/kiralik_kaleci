@@ -8,7 +8,6 @@ import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/notification_model.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'package:workmanager/workmanager.dart';
 
 class ApptRequest extends StatefulWidget {
   final String sellerUid;
@@ -143,7 +142,7 @@ class _ApptRequestState extends State<ApptRequest> {
                   await appointmentSeller();
                   
                   NotificationModel notificationModel = NotificationModel(widget.selectedHour, widget.selectedDay, widget.selectedField);
-                  await PushHelper.sendPushBefore(userId: widget.sellerUid, text: notificationModel.notification(), page: '/appointmentsPage');
+                  await PushHelper.sendPushBefore(userId: widget.sellerUid, text: notificationModel.notification(), page: 'appointment');
                   userorseller = true;
 
                   print(DateTime.now().toUtc());

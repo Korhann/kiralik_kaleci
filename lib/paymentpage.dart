@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
@@ -29,6 +30,7 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  //todo : uygulamadan çıkış yapılmışken bildirime basınca oluyor(null check used on null value)
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
   late String sellerFullName;
   late final sellerAdd;
@@ -48,8 +50,12 @@ class _PaymentPageState extends State<PaymentPage> {
         backgroundColor: background,
         leading: IconButton(
           onPressed: () {
-            // todo: burada popUntil kullanılabilir, metodlara bak
-            Navigator.of(context).pop();
+            // birden fazla push olduğu için bunu kullandım
+            Navigator.pushAndRemoveUntil<void>(
+            context,
+            MaterialPageRoute<void>(builder: (BuildContext context) => const MainPage()),
+            ModalRoute.withName('/'),
+            );
         }, icon: const Icon(Icons.arrow_back, color: Colors.black)),
       ),
       body: SafeArea(

@@ -61,7 +61,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/':(context) => const MainPage(),
-        '/appointmentsPage': (context) => const AppointmentsPage(),
+        //'/appointmentsPage': (context) => const AppointmentsPage(),
         '/details': (context) => const SellerIbanPage(),
         //'/paymentPage': (context) => const PaymentPage(sellerUid: sellerUid, selectedDay: selectedDay, selectedHour: selectedHour, selectedField: selectedField)
       },
@@ -73,35 +73,56 @@ void setupNotificationListener() {
   OneSignal.Notifications.addClickListener((event) {
     final data = event.notification.additionalData;
     String? page = data?['page'];
+    print('actually page is $page');
+
 
     if (page != null) {
       print("Navigating to: $page");
 
       BuildContext? context = MyApp.navigatorKey.currentContext;
-      if (context != null) {
-        if (page == "payment") {
-          // Extract required data from the notification payload
-          String sellerUid = data?['sellerUid'] ?? '';
-          String selectedDay = data?['selectedDay'] ?? '';
-          String selectedHour = data?['selectedHour'] ?? '';
-          String selectedField = data?['selectedField'] ?? '';
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PaymentPage(
-                sellerUid: sellerUid,
-                selectedDay: selectedDay,
-                selectedHour: selectedHour,
-                selectedField: selectedField,
-              ),
-            ),
-          );
+      if (context != null) {
+        switch (page) {
+          case "payment":
+            if (ModalRoute.of(context)?.settings.name != "/paymentPage") {
+              String sellerUid = data?['sellerUid'] ?? '';
+              String selectedDay = data?['selectedDay'] ?? '';
+              String selectedHour = data?['selectedHour'] ?? '';
+              String selectedField = data?['selectedField'] ?? '';
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PaymentPage(
+                    sellerUid: sellerUid,
+                    selectedDay: selectedDay,
+                    selectedHour: selectedHour,
+                    selectedField: selectedField,
+                  ),
+                ),
+              );
+            }
+            break;
+            //todo : bir daha mantığı dene 
+          case "appointment":
+            if (ModalRoute.of(context)?.settings.name != "/appointmentsPage") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AppointmentsPage()
+                )
+              );
+            }
+            break;
+          default:
+            print("Unknown page: $page");
+            break;
         }
       }
     }
   });
 }
+
 
 
 

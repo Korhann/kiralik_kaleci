@@ -3,8 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
-import 'package:kiralik_kaleci/notification_model.dart';
-import 'package:kiralik_kaleci/searchpage.dart';
+import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'globals.dart';
 
@@ -53,7 +52,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.pushAndRemoveUntil<void>(
+            context,
+            MaterialPageRoute<void>(builder: (BuildContext context) => const SellerMainPage()),
+            ModalRoute.withName('/'),
+            );
           },
           icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
         ),

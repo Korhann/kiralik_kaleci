@@ -18,6 +18,7 @@ class PushHelper {
       String? notificationToken = userData['notificationToken'];
 
     if (notificationToken != null) {
+      print('push helper page $page');
       sendPush(text: text, id: notificationToken, data: {'page':page});
       //_writePush(text: text, targetEmail: targetEmail); Gönderilen bildirim sisteme kaydedilecekse çalışmalı.
     } else {
