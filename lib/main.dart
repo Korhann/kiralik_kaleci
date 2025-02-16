@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/football_field.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
@@ -61,9 +62,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/':(context) => const MainPage(),
-        //'/appointmentsPage': (context) => const AppointmentsPage(),
-        '/details': (context) => const SellerIbanPage(),
-        //'/paymentPage': (context) => const PaymentPage(sellerUid: sellerUid, selectedDay: selectedDay, selectedHour: selectedHour, selectedField: selectedField)
       },
     );
   }
@@ -73,12 +71,9 @@ void setupNotificationListener() {
   OneSignal.Notifications.addClickListener((event) {
     final data = event.notification.additionalData;
     String? page = data?['page'];
-    print('actually page is $page');
 
 
     if (page != null) {
-      print("Navigating to: $page");
-
       BuildContext? context = MyApp.navigatorKey.currentContext;
 
       if (context != null) {
@@ -103,9 +98,11 @@ void setupNotificationListener() {
               );
             }
             break;
-            //todo : bir daha mantığı dene 
+          //TODO: kullanıcı sayfasına da atabiliyor
           case "appointment":
             if (ModalRoute.of(context)?.settings.name != "/appointmentsPage") {
+              // alıcı sayfasında çağırınca alıcı olarak algılıyor
+              userorseller = true;
               Navigator.push(
                 context,
                 MaterialPageRoute(
