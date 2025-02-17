@@ -36,7 +36,6 @@ class _ApptRequestState extends State<ApptRequest> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
   late String sellerFullName;
-  late final sellerAdd;
 
   @override
   void initState() {
@@ -137,7 +136,6 @@ class _ApptRequestState extends State<ApptRequest> {
               child: ElevatedButton(
                 // burada bir method oluştur ve onun içinde çalıştır
                 onPressed: () async{
-                  await appointmentBuyer();
                   await appointmentSeller();
                   
                   NotificationModel notificationModel = NotificationModel(widget.selectedHour, widget.selectedDay, widget.selectedField);
@@ -265,22 +263,26 @@ class _ApptRequestState extends State<ApptRequest> {
     return true; // Return true if payment is successful
   }
 
-  Future<void> appointmentBuyer() async{
+  // burada eğer approved olursa eklenecek
+  Future<String> appointmentBuyer() async{
     Map<String,String> appointmentDetails = {
       'name': sellerFullName,
       'selleruid': widget.sellerUid,
       'day': widget.selectedDay,
       'hour': widget.selectedHour,
       'field': widget.selectedField,
+      'status': 'pending'
     };
 
-    await _firestore.collection('Users')
+    DocumentReference buyerDocRef = await _firestore.collection('Users')
     .doc(currentuser)
     .collection('appointmentbuyer')
     .add({
       'appointmentDetails': appointmentDetails
     });
+    return buyerDocRef.id;
   }
+
   Future<void> appointmentSeller() async {
   String fullName;
   
@@ -293,10 +295,13 @@ class _ApptRequestState extends State<ApptRequest> {
     throw Exception("User data not found"); 
   }
 
+  String buyerDocId = await appointmentBuyer();
+
   // Create the appointmentDetails map with the fetched data
   Map<String, String> appointmentDetails = {
     'fullName': fullName,
     'buyerUid': currentuser,
+    'buyerDocId' : buyerDocId,
     'day': widget.selectedDay,
     'hour': widget.selectedHour,
     'field':widget.selectedField,
@@ -304,49 +309,19 @@ class _ApptRequestState extends State<ApptRequest> {
   };
   
   // Add appointment details to Firestore to the seller account
-  sellerAdd = await _firestore
+  DocumentReference sellerDocRef = await _firestore
       .collection('Users')
       .doc(widget.sellerUid)
       .collection('appointmentseller')
       .add({
     'appointmentDetails': appointmentDetails,
   });
-  // add sellerAdd to the database before the takeStatus is working
-  await sellerAdd;
-}
-  Future<bool> takeStatus() async {
-    if (sellerAdd == null) {
-      return false;
-    }
-    try {
-      final statusDoc = await _firestore
-      .collection('Users')
-      .doc(widget.sellerUid)
-      .collection('appointmentseller')
-      .doc(sellerAdd.id)
-      .get();
-
-      if (statusDoc.exists) {
-        final data = statusDoc.data();
-        final status = data?['appointmentDetails']['status'];
-        print(status);
-        return status == 'approved';
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
-  }
-  Future<void> takeAppointment() async {
-    bool status = await takeStatus();
-    if (status) {
-      await markHourAsTaken(widget.selectedDay, widget.selectedHour);
-      bool paymentSuccesful = await _processPayment();
-      if (paymentSuccesful) {
-        print('Successfull');
-      } else {
-        print('Not succesfull');
-      }
-    }
+  
+  await _firestore
+  .collection('Users')
+  .doc(currentuser)
+  .collection('appointmentbuyer')
+  .doc(buyerDocId)
+  .update({'appointmentDetails.sellerDocId' : sellerDocRef.id});
   }
 }

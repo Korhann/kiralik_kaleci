@@ -52,11 +52,17 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
           onPressed: () {
-            Navigator.pushAndRemoveUntil<void>(
-            context,
-            MaterialPageRoute<void>(builder: (BuildContext context) => const SellerMainPage()),
-            ModalRoute.withName('/'),
-            );
+            // geri ye basınca yanlış yerden çıkış yaptığı için kullandım
+            if (userorseller){
+              Navigator.pushAndRemoveUntil<void>(
+              context,
+              MaterialPageRoute<void>(builder: (BuildContext context) => const SellerMainPage()
+              ),
+              ModalRoute.withName('/'),
+              );
+            } else {
+              Navigator.of(context).pop();
+            }
           },
           icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
         ),
@@ -115,6 +121,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         cardColor = Colors.green.shade200;
                       } else if (status == 'rejected') {
                         cardColor = Colors.red.shade200;
+                      } else if (status == 'pending') {
+                        cardColor = Colors.orange.shade200;
                       }
 
                       return Padding(
@@ -153,7 +161,14 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                         children: [
                                           const Icon(Icons.location_on),
                                           const SizedBox(width: 5),
-                                          Text('$field')
+                                          Text('$field'),
+                                          const Spacer(),
+                                          Text(
+                                            status == 'approved' ? 'Onaylandı'
+                                            : status == 'pending' ? 'Beklemede'
+                                            : status == 'rejected' ? 'Reddedildi'
+                                            :''
+                                          )
                                         ],
                                       )
                                     ],
@@ -215,14 +230,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .doc(currentuser)
           .collection('appointmentseller')
           .get();
-      
-      // Get document IDs for updating a specific user's appointment
+    }
+    // Get document IDs for updating a specific user's appointment
       if (mounted) {
         setState(() {
         docs = snapshot.docs.map((doc) => doc.id).toList();
       });
       }
-    }
     if (mounted) {
       setState(() {
       appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
@@ -230,7 +244,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
     }
 
-  // Approve Appointment - Updates status to 'approved'
+  // Updates status to 'approved'
   Future<void> approveAppointment(String docId, int index) async {
     String appointmentDetails = 'appointmentDetails';
     try {
@@ -242,6 +256,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .update({
             'appointmentDetails.status': 'approved'
           });
+
       DocumentSnapshot<Map<String,dynamic>> documentSnapshot = await _firestore
       .collection('Users')
       .doc(currentuser)
@@ -253,17 +268,21 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         Map<String, dynamic>? appointmentData = documentSnapshot.data();
         if (appointmentData != null && appointmentData.containsKey('appointmentDetails')) {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
-          
-
-          // NotificationModel notificationModel = NotificationModel(
-          //   appointmentData[appointmentDetails]['hour'], 
-          //   appointmentData[appointmentDetails]['day'],
-          //   appointmentData[appointmentDetails]['field']
-          // );
+          String buyerDocId = appointmentData['appointmentDetails']['buyerDocId'];
 
           String hour = appointmentData[appointmentDetails]['hour'];
           String day = appointmentData[appointmentDetails]['day'];
           String field = appointmentData[appointmentDetails]['field'];
+
+          // alıcı için status update (renkleri göstermek için - turuncu,yeşil,kırmzı)
+          await _firestore
+          .collection('Users')
+          .doc(buyerUid)
+          .collection('appointmentbuyer')
+          .doc(buyerDocId)
+          .update({
+            'appointmentDetails.status': 'approved'
+          });
 
           // alıcı ödeme yapması için bildirim gönder
           await PushHelper.sendPushPayment(
