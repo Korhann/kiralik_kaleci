@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
+import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'globals.dart';
@@ -113,6 +114,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final hour = appointmentDetails['hour'] ?? '';
                       final field = appointmentDetails['field'] ?? '';
                       final status = appointmentDetails['status'] ?? 'pending';
+                      final paymentStatus = appointmentDetails['paymentStatus'] ?? 'waiting';
                       final docId = docs?[index] ?? '';
 
                       // Card background color based on status
@@ -163,12 +165,40 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                           const SizedBox(width: 5),
                                           Text('$field'),
                                           const Spacer(),
-                                          Text(
-                                            status == 'approved' ? 'Onaylandı'
-                                            : status == 'pending' ? 'Beklemede'
-                                            : status == 'rejected' ? 'Reddedildi'
-                                            :''
+                                          if (userorseller == false)
+                                          status == 'approved' && paymentStatus == 'waiting' ? ElevatedButton(
+                                            onPressed: () {
+                                              // todo: giden doc id leri farklı
+                                              print('the doc id 2 is $docId');
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => PaymentPage(
+                                                  sellerUid: appointmentDetails['selleruid'],
+                                                  buyerUid: currentuser,
+                                                  selectedDay: appointmentDetails['day'],
+                                                  selectedHour: appointmentDetails['hour'],
+                                                  selectedField: appointmentDetails['field'],
+                                                  docId: docId,
+                                                )), // Navigate to PaymentPage
+                                              );
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.green,
+                                            ),
+                                            child: const Text(
+                                              'Ödeme yap',
+                                              style: TextStyle(color: Colors.white),
+                                            ),
                                           )
+                                          : Text(
+                                              status == 'pending' ? 'Beklemede' 
+                                              : status == 'rejected' ? 'Reddedildi' 
+                                              : '',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 14,
+                                                color: Colors.black,
+                                              ),
+                                            )
                                         ],
                                       )
                                     ],
@@ -246,6 +276,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   // Updates status to 'approved'
   Future<void> approveAppointment(String docId, int index) async {
+    print('the doc id is $docId');
     String appointmentDetails = 'appointmentDetails';
     try {
       await _firestore
@@ -290,7 +321,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             buyerUid: buyerUid,
             selectedDay: day,
             selectedHour: hour,
-            selectedField: field
+            selectedField: field,
+            docId: docId
           );
         } else {
           print('appointment details does not exist');
@@ -310,8 +342,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
-  // Reject Appointment - Updates status to 'rejected'
+  // todo: şimdilik reddedilince bildirim gönderme
   Future<void> rejectAppointment(String docId, int index) async {
+    String appointmentDetails = 'appointmentDetails';
     try {
       await _firestore
           .collection('Users')
@@ -321,10 +354,54 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .update({
             'appointmentDetails.status': 'rejected'
           });
+      DocumentSnapshot<Map<String,dynamic>> documentSnapshot = await _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentseller')
+      .doc(docId)
+      .get();
 
-      setState(() {
-        appointments[index]['appointmentDetails']['status'] = 'rejected';
-      });
+      if (documentSnapshot.exists) {
+        Map<String, dynamic>? appointmentData = documentSnapshot.data();
+        if (appointmentData != null && appointmentData.containsKey('appointmentDetails')) {
+          String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
+          String buyerDocId = appointmentData['appointmentDetails']['buyerDocId'];
+
+          // String hour = appointmentData[appointmentDetails]['hour'];
+          // String day = appointmentData[appointmentDetails]['day'];
+          // String field = appointmentData[appointmentDetails]['field'];
+
+          // alıcı için status update (renkleri göstermek için - turuncu,yeşil,kırmzı)
+          await _firestore
+          .collection('Users')
+          .doc(buyerUid)
+          .collection('appointmentbuyer')
+          .doc(buyerDocId)
+          .update({
+            'appointmentDetails.status': 'rejected'
+          });
+
+          // await PushHelper.sendPushPayment(
+          //   sellerUid: currentuser,
+          //   buyerUid: buyerUid,
+          //   selectedDay: day,
+          //   selectedHour: hour,
+          //   selectedField: field
+          // );
+        } else {
+          print('appointment details does not exist');
+        }
+      } else {
+        print('document snapshot does not exist');
+      }
+
+      // todo: burada bir hata alıyorum, sebebini anlamadım
+      if (mounted) {
+        setState(() {
+          appointments[index]['appointmentDetails']['status'] = 'rejected';
+        });
+      }
+
 
     } catch (e) {
       print('Error rejecting appointment: $e');

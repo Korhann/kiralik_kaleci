@@ -271,7 +271,8 @@ class _ApptRequestState extends State<ApptRequest> {
       'day': widget.selectedDay,
       'hour': widget.selectedHour,
       'field': widget.selectedField,
-      'status': 'pending'
+      'status': 'pending',
+      'paymentStatus' : 'waiting'
     };
 
     DocumentReference buyerDocRef = await _firestore.collection('Users')
@@ -305,7 +306,7 @@ class _ApptRequestState extends State<ApptRequest> {
     'day': widget.selectedDay,
     'hour': widget.selectedHour,
     'field':widget.selectedField,
-    'status': 'pending'
+    'status': 'pending',
   };
   
   // Add appointment details to Firestore to the seller account

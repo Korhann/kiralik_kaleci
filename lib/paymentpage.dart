@@ -14,13 +14,15 @@ class PaymentPage extends StatefulWidget {
   final String? selectedDay;
   final String? selectedHour;
   final String? selectedField;
+  final String? docId;
   const PaymentPage({
     super.key,
     this.sellerUid,
     this.buyerUid,
     this.selectedDay,
     this.selectedHour,
-    this.selectedField
+    this.selectedField,
+    this.docId
   });
 
   @override
@@ -224,9 +226,25 @@ class _PaymentPageState extends State<PaymentPage> {
   // ÖDEME BURAYA EKLENECEK
   Future<bool> _processPayment() async {
     print('its making it work');
+    await updatePaymentStatus();
     // Simulate payment process (replace this with actual payment gateway logic)
     await Future.delayed(const Duration(seconds: 2));
     return true; // Return true if payment is successful
+  }
+
+  Future<void> updatePaymentStatus() async {
+    try {
+      await _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentbuyer')
+      .doc(widget.docId)
+      .update({
+        'appointmentDetails.paymentStatus' : 'done'
+      });
+    } catch (e) {
+      print('Error updating payment status $e');
+    }
   }
 
   
@@ -252,5 +270,5 @@ class _PaymentPageState extends State<PaymentPage> {
     }
   }
 
-  // refresh appointments nasıl haftalık yapılcağını çöz serverdan olabilir
+  
 }

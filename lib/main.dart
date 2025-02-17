@@ -84,6 +84,7 @@ void setupNotificationListener() {
               String selectedDay = data?['selectedDay'] ?? '';
               String selectedHour = data?['selectedHour'] ?? '';
               String selectedField = data?['selectedField'] ?? '';
+              String docId = data?['docId'] ?? '';
 
               Navigator.push(
                 context,
@@ -93,6 +94,7 @@ void setupNotificationListener() {
                     selectedDay: selectedDay,
                     selectedHour: selectedHour,
                     selectedField: selectedField,
+                    docId: docId,
                   ),
                 ),
               );
