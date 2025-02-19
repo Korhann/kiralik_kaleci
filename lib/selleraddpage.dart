@@ -726,6 +726,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
             formattedData[day] = selectedHours.map((hour) => {
                   'title': hour.title,
                   'istaken': false,
+                  'takenby': 'empty'
                 }).toList();
           }
         });

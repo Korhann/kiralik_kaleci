@@ -85,95 +85,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               ),
             ),
             if (userorseller == false) 
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.green.shade500,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Alındı',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.red.shade200,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Reddedildi',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.orange.shade200,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Beklemede',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.green.shade200,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Ödeme gerekiyor',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Dolu',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+              buyerStatusInfo()
+            else 
+              sellerStatusInfo(),
             appointments.isEmpty
                 ? Center(
                     child: Padding(
@@ -500,5 +414,156 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     } catch (e) {
       print('Error rejecting appointment: $e');
     }
+  }
+  // 
+  Widget buyerStatusInfo() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.green.shade500,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Alındı',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.red.shade200,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Reddedildi',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.orange.shade200,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Beklemede',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.green.shade200,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Ödeme gerekiyor',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Dolu',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+  }
+  Widget sellerStatusInfo() {
+    return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.green.shade500,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Onaylandı',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.red.shade200,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Reddedildi',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.orange.shade200,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Beklemede',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
   }
 }

@@ -260,7 +260,6 @@ class _PaymentPageState extends State<PaymentPage> {
 
   
   Future<void> _markHourTaken() async {
-    print('this not working');
     DocumentReference docref = _firestore.collection('Users').doc(widget.sellerUid);
 
     try {
@@ -273,6 +272,7 @@ class _PaymentPageState extends State<PaymentPage> {
       for (var hour in hourList) {
         if (hour['title'] == widget.selectedHour) {
           hour['istaken'] = true;
+          hour['takenby'] = currentuser;
           break;
         }
       }
