@@ -39,6 +39,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   List<Map<String, dynamic>> appointments = [];
   List<String>? docs;
+  Color paymentColor = Colors.green;
 
   @override
   void initState() {
@@ -83,6 +84,96 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 ),
               ),
             ),
+            if (userorseller == false) 
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.green.shade500,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Alındı',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.red.shade200,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Reddedildi',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.orange.shade200,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Beklemede',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.green.shade200,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Ödeme gerekiyor',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Dolu',
+                      style: TextStyle(
+                        color: userorseller ? Colors.white: Colors.black
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             appointments.isEmpty
                 ? Center(
                     child: Padding(
@@ -119,12 +210,16 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
                       // Card background color based on status
                       Color cardColor = Colors.white;
-                      if (status == 'approved') {
+                      if (status == 'approved' && paymentStatus == 'done') {
+                        cardColor = Colors.green.shade500;
+                      } else if (status == 'approved' && paymentStatus == 'waiting') {
                         cardColor = Colors.green.shade200;
                       } else if (status == 'rejected') {
                         cardColor = Colors.red.shade200;
                       } else if (status == 'pending') {
                         cardColor = Colors.orange.shade200;
+                      } else if (status == 'approved' && paymentStatus == 'taken') {
+                        cardColor = Colors.grey;
                       }
 
                       return Padding(
@@ -168,8 +263,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                           if (userorseller == false)
                                           status == 'approved' && paymentStatus == 'waiting' ? ElevatedButton(
                                             onPressed: () {
-                                              // todo: giden doc id leri farklı
-                                              print('the doc id 2 is $docId');
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(builder: (context) => PaymentPage(
@@ -189,6 +282,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                               'Ödeme yap',
                                               style: TextStyle(color: Colors.white),
                                             ),
+                                          ): paymentStatus == 'taken' ?
+                                          Text(
+                                            'Dolu'
                                           )
                                           : Text(
                                               status == 'pending' ? 'Beklemede' 
@@ -276,7 +372,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   // Updates status to 'approved'
   Future<void> approveAppointment(String docId, int index) async {
-    print('the doc id is $docId');
     String appointmentDetails = 'appointmentDetails';
     try {
       await _firestore
@@ -322,7 +417,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             selectedDay: day,
             selectedHour: hour,
             selectedField: field,
-            docId: docId
+            docId: buyerDocId
           );
         } else {
           print('appointment details does not exist');
@@ -344,7 +439,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   // todo: şimdilik reddedilince bildirim gönderme
   Future<void> rejectAppointment(String docId, int index) async {
-    String appointmentDetails = 'appointmentDetails';
     try {
       await _firestore
           .collection('Users')

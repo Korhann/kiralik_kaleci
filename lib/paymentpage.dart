@@ -41,6 +41,7 @@ class _PaymentPageState extends State<PaymentPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    checkIfHourTaken();
   }
 
   @override
@@ -140,11 +141,21 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
-                // burada bir method oluştur ve onun içinde çalıştır
+                // ilk başta saat alındı mı diye kontrol etmeliyim
                 onPressed: () async{
-                  bool isSuccess = await _processPayment();
-                  if (isSuccess) {
-                    await _markHourTaken();
+                  bool? hourTaken = await checkIfHourTaken();
+                  if (hourTaken == false) {
+                    bool isSuccess = await _processPayment();
+                    if (isSuccess) {
+                      await _markHourTaken();
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        duration: Duration(seconds: 5),
+                        content: Text('Seçtiğiniz saat başkası tarafından alınmıştır'),
+                      )
+                    );
                   }
                 }, 
               style: buttonPrimary,
@@ -225,7 +236,7 @@ class _PaymentPageState extends State<PaymentPage> {
   }
   // ÖDEME BURAYA EKLENECEK
   Future<bool> _processPayment() async {
-    print('its making it work');
+    print('processing the payment');
     await updatePaymentStatus();
     // Simulate payment process (replace this with actual payment gateway logic)
     await Future.delayed(const Duration(seconds: 2));
@@ -249,6 +260,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
   
   Future<void> _markHourTaken() async {
+    print('this not working');
     DocumentReference docref = _firestore.collection('Users').doc(widget.sellerUid);
 
     try {
@@ -270,5 +282,34 @@ class _PaymentPageState extends State<PaymentPage> {
     }
   }
 
-  
+  Future<bool> checkIfHourTaken() async {
+    try {
+      DocumentSnapshot snapshot = await _firestore
+        .collection('Users')
+        .doc(widget.sellerUid)
+        .get();
+
+    if (snapshot.exists) {
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      if (data.isNotEmpty && data.containsKey('sellerDetails')) {
+        Map<String, dynamic> sellerDetails = data['sellerDetails'];
+        if (sellerDetails.containsKey('selectedHoursByDay')) {
+          Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
+          if (selectedHoursByDay.containsKey(widget.selectedDay)) {
+            List<dynamic> hoursList = selectedHoursByDay[widget.selectedDay];
+            var mathcingHour = hoursList.firstWhere(
+              (hour) => hour['title'] == widget.selectedHour
+            );
+            if (mathcingHour != null) {
+              return mathcingHour['istaken'] ?? false;
+            }
+          }
+        }
+      }
+    }
+    }catch (e) {
+      print('Error checking is taken value $e');
+    }
+    return false;
+  }
 }

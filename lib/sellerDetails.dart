@@ -569,7 +569,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             // Add the title to display in the UI
             hourTitles.add(title);
           }
-          print('hour titles is $hourTitles');
 
           setState(() {
             hoursByDay[day] = hourTitles;
