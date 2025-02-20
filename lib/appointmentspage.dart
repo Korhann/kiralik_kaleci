@@ -351,7 +351,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
-  // todo: şimdilik reddedilince bildirim gönderme
   Future<void> rejectAppointment(String docId, int index) async {
     try {
       await _firestore
@@ -375,10 +374,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
           String buyerDocId = appointmentData['appointmentDetails']['buyerDocId'];
 
-          // String hour = appointmentData[appointmentDetails]['hour'];
-          // String day = appointmentData[appointmentDetails]['day'];
-          // String field = appointmentData[appointmentDetails]['field'];
-
           // alıcı için status update (renkleri göstermek için - turuncu,yeşil,kırmzı)
           await _firestore
           .collection('Users')
@@ -388,14 +383,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .update({
             'appointmentDetails.status': 'rejected'
           });
-
-          // await PushHelper.sendPushPayment(
-          //   sellerUid: currentuser,
-          //   buyerUid: buyerUid,
-          //   selectedDay: day,
-          //   selectedHour: hour,
-          //   selectedField: field
-          // );
         } else {
           print('appointment details does not exist');
         }
@@ -403,7 +390,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         print('document snapshot does not exist');
       }
 
-      // todo: burada bir hata alıyorum, sebebini anlamadım
       if (mounted) {
         setState(() {
           appointments[index]['appointmentDetails']['status'] = 'rejected';

@@ -22,7 +22,6 @@ dependencies:
   bottom_navy_bar: ^6.0.0
   toggle_switch: ^2.1.0
   #flutter_credit_card: ^4.0.1
-  workmanager: ^0.5.2
   image_picker: ^1.0.7
   another_carousel_pro: ^1.0.2
   carousel_slider: ^5.0.0

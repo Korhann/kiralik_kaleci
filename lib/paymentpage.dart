@@ -8,7 +8,6 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 
 
 class PaymentPage extends StatefulWidget {
-  // TODO: required çıkarılıp bunlar optional yapılarbilir !! (CHATGPT çözümüne bak)
   final String? sellerUid;
   final String? buyerUid;
   final String? selectedDay;
@@ -150,6 +149,7 @@ class _PaymentPageState extends State<PaymentPage> {
                       await _markHourTaken();
                     }
                   } else {
+                    await markAppointmentTaken();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         duration: Duration(seconds: 5),
@@ -311,5 +311,19 @@ class _PaymentPageState extends State<PaymentPage> {
       print('Error checking is taken value $e');
     }
     return false;
+  }
+  Future<void> markAppointmentTaken() async {
+    try {
+      await _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentbuyer')
+      .doc(widget.docId)
+      .update({
+        'appointmentDetails.paymentStatus' : 'taken'
+      });
+    }catch (e) {
+      print('Appointment could not mark as taken');
+    }
   }
 }

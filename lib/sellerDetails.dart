@@ -607,8 +607,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     }
   }
 }
-  
-  
 
   void _toggleFavorite(Map<String, dynamic> sellerDetails, String sellerUid) async {
     final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
