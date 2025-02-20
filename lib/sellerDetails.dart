@@ -268,16 +268,18 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                             // todo: dayHourKey ile db den aldığım saatleri karşılaştırıp ona göre rengini değiştirebilirim
                                                             String dayHourKey = '$day $hour';
                                                             bool isSelected = hourColors[dayHourKey] == Colors.grey;
+                                                            // dokunulamayan saaatler
+                                                            bool isDisabled = hourColors[dayHourKey] == Colors.grey.shade600 || hourColors[dayHourKey] == Colors.grey || hourColors[dayHourKey] == Colors.green;
                                                             return GestureDetector(
                                                               // renk sadece cyan ise seçilebilir
-                                                              onTap: hourColors[dayHourKey] == Colors.cyan
+                                                              onTap: !isDisabled
                                                               ? () {
                                                                 setState(() {
                                                                   _selectedDay = day;
                                                                   _selectedHour = hour;
                                                                   // eğer available ise seçebilirsin, değilse seçemezsin
                                                                   hourColors.forEach((key,value) {
-                                                                    if (value != Colors.grey.shade600) {
+                                                                    if (value != Colors.grey.shade600 && value != Colors.green) {
                                                                       hourColors[key] = Colors.cyan;
                                                                     }
                                                                   });
@@ -358,6 +360,26 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     children: [
+                      Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              height: 10,
+                              width: 10,
+                              color: Colors.green,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Randevu saatin',
+                            style: TextStyle(
+                              color: userorseller ? Colors.white: Colors.black
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 5),
                       Row(
                         children: [
                           ClipRRect(
@@ -447,7 +469,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             ),
           ),
           Positioned(
-            bottom: 80,
+            bottom: 60,
             right: 20,
             child: GestureDetector(
               onTap: () {
@@ -537,6 +559,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             Map<String, dynamic> hourMap = hour as Map<String, dynamic>;
             String title = hourMap['title'];
             bool istaken = hourMap['istaken'];
+            String? takenby = hourMap['takenby'];
 
             // Determine the color based on istaken and whether the day is past
             String dayHourKey = '$day $title';
@@ -558,15 +581,21 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
               .doc(userId)
               .update({
                 'sellerDetails.selectedHoursByDay.$day':
-                FieldValue.arrayRemove([{'title': title, 'istaken': true}])
+                FieldValue.arrayRemove([{'title': title, 'istaken': true, 'takenby': 'empty'}])
               });
               istaken = false;
             }
 
-            // If the day is past or the hour is taken, mark as grey
-            hourColors[dayHourKey] = (isPastDay || istaken) ? Colors.grey.shade600 : Colors.cyan;
-
-            // Add the title to display in the UI
+            // duruma göre renk belirliyor
+            if (istaken) {
+              if (takenby == currentUserUid) {
+                hourColors[dayHourKey] = Colors.green;
+              } else {
+                hourColors[dayHourKey] = Colors.grey.shade600;  
+              }
+            } else {
+              hourColors[dayHourKey] = Colors.cyan;
+            }
             hourTitles.add(title);
           }
 
@@ -578,6 +607,8 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     }
   }
 }
+  
+  
 
   void _toggleFavorite(Map<String, dynamic> sellerDetails, String sellerUid) async {
     final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
