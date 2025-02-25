@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/main.dart';
+import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 
 import 'styles/colors.dart';
@@ -56,7 +57,7 @@ class _SignUpState extends State<SignUp> {
       addUser(fullNameController.text.trim(), emailController.text.trim(), uid);
 
       // Navigate to the desired page (you can customize this part)
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const MyApp()));
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const MainPage()));
 
     }
   } on FirebaseAuthException catch (e) {

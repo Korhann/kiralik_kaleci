@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
+import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
@@ -145,6 +146,7 @@ class _PaymentPageState extends State<PaymentPage> {
                   bool? hourTaken = await checkIfHourTaken();
                   if (hourTaken == false) {
                     bool isSuccess = await _processPayment();
+                    await sendNotificationToSeller();
                     if (isSuccess) {
                       await _markHourTaken();
                     }
@@ -325,5 +327,8 @@ class _PaymentPageState extends State<PaymentPage> {
     }catch (e) {
       print('Appointment could not mark as taken');
     }
+  }
+  Future<void> sendNotificationToSeller() async {
+    await PushHelper.sendPushBefore(userId: widget.sellerUid!, text: 'Ödeme alınmıştır', page: 'appointment');
   }
 }

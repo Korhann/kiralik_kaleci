@@ -20,9 +20,6 @@ class _GetUserDataState extends State<GetUserData> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _userStream;
 
-  // NOT: BUNLAR DENEMEK İÇİN
-  final String user = FirebaseAuth.instance.currentUser!.uid;
-
   String? nameFilter;
   String? cityFilter;
   String? districtFilter;
