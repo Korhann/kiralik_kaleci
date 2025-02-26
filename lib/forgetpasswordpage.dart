@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -28,9 +29,12 @@ class _ForgetPasswordState extends State<ForgetPassword> {
   bool _showError = false; 
 
   Future<void> sendResetLink() async {
-    final textResetController = resetController.text.trim();
-    await FirebaseAuth.instance
-        .sendPasswordResetEmail(email: textResetController);
+    try {
+      final textResetController = resetController.text.trim();
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: textResetController);
+    } catch (e) {
+      print('Error $e');
+    }
   }
 
   @override
@@ -59,104 +63,36 @@ class _ForgetPasswordState extends State<ForgetPassword> {
             child: Column(
               children: [
                 const SizedBox(height: 160),
-                Text(
+                PlatformText(
                   "Şifreni yenile",
                   style: GoogleFonts.inter(textStyle: style),
                 ),
-
-
                 const SizedBox(height: 40),
-
-
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Text(
+                  child: PlatformText(
                     "Email giriniz ve hesabınıza şifrenizi yenilemek için link gönderilecek",
                     textAlign: TextAlign.start,
                     style: GoogleFonts.inter(textStyle: textstyle, color: grey),
                   ),
                 ),
 
-
                 const SizedBox(height: 30),
-
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 30.0, vertical: 5.0),
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 45,
-                        width: 335,
-                        child: TextFormField(
-                          keyboardType: TextInputType.emailAddress,
-                          controller: resetController,
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 20),
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.fromLTRB(
-                                20.0, 10.0, 20.0, 10.0),
-                            hintText: "Email",
-                            hintStyle: GoogleFonts.inter(
-                                textStyle: hintstyle,
-                                fontSize: 20,
-                                color: grey),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: Colors.black),
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: Colors.black),
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                            fillColor: const Color(0xFFE5E5E5),
-                            filled: true,
-                          ),
-                          validator: (value) {
-                            if (value!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
-                              setState(() {
-                                _showError = true;
-                              });
-                              return null;
-                            } else {
-                              setState(() {
-                                _showError = false;
-                              });
-                              return null;
-                            }
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-
-                      if (_showError)
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Geçerli bir mail adresi giriniz",
-                            style: GoogleFonts.inter(
-                              textStyle: errorstyle
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 5.0),
+                  child: _buildTextField(resetController, 'Email', _showError,(value) {
+                    setState(() => _showError = value.trim().isEmpty ||!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value));
+                  } ),
                 ),
 
-
                 const SizedBox(height: 30),
-
-
 
                 ElevatedButton(
                   style: buttonPrimary,
-                  onPressed: () {
+                  onPressed: () async{
                     if (formkey.currentState!.validate()) {
-                      sendResetLink();
+                      await sendResetLink();
                     }
                   },
                   child: Text(
@@ -171,4 +107,71 @@ class _ForgetPasswordState extends State<ForgetPassword> {
       ),
     );
   }
+  Widget _buildTextField(
+  TextEditingController controller,
+  String hintText,
+  bool showError,
+  Function(String) validator, {
+  bool obscureText = false,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(
+        height: 45,
+        width: 335,
+        child: PlatformTextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          style: const TextStyle(color: Colors.black, fontSize: 20),
+          material: (_, __) => MaterialTextFormFieldData(
+            decoration: _inputDecoration(hintText, showError),
+          ),
+          cupertino: (_, __) => CupertinoTextFormFieldData(
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5E5E5),
+              borderRadius: BorderRadius.circular(15.0),
+              border: Border.all(color: showError ? Colors.red : Colors.black), // Keep style but change border color
+            ),
+            placeholder: hintText,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          ),
+          validator: (value) {
+            validator(value!);
+            return showError ? '' : null;
+          },
+        ),
+      ),
+      if (showError)
+        Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: PlatformText(
+            "Geçerli bir $hintText giriniz",
+            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red),
+          ),
+        ),
+      const SizedBox(height: 17),
+    ],
+  );
+}
+
+// Updated input decoration function
+InputDecoration _inputDecoration(String hintText, bool showError) {
+  return InputDecoration(
+    contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+    hintText: hintText,
+    hintStyle: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.normal, color: grey),
+    enabledBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    fillColor: const Color(0xFFE5E5E5),
+    filled: true,
+  );
+}
+
 }

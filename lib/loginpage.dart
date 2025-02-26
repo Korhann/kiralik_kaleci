@@ -1,10 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kiralik_kaleci/forgetpasswordpage.dart';
+import 'package:kiralik_kaleci/homepage.dart';
+import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+
+
+//TODO: ANİMASYON EKLENECEK !!!
 
 class LogIn extends StatefulWidget {
   final VoidCallback showRegisterPage;
@@ -30,7 +36,7 @@ class _LogInState extends State<LogIn> {
   bool _invalidcred = false;
 
   // bool value for the password to show/hide
-  bool _obsecureText = true;
+  //bool _obsecureText = true;
 
   // Initialize google
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -41,6 +47,12 @@ class _LogInState extends State<LogIn> {
   Future signInUser() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text.trim(), password: passwordController.text.trim());
+
+      //todo: Zaten mainpage.dart da navigate ediyor, hata olur mu diye kontrol et !!!!
+      // Navigator.push(
+      //   context,
+      //   _createRoute(MainPage()), // Change this to your actual home page
+      // );
     } on FirebaseAuthException catch (e) {
       if (e.code == 'network-request-failed') {
         print('İnternet bağlantısı yok');
@@ -71,7 +83,6 @@ class _LogInState extends State<LogIn> {
 
       return await _auth.signInWithCredential(credential);
     } catch (error) {
-      print("Google Sign In Error: $error");
       return null;
     }
   }
@@ -87,8 +98,7 @@ class _LogInState extends State<LogIn> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return PlatformScaffold(
       backgroundColor: background,
       body: SafeArea(
         child: Center(
@@ -102,7 +112,7 @@ class _LogInState extends State<LogIn> {
                     const SizedBox(height: 130),
               
                     // Header
-                    Text(
+                    PlatformText(
                       "Giriş Yap",
                       style: GoogleFonts.inter(
                         textStyle: style,
@@ -110,161 +120,23 @@ class _LogInState extends State<LogIn> {
                     ),
               
                     const SizedBox(height: 40),
+
+                    _buildTextField(emailController, "Email", _showErrorEmail, (value) {
+                    setState(() => _showErrorEmail = value.trim().isEmpty ||!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value));
+                  }),
               
-                    // Textfields
-                    SizedBox(
-                      height: 45,
-                      width: 335,
-                      child: TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        controller: emailController,
-                        style: const TextStyle(color: Colors.black, fontSize: 20),
-                        decoration: InputDecoration(
-                          contentPadding:
-                              const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                          hintText: "Email",
-                          hintStyle: GoogleFonts.inter(
-                              textStyle: hintstyle, fontSize: 20, color: grey),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.black),
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: Colors.black),
-                              borderRadius: BorderRadius.circular(15.0)),
-                          fillColor: const Color(0xFFE5E5E5),
-                          filled: true,
-                        ),
-                        validator: (value) {
-                          final email = value?.trim();
-                          if (email!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email)) {
-                            setState(() {
-                              _showErrorEmail = true;
-                            });
-                            return '';
-                          } else {
-                            setState(() {
-                              _showErrorEmail = false;
-                            });
-                            return null;
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-              
-                    if (_showErrorEmail) 
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Girdiğiniz mail hatalı',
-                          textAlign: TextAlign.start,
-                          style: GoogleFonts.inter(
-                            textStyle: errorstyle
-                          ),
-                        ),
-                      ),
-              
-                    const SizedBox(height: 20),
-              
-                    SizedBox(
-                      height: 45,
-                      width: 335,
-                      child: TextFormField(
-                        keyboardType: TextInputType.text,
-                        obscureText: _obsecureText,
-                        controller: passwordController,
-                        style: const TextStyle(color: Colors.black, fontSize: 20),
-                        decoration: InputDecoration(
-                            contentPadding:
-                                const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            hintText: "Parola",
-                            hintStyle: GoogleFonts.inter(
-                                textStyle: hintstyle, fontSize: 20, color: grey),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: Colors.black),
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Colors.black),
-                                borderRadius: BorderRadius.circular(15.0)),
-                            fillColor: const Color(0xFFE5E5E5),
-                            filled: true,
-                            suffixIcon: Padding(
-                              padding: const EdgeInsets.only(right: 10.0),
-                              // I have to change the icon size and add it to sign up page as well
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _obsecureText = !_obsecureText;
-                                  });
-                                },
-                                child: Image.asset(
-                                  _obsecureText
-                                      ? "lib/icons/eye.png"
-                                      : "lib/icons/eye-off.png",
-                                  width: 15,
-                                  height: 15,
-                                ),
-                              ),
-                            )
-                          ),
-                        validator: (value) {
-                          final password = value?.trim();
-                          if (password!.isEmpty || password.length < 6 || password.contains(" ")) {
-                            setState(() {
-                              _showErrorPassword = true;
-                            });
-                            return '';
-                          } else {
-                            setState(() {
-                              _showErrorPassword = false;
-                            });
-                            return null;
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-              
-                    if (_showErrorPassword && passwordController.text.trim().length < 6)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Parolanın çok kısa",
-                          style: GoogleFonts.inter(
-                            textStyle: errorstyle
-                          ),
-                        ),
-                      ),
-                  
-                    if (_showErrorPassword && passwordController.text.trim().contains(" "))
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Parolada boşluk bulundurmayınız",
-                          style: GoogleFonts.inter(
-                            textStyle: errorstyle
-                          ),
-                        ),
-                      ),
-                    if (_showErrorPassword && passwordController.text.trim().isEmpty)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Parola boş bırakılamaz",
-                          style: GoogleFonts.inter(
-                            textStyle: errorstyle
-                          ),
-                        ),
-                      ),
+                    const SizedBox(height: 10),
+                    
+                    _buildTextField(passwordController, 'Parola', _showErrorPassword, (value) {
+                    setState(() => _showErrorPassword = value.length < 6 || value.contains(" "));}, obscureText: true),
+                    
                     
                     const SizedBox(height: 10),
 
                     if (_invalidcred)
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(
+                        child: PlatformText(
                           'Girdiğiniz Bilgiler geçersizdir',
                           style: GoogleFonts.inter(
                             textStyle: errorstyle
@@ -275,8 +147,7 @@ class _LogInState extends State<LogIn> {
                     const SizedBox(height: 40),
               
                     // Giriş yap butonu
-                    ElevatedButton(
-                      style: buttonPrimary,
+                    PlatformElevatedButton(
                       onPressed: () async{
                         if (formkey.currentState!.validate()) {
                           await signInUser();
@@ -287,25 +158,33 @@ class _LogInState extends State<LogIn> {
                         style: GoogleFonts.inter(
                             textStyle: style, color: Colors.black),
                       ),
+                      material: (_,__) => MaterialElevatedButtonData(
+                        style: buttonPrimary
+                      ),
+                      cupertino: (_,__) => CupertinoElevatedButtonData(
+                        borderRadius: BorderRadius.circular(20),
+                        color: green,
+                        originalStyle: true
+                      ),
                     ),
+
                     const SizedBox(height: 20),
               
                     GestureDetector(
                       onTap: () async{
                         forgetPassword();
                       },
-                      child: Text(
+                      child: PlatformText(
                         "Şifremi unuttum?",
                         style: GoogleFonts.inter(
                             fontWeight: FontWeight.w400,
                             fontSize: 14,
-                            color: grey),
+                            color: grey
+                        ),
                       ),
                     ),
               
                     const SizedBox(height: 20),
-              
-                   
               
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -323,7 +202,7 @@ class _LogInState extends State<LogIn> {
                                 child: Image.asset("lib/icons/google.png"),
                               ),
                               const SizedBox(width: 10),
-                              Text(
+                              PlatformText(
                                 "Google",
                                 style: GoogleFonts.inter(color: Colors.black),
                               ),
@@ -338,7 +217,7 @@ class _LogInState extends State<LogIn> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
+                        PlatformText(
                           "Bir hesabın yok mu?",
                           style: GoogleFonts.inter(
                               color: grey,
@@ -348,7 +227,7 @@ class _LogInState extends State<LogIn> {
                         const SizedBox(width: 10),
                         GestureDetector(
                           onTap: widget.showRegisterPage,
-                          child: Text(
+                          child: PlatformText(
                             "Kayıt Ol",
                             style: GoogleFonts.inter(
                                 decoration: TextDecoration.underline,
@@ -368,4 +247,86 @@ class _LogInState extends State<LogIn> {
       ),
     );
   }
+
+  Widget _buildTextField(
+  TextEditingController controller,
+  String hintText,
+  bool showError,
+  Function(String) validator, {
+  bool obscureText = false,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(
+        height: 45,
+        width: 335,
+        child: PlatformTextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          style: const TextStyle(color: Colors.black, fontSize: 20),
+          material: (_, __) => MaterialTextFormFieldData(
+            decoration: _inputDecoration(hintText, showError),
+          ),
+          cupertino: (_, __) => CupertinoTextFormFieldData(
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5E5E5),
+              borderRadius: BorderRadius.circular(15.0),
+              border: Border.all(color: showError ? Colors.red : Colors.black), // Keep style but change border color
+            ),
+            placeholder: hintText,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          ),
+          validator: (value) {
+            validator(value!);
+            return showError ? '' : null;
+          },
+        ),
+      ),
+      if (showError)
+        Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: PlatformText(
+            "Geçerli bir $hintText giriniz",
+            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red),
+          ),
+        ),
+      const SizedBox(height: 17),
+    ],
+  );
+}
+
+// Updated input decoration function
+InputDecoration _inputDecoration(String hintText, bool showError) {
+  return InputDecoration(
+    contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+    hintText: hintText,
+    hintStyle: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.normal, color: grey),
+    enabledBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    fillColor: const Color(0xFFE5E5E5),
+    filled: true,
+  );
+}
+
+Route _createRoute(Widget child) {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(0.0, 1.0);
+      const end = Offset.zero;
+      const curve = Curves.ease;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+      return SlideTransition(position: animation.drive(tween), child: child);
+    },
+  );
+}
 }

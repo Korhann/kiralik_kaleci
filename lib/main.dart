@@ -11,6 +11,7 @@ import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'appointmentspage.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     
-    return MaterialApp(
+    return PlatformApp(
       // locale: DevicePreview.locale(context),
       // builder: DevicePreview.appBuilder,
       // theme: ThemeData.light(),
