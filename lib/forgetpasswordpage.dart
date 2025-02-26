@@ -29,9 +29,22 @@ class _ForgetPasswordState extends State<ForgetPassword> {
   bool _showError = false; 
 
   Future<void> sendResetLink() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(child: CircularProgressIndicator(
+        color: Colors.grey,
+      )),
+      );
     try {
       final textResetController = resetController.text.trim();
       await FirebaseAuth.instance.sendPasswordResetEmail(email: textResetController);
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Email gönderildi')),
+      );
+      }
     } catch (e) {
       print('Error $e');
     }
@@ -92,7 +105,12 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                   style: buttonPrimary,
                   onPressed: () async{
                     if (formkey.currentState!.validate()) {
-                      await sendResetLink();
+                      if (resetController.text.trim().isNotEmpty) {
+                        await sendResetLink();
+                        setState(() {
+                          _showError = false;
+                        });
+                      }
                     }
                   },
                   child: Text(
