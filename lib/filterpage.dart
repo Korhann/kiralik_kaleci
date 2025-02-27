@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:kiralik_kaleci/football_field.dart';
+import 'package:kiralik_kaleci/searchpage.dart';
 import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
@@ -189,22 +191,23 @@ class _FilterPageState extends State<FilterPage> {
               ),
               const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.only(left: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: _nameController,
-                        onChanged: (value) {
-                          nameFilter = value;
-                          _nameController.text = value;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Ad Soyad',
-                          labelStyle: GoogleFonts.roboto(fontSize: 18, color: Colors.black),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () => clearSingleFilter('name'),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          width: 350,
+                          height: 45,
+                          child: TextField(
+                            controller: _nameController,
+                            onChanged: (value) {
+                              nameFilter = value;
+                              _nameController.text = value;
+                            },
+                            decoration: _inputDecoration('Ad Soyad'),
+                            style: TextStyle(decoration: TextDecoration.none),
                           ),
                         ),
                       ),
@@ -212,7 +215,7 @@ class _FilterPageState extends State<FilterPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ClipRRect(
@@ -251,7 +254,12 @@ class _FilterPageState extends State<FilterPage> {
                                 onCitySelected(value);
                               });
                             },
-                            hint: const Text('Şehir seçin'),
+                            hint: Padding(
+                              padding: const EdgeInsets.all(5),
+                              child: Text(
+                                'Şehir Seçin'
+                              ),
+                            ),
                             underline: const SizedBox(),
                           ),
                           // Clear Icon
@@ -314,7 +322,12 @@ class _FilterPageState extends State<FilterPage> {
                 fieldFilter = null;
               });
             },
-            hint: const Text('İlçe seçin'),
+            hint: Padding(
+              padding: const EdgeInsets.all(5),
+              child: Text(
+                'İlçe Seçin'
+                ),
+            ),
             underline: const SizedBox(),
           ),
           // Clear Icon
@@ -376,7 +389,12 @@ Padding(
                 fieldFilter = value;
               });
             },
-            hint: const Text('Halı Saha seçin'),
+            hint: Padding(
+              padding: const EdgeInsets.all(5),
+              child: Text(
+                'Halı Saha Seçin'
+              ),
+            ),
             underline: const SizedBox(),
           ),
           // Clear Icon
@@ -721,8 +739,6 @@ Padding(
   });
 }
 
-
-
   Widget _dayButton(String day, bool isPressed, VoidCallback onPressed) {
     return SizedBox(
       width: width,
@@ -741,4 +757,26 @@ Padding(
       ),
     );
   }
+InputDecoration _inputDecoration(String hintText) {
+  return InputDecoration(
+    suffixIcon: IconButton(
+      icon: const Icon(Icons.clear),
+      onPressed: () => clearSingleFilter('name'),
+    ),
+    //contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+    hintText: hintText,
+    hintStyle: TextStyle(),
+    // AŞŞAĞIDAKİ STYLE UYGULANACAK !!
+    // style: GoogleFonts.roboto(
+    //                         fontSize: 15,
+    //                         fontWeight: FontWeight.normal,
+    //                         color: Colors.black
+    //                       ),
+    //hintStyle: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.normal, color: grey),
+    fillColor: Colors.white,
+    enabledBorder: InputBorder.none, // Remove underline when not focused
+    focusedBorder: InputBorder.none,
+    filled: true,
+  );
+}
 }

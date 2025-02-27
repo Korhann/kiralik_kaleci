@@ -42,287 +42,165 @@ class _GetUserDataState extends State<GetUserData> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: background,
-      body: StreamBuilder(
-        stream: _userStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Text("Bağlantı hatası");
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          }
-          var docs = snapshot.data!.docs;
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: background,
+    body: StreamBuilder(
+      stream: _userStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(child: Text("Bağlantı hatası"));
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          docs = docs.where((doc) => doc.data().containsKey('sellerDetails')).toList();
+        var docs = snapshot.data!.docs
+            .where((doc) => doc.data().containsKey('sellerDetails'))
+            .toList();
 
-          if (docs.isEmpty) {
-            return Column(
-              children: [
-                Container(
-                  color: background,
-                  padding: const EdgeInsets.only(top: 15),
-                  child: Row(
+        return Column(
+          children: [
+            // Header Section
+            Container(
+              color: background,
+              padding: const EdgeInsets.only(top: 15),
+              child: Row(
+                children: [
+                  Text(
+                    "Kalecilerimiz",
+                    style: GoogleFonts.inter(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Icon(Icons.handshake),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: GestureDetector(
+                      onTap: () async {
+                        final filters = await Navigator.push(
+                          context,
+                          _createRoute(FilterPage())
+                        );
+                        runFilters(filters);
+                      },
+                      child: Image.asset(
+                        'lib/icons/setting.png',
+                        width: 20,
+                        height: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Empty State
+            if (docs.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Icon(Icons.search, size: 70, color: Colors.grey.shade500),
+                      const SizedBox(height: 10),
                       Text(
-                        'Kalecilerimiz',
+                        'İlgili sonuç bulunamadı',
                         style: GoogleFonts.inter(
-                          fontSize: 26,
+                          fontSize: 22,
                           fontWeight: FontWeight.w700,
                           color: Colors.black,
-                        )
+                        ),
                       ),
-                      const SizedBox(width: 10),
-                      const Icon(Icons.handshake),
-                      const Spacer(),
-                      Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: GestureDetector(
-                              onTap: () async {
-                                final filters = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const FilterPage(),
-                                  ),
-                                );
-                                runFilters(filters);
-                              },
-                              child: Image.asset(
-                                'lib/icons/setting.png',
-                                width: 20,
-                                height: 20,
-                              ),
-                            ),
-                          ),
                     ],
                   ),
                 ),
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search,
-                          size: 70,
-                          color: Colors.grey.shade500,
-                        ),
-                        const SizedBox(height: 10),
-                        Center(
-                          child: Text(
-                            'İlgili sonuç bulunamadı',
-                            style: GoogleFonts.inter(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black
-                            ),
-                          ),
-                        )
-                      ],
-                    )
-                  ),
-                )
-              ],
-            );
-          }
-
-          return ListView.builder(
-            itemCount: (docs.length / 2).ceil(),
-            itemBuilder: (context, index) {
-              var startIndex = index * 2;
-              var endIndex = startIndex + 1;
-
-              if (endIndex >= docs.length) {
-                endIndex = docs.length - 1;
-              }
-
-              var sellerDetails1 = docs[startIndex]['sellerDetails'];
-              var fullName1 = sellerDetails1['sellerFullName'];
-              var imageUrls1 = sellerDetails1['imageUrls'];
-              var imageUrl1 = imageUrls1[0];
-              String city1 = sellerDetails1['city'];
-              String district1 = sellerDetails1['district'];
-              var sellerUid1 = docs[startIndex].id;
-
-              var sellerDetails2 = docs[endIndex]['sellerDetails'];
-              var fullName2 = sellerDetails2['sellerFullName'];
-              var imageUrls2 = sellerDetails2['imageUrls'];
-              var imageUrl2 = imageUrls2[0];
-              String city2 = sellerDetails2['city'];
-              String district2 = sellerDetails2['district'];
-              var sellerUid2 = docs[endIndex].id;
-
-              return Column(
-                children: [
-                  if (index == 0)
-                    Container(
-                      color: background,
-                      padding: const EdgeInsets.only(top: 15),
-                      child: Row(
-                        children: [
-                          Text(
-                            "Kalecilerimiz",
-                            style: GoogleFonts.inter(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Icon(Icons.handshake),
-                          const Spacer(),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: GestureDetector(
-                              onTap: () async {
-                                final filters = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const FilterPage(),
-                                  ),
-                                );
-                                runFilters(filters);
-                              },
-                              child: Image.asset(
-                                'lib/icons/setting.png',
-                                width: 20,
-                                height: 20,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+              )
+            else
+              // GridView for 2-column layout
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: GridView.builder(
+                    physics: ScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, // 2 items per row
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.7, // Adjust as needed
                     ),
-                  Container(
-                    color: background,
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10, bottom: 5),
-                          child: Row(
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      var sellerDetails = docs[index]['sellerDetails'];
+                      var fullName = sellerDetails['sellerFullName'] ?? "Bilinmeyen";
+                      var imageUrl = sellerDetails['imageUrls'][0] ?? "";
+                      var city = sellerDetails['city'] ?? "";
+                      var district = sellerDetails['district'] ?? "";
+                      var sellerUid = docs[index].id;
+                  
+                      return GestureDetector(
+                        onTap: () {
+                          sharedValues.sellerUid = sellerUid;
+                          _handleCardTap(context, sellerDetails, sellerUid);
+                        },
+                        child: Card(
+                          elevation: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    sharedValues.sellerUid = sellerUid1;
-                                    _handleCardTap(context, sellerDetails1, sellerUid1);
-                                  },
-                                  child: Card(
-                                    elevation: 3,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          color: Colors.white,
-                                          child: Image.network(
-                                            imageUrl1,
-                                            height: 190,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                        if (fullName1 != null && fullName1.isNotEmpty)
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  fullName1,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      "$city1,$district1",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.w400,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
+                              Container(
+                                color: Colors.white,
+                                child: Image.network(
+                                  imageUrl,
+                                  height: 160,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    sharedValues.sellerUid = sellerUid2;
-                                    _handleCardTap(context, sellerDetails2, sellerUid2);
-                                  },
-                                  child: Card(
-                                    elevation: 3,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        if (imageUrl1 != imageUrl2)
-                                          Container(
-                                            color: Colors.white,
-                                            child: Image.network(
-                                              imageUrl2,
-                                              height: 190,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        if (fullName2 != null && fullName2.isNotEmpty && fullName1 != fullName2)
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  fullName2,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      "$city2,$district2",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.w400,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                      ],
-                                    ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        fullName,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      Text(
+                                        "$city, $district",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                ],
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+                ),
+              ),
+          ],
+        );
+      },
+    ),
+  );
+}
   
   void _handleCardTap(BuildContext context, Map<String, dynamic>? sellerDetails, String sellerUid) {
     if (sellerDetails != null) {
@@ -386,4 +264,18 @@ class _GetUserDataState extends State<GetUserData> {
     _userStream = filterquery.snapshots();
   });
   }
+  Route _createRoute(Widget child) {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(0.0, 1.0);
+      const end = Offset.zero;
+      const curve = Curves.ease;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+      return SlideTransition(position: animation.drive(tween), child: child);
+    },
+  );
+}
 }
