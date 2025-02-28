@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/globals.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 class SellerChangeUserName extends StatefulWidget {
   const SellerChangeUserName({super.key});
@@ -58,10 +60,11 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: userorseller ? sellergrey : Colors.white,
+                color: userorseller ? sellergrey : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration(hintText: 'Ad Soyad'),
                     style: TextStyle(color: userorseller ? Colors.white : Colors.black),
                     controller: _newUsername,
                     onChanged: (value) => clearErrors(),
@@ -90,12 +93,21 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
                     if (_key.currentState!.validate()) {
-                      changeUsername();
+                      if (await InternetConnection().hasInternetAccess) {
+                        changeUsername();
+                        if (mounted) {
+                          Showalert(context: context, text: 'Güncelleme Başarılı').showSuccessAlert();
+                        }
+                      } else {
+                      if (mounted) {
+                        Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                      }
+                      }
                     }
                   },
-                  style: buttonPrimary,
+                  style: GlobalStyles.buttonPrimary(),
                   child: Text(
                     'Onayla',
                     style: GoogleFonts.roboto(
@@ -141,9 +153,6 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
           .update({
           'fullName': _newUsername.text.trim()
         });
-        // onay mesajını göster
-        await showBottomSheetDialog(context);
-        Navigator.pop(context);
       } catch (e) {
         print('Error updating username $e');
       }

@@ -2,8 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 import 'direct2messagepage.dart';
 
@@ -52,81 +56,100 @@ class _DirectMessagesState extends State<DirectMessages> {
       body: ListView.builder(
         itemCount: receiverNames.length,
         itemBuilder: (BuildContext context, int index) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () async {
-                  await _resetUnreadMessages(distinctReceiverIds[index]);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Direct2Message(
-                        receiverId: distinctReceiverIds[index],
-                      ),
-                    ),
-                  );
-                },
-                child: ListTile(
-                  leading: FutureBuilder(
-                    future: _getReceiverImage(distinctReceiverIds[index]),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircleAvatar(
-                          backgroundColor: Colors.grey,
-                          child: CircularProgressIndicator(),
-                        );
-                      } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-                        return const CircleAvatar(
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.error),
-                        );
-                      } else {
-                        return CircleAvatar(
-                          backgroundImage: NetworkImage(snapshot.data as String),
-                          radius: 25,
-                        );
-                      }
-                    },
-                  ),
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        receiverNames[index],
-                        style: GoogleFonts.inter(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
+          final item = receiverNames[index];
+          return Dismissible(
+            key: Key(item),
+            background: Container(color: Colors.red),
+            onDismissed: (direction) async{
+              if (await checkConnection()) {
+                setState(() {
+                receiverNames.removeAt(index);
+              });
+              if (mounted) {
+                Showalert(context: context, text: 'Mesaj silindi').showSuccessAlert();
+              }
+              } else {
+                if (mounted) {
+                  Showalert(context: context, text: 'Mesaj silinemedi').showErrorAlert();
+                }
+              }
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () async {
+                    await _resetUnreadMessages(distinctReceiverIds[index]);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Direct2Message(
+                          receiverId: distinctReceiverIds[index],
                         ),
                       ),
-                      Text(messages[index]),
-                    ],
-                  ),
-                  trailing: StreamBuilder<int>(
-                    stream: _getUnreadMessagesStream(distinctReceiverIds[index]),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data! > 0) {
-                        return CircleAvatar(
-                          backgroundColor: Colors.red,
-                          radius: 12,
-                          child: Text(
-                            '${snapshot.data}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    );
+                  },
+                  child: ListTile(
+                    leading: FutureBuilder(
+                      future: _getReceiverImage(distinctReceiverIds[index]),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const CircleAvatar(
+                            backgroundColor: Colors.grey,
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+                          return const CircleAvatar(
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.error),
+                          );
+                        } else {
+                          return CircleAvatar(
+                            backgroundImage: NetworkImage(snapshot.data as String),
+                            radius: 25,
+                          );
+                        }
+                      },
+                    ),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          receiverNames[index],
+                          style: GoogleFonts.inter(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
                           ),
-                        );
-                      } else {
-                        return const SizedBox(); // Show nothing if there are no unread messages
-                      }
-                    },
+                        ),
+                        Text(messages[index]),
+                      ],
+                    ),
+                    trailing: StreamBuilder<int>(
+                      stream: _getUnreadMessagesStream(distinctReceiverIds[index]),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data! > 0) {
+                          return CircleAvatar(
+                            backgroundColor: Colors.red,
+                            radius: 12,
+                            child: Text(
+                              '${snapshot.data}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        } else {
+                          return const SizedBox(); // Show nothing if there are no unread messages
+                        }
+                      },
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -301,5 +324,18 @@ class _DirectMessagesState extends State<DirectMessages> {
     return 'Unknown';
   }
 }
-
+  // check for the internet connection
+  static Future<bool> checkConnection() async{
+    if (await InternetConnection().hasInternetAccess) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  void showSuccessAlert() {
+    QuickAlert.show(context: context, text: 'Randevu talebi gönderilmiştir',type: QuickAlertType.success,confirmBtnText: 'Tamam',title: 'Başarılı');
+  }
+  void showErrorAlert() {
+    QuickAlert.show(context: context, text: 'Ooops...',type: QuickAlertType.error,confirmBtnText: 'Tamam',title: 'Bir şeyler ters gitti');
+  }
 }

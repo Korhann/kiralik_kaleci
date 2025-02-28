@@ -15,8 +15,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/dom.dart' as dom;
@@ -600,7 +600,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 const SizedBox(height: 40),
                 Center(
                   child: ElevatedButton(
-                      style: buttonPrimary,
+                      style: GlobalStyles.buttonPrimary(),
                       onPressed: () async {
                         try {
                             await _insertSellerDetails(context);

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/globals.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 class SellerIbanPage extends StatefulWidget {
   const SellerIbanPage({super.key});
@@ -205,7 +205,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                       await _updateIbanNo();
                     }
                   },
-                  style: buttonPrimary,
+                  style: GlobalStyles.buttonPrimary(),
                   child: Text(
                     'Kaydet',
                     style: GoogleFonts.roboto(

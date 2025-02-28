@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 
 class PaymentPage extends StatefulWidget {
@@ -160,7 +160,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     );
                   }
                 }, 
-              style: buttonPrimary,
+              style: GlobalStyles.buttonPrimary(),
               child: Text(
                 'Ödeme',
                 style: GoogleFonts.inter(

@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 class ForgetPassword extends StatefulWidget {
   const ForgetPassword({super.key});
@@ -102,7 +102,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                 const SizedBox(height: 30),
 
                 ElevatedButton(
-                  style: buttonPrimary,
+                  style: GlobalStyles.buttonPrimary(),
                   onPressed: () async{
                     if (formkey.currentState!.validate()) {
                       if (resetController.text.trim().isNotEmpty) {

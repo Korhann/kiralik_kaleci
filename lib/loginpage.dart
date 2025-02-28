@@ -4,10 +4,8 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kiralik_kaleci/forgetpasswordpage.dart';
-import 'package:kiralik_kaleci/homepage.dart';
-import 'package:kiralik_kaleci/mainpage.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 
 //TODO: ANİMASYON EKLENECEK !!!
@@ -48,11 +46,6 @@ class _LogInState extends State<LogIn> {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text.trim(), password: passwordController.text.trim());
 
-      //todo: Zaten mainpage.dart da navigate ediyor, hata olur mu diye kontrol et !!!!
-      // Navigator.push(
-      //   context,
-      //   _createRoute(MainPage()), // Change this to your actual home page
-      // );
     } on FirebaseAuthException catch (e) {
       if (e.code == 'network-request-failed') {
         print('İnternet bağlantısı yok');
@@ -159,7 +152,7 @@ class _LogInState extends State<LogIn> {
                             textStyle: style, color: Colors.black),
                       ),
                       material: (_,__) => MaterialElevatedButtonData(
-                        style: buttonPrimary
+                        style: GlobalStyles.buttonPrimary()
                       ),
                       cupertino: (_,__) => CupertinoElevatedButtonData(
                         borderRadius: BorderRadius.circular(20),
@@ -312,21 +305,6 @@ InputDecoration _inputDecoration(String hintText, bool showError) {
     ),
     fillColor: const Color(0xFFE5E5E5),
     filled: true,
-  );
-}
-
-Route _createRoute(Widget child) {
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => child,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const begin = Offset(0.0, 1.0);
-      const end = Offset.zero;
-      const curve = Curves.ease;
-
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-      return SlideTransition(position: animation.drive(tween), child: child);
-    },
   );
 }
 }

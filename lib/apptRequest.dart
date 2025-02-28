@@ -1,12 +1,15 @@
 
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/notification_model.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 class ApptRequest extends StatefulWidget {
   final String sellerUid;
@@ -27,10 +30,6 @@ class ApptRequest extends StatefulWidget {
 }
 
 class _ApptRequestState extends State<ApptRequest> {
-
-  /*
-  kullanıcı adı soyadı, seçili saat, seçili gün 
-  */
 
   // referanslar
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -134,16 +133,17 @@ class _ApptRequestState extends State<ApptRequest> {
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
-                // burada bir method oluştur ve onun içinde çalıştır
+                // check for the internet connection
                 onPressed: () async{
-                  await appointmentSeller();
-                  
-                  NotificationModel notificationModel = NotificationModel(widget.selectedHour, widget.selectedDay, widget.selectedField);
-                  await PushHelper.sendPushBefore(userId: widget.sellerUid, text: notificationModel.notification(), page: 'appointment');
-
-                  print(DateTime.now().toUtc());
-              }, 
-              style: buttonPrimary,
+                  if (await InternetConnection().hasInternetAccess) {
+                    await sendRequest();
+                  } else {
+                    if (mounted) {
+                      Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                    }
+                  }
+                }, 
+              style: GlobalStyles.buttonPrimary(),
               child: Text(
                 'Randevu Talebi Gönder',
                 style: GoogleFonts.inter(
@@ -255,13 +255,13 @@ class _ApptRequestState extends State<ApptRequest> {
     }
   }
 
-  // ÖDEME BURAYA EKLENECEK
-  Future<bool> _processPayment() async {
+  // // ÖDEME BURAYA EKLENECEK
+  // Future<bool> _processPayment() async {
 
-    // Simulate payment process (replace this with actual payment gateway logic)
-    await Future.delayed(const Duration(seconds: 2));
-    return true; // Return true if payment is successful
-  }
+  //   // Simulate payment process (replace this with actual payment gateway logic)
+  //   await Future.delayed(const Duration(seconds: 2));
+  //   return true; // Return true if payment is successful
+  // }
 
   // burada eğer approved olursa eklenecek
   Future<String> appointmentBuyer() async{
@@ -324,5 +324,20 @@ class _ApptRequestState extends State<ApptRequest> {
   .collection('appointmentbuyer')
   .doc(buyerDocId)
   .update({'appointmentDetails.sellerDocId' : sellerDocRef.id});
+  } 
+
+  Future<void> sendRequest() async{
+    try {
+      await appointmentSeller();
+      NotificationModel notificationModel = NotificationModel(widget.selectedHour, widget.selectedDay, widget.selectedField);
+      await PushHelper.sendPushBefore(userId: widget.sellerUid, text: notificationModel.notification(), page: 'appointment');
+      if (mounted) {
+        Showalert(context: context, text: 'Randevu talebi gönderilmiştir').showSuccessAlert();
+      }
+    } catch (e) {
+      if (mounted){
+        Showalert(context: context, text: 'Ooops...').showErrorAlert();
+      }
+    }
   }
 }

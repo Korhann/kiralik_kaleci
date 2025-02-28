@@ -7,8 +7,8 @@ import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
 import 'package:kiralik_kaleci/apptRequest.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
@@ -200,14 +200,20 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                       },
                                       child: Card(
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(20.0)
+                                          borderRadius: BorderRadius.circular(10.0)
                                         ),
                                         color: isSelected ? Colors.grey : green,
-                                        child: Center(
-                                          child: Text(
-                                            field,
-                                            style: TextStyle(
-                                              color: Colors.black
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 10),
+                                          child: Center(
+                                            child: SingleChildScrollView(
+                                              scrollDirection: Axis.horizontal,
+                                              child: Text(
+                                                field,
+                                                style: TextStyle(
+                                                  color: Colors.black
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -346,6 +352,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                       ],
                                     ),
                                   ),
+                                  const SizedBox(height: 10,)
                                 ],
                               ),
                             ),
@@ -454,7 +461,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                     );
                     }
                   },
-                  style: buttonPrimary,
+                  style: GlobalStyles.buttonPrimary(),
                   child: Text(
                     "Ödeme (₺${widget.sellerDetails['sellerPrice']})",
                     style: GoogleFonts.inter(

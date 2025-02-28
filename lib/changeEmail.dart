@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/globals.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 class ChangeEmail extends StatefulWidget {
   const ChangeEmail({super.key});
@@ -152,7 +152,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
                       changeEmail();
                     }
                   },
-                  style: buttonPrimary,
+                  style: GlobalStyles.buttonPrimary(),
                   child: Text(
                     'Onayla',
                     style: GoogleFonts.roboto(

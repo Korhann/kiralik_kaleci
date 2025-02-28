@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/globals.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 class SellerChangePassword extends StatefulWidget {
   const SellerChangePassword({super.key});
@@ -66,10 +66,11 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: userorseller ? sellergrey : Colors.white,
+                color: userorseller ? sellergrey : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration(hintText: ''),
                     style: TextStyle(color: userorseller ? Colors.white : Colors.black),
                     controller: _currentPasswordController,
                     obscureText: true,
@@ -113,10 +114,11 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
               ),
               Container(
                 width: double.infinity,
-                color: userorseller ? sellergrey : Colors.white,
+                color: userorseller ? sellergrey : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration(hintText: ''),
                     style: TextStyle(color: userorseller ? Colors.white : Colors.black),
                     controller: _newPasswordController,
                     obscureText: true,
@@ -153,7 +155,7 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
                       changePassword();
                     }
                   },
-                  style: buttonPrimary,
+                  style: GlobalStyles.buttonPrimary(),
                   child: Text(
                     'Onayla',
                     style: GoogleFonts.roboto(

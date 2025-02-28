@@ -7,9 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/searchpage.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FilterPage extends StatefulWidget {
@@ -51,6 +51,7 @@ class _FilterPageState extends State<FilterPage> {
   List<String> fields = [];
   
   bool isCleared = false;
+  TextStyle textStyle = GoogleFonts.roboto(fontSize: 15,fontWeight: FontWeight.normal,color: Colors.grey.shade600);
 
   @override
   void initState() {
@@ -257,7 +258,8 @@ class _FilterPageState extends State<FilterPage> {
                             hint: Padding(
                               padding: const EdgeInsets.all(5),
                               child: Text(
-                                'Şehir Seçin'
+                                'Şehir Seçin',
+                                style: textStyle,
                               ),
                             ),
                             underline: const SizedBox(),
@@ -325,7 +327,8 @@ class _FilterPageState extends State<FilterPage> {
             hint: Padding(
               padding: const EdgeInsets.all(5),
               child: Text(
-                'İlçe Seçin'
+                'İlçe Seçin',
+                style: textStyle,
                 ),
             ),
             underline: const SizedBox(),
@@ -392,7 +395,8 @@ Padding(
             hint: Padding(
               padding: const EdgeInsets.all(5),
               child: Text(
-                'Halı Saha Seçin'
+                'Halı Saha Seçin',
+                style: textStyle,
               ),
             ),
             underline: const SizedBox(),
@@ -637,7 +641,7 @@ Padding(
                       'maxFilter':maxFilter
                     });
                 },
-                style: buttonPrimary, 
+                style: GlobalStyles.buttonPrimary(), 
                 child: Text(
                   'Filtrele',
                   style: GoogleFonts.roboto(
@@ -763,16 +767,8 @@ InputDecoration _inputDecoration(String hintText) {
       icon: const Icon(Icons.clear),
       onPressed: () => clearSingleFilter('name'),
     ),
-    //contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
     hintText: hintText,
-    hintStyle: TextStyle(),
-    // AŞŞAĞIDAKİ STYLE UYGULANACAK !!
-    // style: GoogleFonts.roboto(
-    //                         fontSize: 15,
-    //                         fontWeight: FontWeight.normal,
-    //                         color: Colors.black
-    //                       ),
-    //hintStyle: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.normal, color: grey),
+    hintStyle: textStyle,
     fillColor: Colors.white,
     enabledBorder: InputBorder.none, // Remove underline when not focused
     focusedBorder: InputBorder.none,

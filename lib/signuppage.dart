@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 import 'styles/colors.dart';
-import 'styles/button.dart';
 import 'mainpage.dart';
 
 //TODO: ANİMASYON EKLENECEK !!!
@@ -143,7 +143,7 @@ class _SignUpState extends State<SignUp> {
                       }
                     },
                     child: PlatformText("Kayıt Ol", style: GoogleFonts.inter(color: Colors.black, textStyle: style)),
-                    material: (_, __) => MaterialElevatedButtonData(style: buttonPrimary),
+                    material: (_, __) => MaterialElevatedButtonData(style: GlobalStyles.buttonPrimary()),
                     cupertino: (_, __) => CupertinoElevatedButtonData(),
                   ),
                 ],
