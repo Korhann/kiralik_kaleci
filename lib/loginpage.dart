@@ -114,14 +114,15 @@ class _LogInState extends State<LogIn> {
               
                     const SizedBox(height: 40),
 
-                    _buildTextField(emailController, "Email", _showErrorEmail, (value) {
+                    GlobalStyles().buildTextField(emailController, "Email", _showErrorEmail, (value) {
                     setState(() => _showErrorEmail = value.trim().isEmpty ||!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value));
                   }),
               
                     const SizedBox(height: 10),
                     
-                    _buildTextField(passwordController, 'Parola', _showErrorPassword, (value) {
-                    setState(() => _showErrorPassword = value.length < 6 || value.contains(" "));}, obscureText: true),
+                    GlobalStyles().buildTextField(passwordController, 'Parola', _showErrorPassword, (value) {
+                    setState(() => _showErrorPassword = value.length < 6 || value.contains(" "));}, obscureText: true
+                    ),
                     
                     
                     const SizedBox(height: 10),
@@ -240,71 +241,4 @@ class _LogInState extends State<LogIn> {
       ),
     );
   }
-
-  Widget _buildTextField(
-  TextEditingController controller,
-  String hintText,
-  bool showError,
-  Function(String) validator, {
-  bool obscureText = false,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(
-        height: 45,
-        width: 335,
-        child: PlatformTextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          style: const TextStyle(color: Colors.black, fontSize: 20),
-          material: (_, __) => MaterialTextFormFieldData(
-            decoration: _inputDecoration(hintText, showError),
-          ),
-          cupertino: (_, __) => CupertinoTextFormFieldData(
-            decoration: BoxDecoration(
-              color: const Color(0xFFE5E5E5),
-              borderRadius: BorderRadius.circular(15.0),
-              border: Border.all(color: showError ? Colors.red : Colors.black), // Keep style but change border color
-            ),
-            placeholder: hintText,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          ),
-          validator: (value) {
-            validator(value!);
-            return showError ? '' : null;
-          },
-        ),
-      ),
-      if (showError)
-        Padding(
-          padding: const EdgeInsets.only(top: 5),
-          child: PlatformText(
-            "Geçerli bir $hintText giriniz",
-            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red),
-          ),
-        ),
-      const SizedBox(height: 17),
-    ],
-  );
-}
-
-// Updated input decoration function
-InputDecoration _inputDecoration(String hintText, bool showError) {
-  return InputDecoration(
-    contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-    hintText: hintText,
-    hintStyle: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.normal, color: grey),
-    enabledBorder: OutlineInputBorder(
-      borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
-      borderRadius: BorderRadius.circular(15.0),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
-      borderRadius: BorderRadius.circular(15.0),
-    ),
-    fillColor: const Color(0xFFE5E5E5),
-    filled: true,
-  );
-}
 }
