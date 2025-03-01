@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 
@@ -149,6 +150,9 @@ class _PaymentPageState extends State<PaymentPage> {
                     await sendNotificationToSeller();
                     if (isSuccess) {
                       await _markHourTaken();
+                      Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
+                    } else {
+                      Showalert(context: context, text: 'Ooopps...').showErrorAlert();
                     }
                   } else {
                     await markAppointmentTaken();
