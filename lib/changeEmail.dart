@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 
@@ -26,6 +28,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
   bool _showErrorPassword = false;
   //
   String _reauthErrorMessage = '';
+  bool isUpdated = false;
   //
   final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
 
@@ -63,10 +66,11 @@ class _ChangeEmailState extends State<ChangeEmail> {
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: userorseller ? sellergrey : Colors.white,
+                color: userorseller ? sellergrey : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration1(hintText: 'Email',showError: _showErrorEmail),
                     style: TextStyle(color: userorseller ? Colors.white : Colors.black),
                     controller: _emailController,
                     obscureText: false,
@@ -108,10 +112,11 @@ class _ChangeEmailState extends State<ChangeEmail> {
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: userorseller ? sellergrey : Colors.white,
+                color: userorseller ? sellergrey : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration1(hintText: 'Şifre', showError: _showErrorPassword),
                     style: TextStyle(color: userorseller ? Colors.white : Colors.black),
                     controller: _currentPasswordController,
                     obscureText: true,
@@ -147,10 +152,24 @@ class _ChangeEmailState extends State<ChangeEmail> {
 
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
                     if (_key.currentState!.validate()) {
-                      changeEmail();
+                      if (await InternetConnection().hasInternetAccess) {
+                        await changeEmail();
+                        if (isUpdated) {
+                          _emailController.clear();
+                          _currentPasswordController.clear();
+                          if (mounted) {
+                          Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
+                          }
+                        }
+                      } else {
+                        if (mounted) {
+                          Showalert(context: context, text: 'Ooopps...').showErrorAlert();
+                        }
+                      }
                     }
+                    isUpdated = false;
                   },
                   style: GlobalStyles.buttonPrimary(),
                   child: Text(
@@ -190,7 +209,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
     );
   }
 
-  void changeEmail() async {
+  Future<void> changeEmail() async {
     final user = FirebaseAuth.instance.currentUser;
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
     String email = _emailController.text.trim();
@@ -207,8 +226,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
           .update({
           'email': email
         });
-        await showBottomSheetDialog(context);
-        Navigator.pop(context);
+        isUpdated = true;
       } catch (e) {
         setState(() {
           _reauthErrorMessage = 'Geçerli bir mail giriniz';
@@ -220,31 +238,5 @@ class _ChangeEmailState extends State<ChangeEmail> {
         _reauthErrorMessage = 'Kullanıcı oturumu açılmadı';
       });
     }
-  }
-
-  Future<void> showBottomSheetDialog(BuildContext context) async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          height: 80,
-          padding: const EdgeInsets.all(16.0),
-          color: userorseller ? sellerbackground : background,
-          child: Center(
-            child: Text(
-              'Mailin güncellenmesi için onay kodunu onaylayın',
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: userorseller ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-    await Future.delayed(const Duration(seconds: 1));
   }
 }

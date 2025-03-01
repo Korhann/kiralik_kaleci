@@ -139,6 +139,7 @@ class _SignUpState extends State<SignUp> {
                   PlatformElevatedButton(
                     onPressed: () async {
                       if (formkey.currentState!.validate()) {
+                        print('just controlling');
                         signUpUser();
                       }
                     },

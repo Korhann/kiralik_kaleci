@@ -1,14 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class SellerChangePassword extends StatefulWidget {
   const SellerChangePassword({super.key});
@@ -29,6 +26,8 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
 
   String _reauthErrorMessage = '';
   final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
+
+  bool isUpdated = false;
 
   @override
   void dispose() {
@@ -74,12 +73,37 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
                 color: userorseller ? sellergrey : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: _buildTextField(_currentPasswordController, "Parola", _showErrorPassword, (value) {
-                    setState(() => _showErrorPassword = value.length < 6 || value.contains(" "));
-                  }, obscureText: true)
+                  child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration1(hintText: 'Şifre', showError: _showErrorPassword),
+                    style: TextStyle(color: userorseller ? Colors.white : Colors.black, fontSize: 20),
+                    controller: _currentPasswordController,
+                    obscureText: true,
+                    onChanged: (value) => clearErrors(),
+                    validator: (value) {
+                      final currentTrimmedPassword = value?.trim();
+                      if (currentTrimmedPassword!.isEmpty || currentTrimmedPassword.length < 6 || currentTrimmedPassword.contains(" ")) {
+                        setState(() {
+                          _showErrorPassword = true;
+                        });
+                        return '';
+                      } else {
+                        setState(() {
+                          _showErrorPassword = false;
+                        });
+                        return null;
+                      }
+                    },
+                  ),
                 ),
               ),
-              
+              if (_showErrorPassword && _currentPasswordController.text.trim().length < 6)
+                errorMessage("Parolanız çok kısa"),
+              if (_showErrorPassword && _currentPasswordController.text.trim().contains(" "))
+                errorMessage("Parolada boşluk bulundurmayınız"),
+              if (_showErrorPassword && _currentPasswordController.text.trim().isEmpty)
+                errorMessage("Parola boş bırakılamaz"),
+              if (_reauthErrorMessage.isNotEmpty)
+                errorMessage(_reauthErrorMessage),
               const SizedBox(height: 15),
               Padding(
                 padding: const EdgeInsets.only(left: 20),
@@ -97,28 +121,57 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
                 color: userorseller ? sellergrey : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: _buildTextField(_newPasswordController, "Parola tekrar", _showErrorNewPassword, (value) {
-                    setState(() => _showErrorPassword = value.length < 6 || value.contains(" "));
-                  }, obscureText: true)
+                  child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration1(hintText: 'Yeni Şifre', showError: _showErrorNewPassword),
+                    style: TextStyle(color: userorseller ? Colors.white : Colors.black),
+                    controller: _newPasswordController,
+                    obscureText: true,
+                    onChanged: (value) => clearErrors(),
+                    validator: (value) {
+                      final newTrimmedPassword = value?.trim();
+                      if (newTrimmedPassword!.isEmpty || newTrimmedPassword.length < 6 || newTrimmedPassword.contains(" ")) {
+                        setState(() {
+                          _showErrorNewPassword = true;
+                        });
+                        return null;
+                      } else {
+                        setState(() {
+                          _showErrorNewPassword = false;
+                        });
+                        return null;
+                      }
+                    },
+                  ),
                 ),
               ),
+              if (_showErrorNewPassword && _newPasswordController.text.trim().length < 6)
+                errorMessage("Parolanız çok kısa"),
+              if (_showErrorNewPassword && _newPasswordController.text.trim().contains(" "))
+                errorMessage("Parolada boşluk bulundurmayınız"),
+              if (_showErrorNewPassword && _newPasswordController.text.trim().isEmpty)
+                errorMessage("Parola boş bırakılamaz"),
                 
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
                   onPressed: () async{
                     if (_key.currentState!.validate()) {
-                      print('1');
                       if (await InternetConnection().hasInternetAccess) {
-                        print('2');
                         await changePassword();
-                        showSuccessAlert('Başarılı');
+                        if (isUpdated){
+                          _currentPasswordController.clear();
+                          _newPasswordController.clear();
+                          if (mounted) {
+                          Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
+                        }
+                        }
                       } else {
                         if (mounted) {
-                        showErrorAlert('Oopps...');
-                      }
+                          Showalert(context: context, text: 'Ooopps...').showErrorAlert();
+                        }
                       }
                     }
+                    isUpdated = false;
                   },
                   style: GlobalStyles.buttonPrimary(),
                   child: Text(
@@ -137,55 +190,6 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
       ),
     );
   }
-
-  Widget _buildTextField(
-  TextEditingController controller,
-  String hintText,
-  bool showError,
-  Function(String) validator, {
-  bool obscureText = false,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(
-        height: 45,
-        width: 335,
-        child: PlatformTextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          style: const TextStyle(color: Colors.black, fontSize: 20),
-          material: (_, __) => MaterialTextFormFieldData(
-            decoration: GlobalStyles.inputDecoration1(hintText: hintText,showError:  showError),
-          ),
-          cupertino: (_, __) => CupertinoTextFormFieldData(
-            decoration: BoxDecoration(
-              color: const Color(0xFFE5E5E5),
-              borderRadius: BorderRadius.circular(15.0),
-              border: Border.all(color: showError ? Colors.red : Colors.black), // Keep style but change border color
-            ),
-            placeholder: hintText,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          ),
-          validator: (value) {
-            validator(value!);
-            return showError ? 'Geçerli bir $hintText giriniz' : null;
-          },
-        ),
-      ),
-      const SizedBox(height: 10,),
-      if (showError)
-        Padding(
-          padding: const EdgeInsets.only(top: 5),
-          child: PlatformText(
-            "Geçerli bir $hintText giriniz",
-            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red),
-          ),
-        ),
-      const SizedBox(height: 17),
-    ],
-  );
-}
 
   Widget errorMessage(String message) {
     return Align(
@@ -213,9 +217,7 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
       try {
         await user.reauthenticateWithCredential(cred);
         await user.updatePassword(_newPasswordController.text.trim());
-        print('wow this is working');
-        await showBottomSheetDialog(context);
-        Navigator.pop(context);
+        isUpdated = true;
       } catch (e) {
         setState(() {
           _reauthErrorMessage = 'Geçerli bir şifre giriniz';
@@ -229,37 +231,5 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
       _showErrorNewPassword = false;
       _reauthErrorMessage = '';
     });
-  }
-  Future<void> showBottomSheetDialog(BuildContext context) async {
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) {
-      return Container(
-        height: 80,
-        padding: const EdgeInsets.all(16.0),
-        color: userorseller ? sellerbackground : background,
-        child: Center(
-          child: Text(
-            'Kullanıcı şifresi başarı ile güncellenmiştir',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: userorseller ? Colors.white : Colors.black,
-            ),
-          ),
-        ),
-      );
-    },
-  );
-  // Delay pop to give user time to see the confirmation message
-  await Future.delayed(const Duration(seconds: 1));
-}
-void showSuccessAlert(String text) {
-    QuickAlert.show(context: context, text: text,type: QuickAlertType.success,confirmBtnText: 'Tamam',title: 'Başarılı');
-  }
-  void showErrorAlert(String text) {
-    QuickAlert.show(context: context, text: text,type: QuickAlertType.error,confirmBtnText: 'Tamam',title: 'Bir şeyler ters gitti');
   }
 }

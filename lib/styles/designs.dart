@@ -97,8 +97,18 @@ static InputDecoration inputDecoration1({required String hintText, required bool
       borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
       borderRadius: BorderRadius.circular(15.0),
     ),
+    errorBorder: OutlineInputBorder(
+      borderSide: const BorderSide(color: Colors.red), // Error border when unfocused
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderSide: const BorderSide(color: Colors.red), // Error border when focused
+      borderRadius: BorderRadius.circular(15.0),
+    ),
     fillColor: const Color(0xFFE5E5E5),
     filled: true,
+    errorStyle: const TextStyle(height: 0)
   );
 }
+
 }
