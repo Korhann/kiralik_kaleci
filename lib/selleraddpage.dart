@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -19,10 +18,6 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:html/dom.dart' as dom;
-import 'package:html/parser.dart' as parser;
-import 'package:beautiful_soup_dart/beautiful_soup.dart';
-
 
 class SellerAddPage extends StatefulWidget {
   const SellerAddPage({super.key});
@@ -64,6 +59,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
   // for selecting the fields according to the districts
   List<String> fields = [];
 
+  String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  bool userisSeller = false;
+
 
   @override
   void initState() {
@@ -90,11 +88,21 @@ class _SellerAddPageState extends State<SellerAddPage> {
       });
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: sellerbackground,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: sellerbackground,
+        centerTitle: true,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 30, bottom: 10),
+          child: buildButton(),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Form(
@@ -102,7 +110,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 50),
+                const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
                   child: Text(
@@ -302,6 +310,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                       width: 350,
                       color: Colors.white,
                       child: DropdownButton<String>(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
                         isExpanded: true,
                         value: selectedCity,
                         items: cities.map((city) => DropdownMenuItem<String>(
@@ -319,7 +328,12 @@ class _SellerAddPageState extends State<SellerAddPage> {
                           }
                           multFields.clear();
                         },
-                        hint: const Text('Şehir seçin'),
+                        hint: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: const Text(
+                            'Şehir seçin'
+                          ),
+                        ),
                         underline: const SizedBox(),
                       ),
                     ),
@@ -347,6 +361,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                       width: 350,
                       color: Colors.white,
                       child: DropdownButton<String>(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
                         isExpanded: true,
                         value: selectedDistrict,
                         items: districts.map((district) => DropdownMenuItem<String>(
@@ -365,7 +380,12 @@ class _SellerAddPageState extends State<SellerAddPage> {
                             multFields.clear();
                           });
                         },
-                        hint: const Text('İlçe seçin'),
+                        hint: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: const Text(
+                            'İlçe seçin'
+                          ),
+                        ),
                         underline: const SizedBox(),
                       ),
                     ),
@@ -428,6 +448,24 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 ),
               ),
             ),
+          ),
+          const SizedBox(height: 10),
+
+          ListView.builder(
+          padding: const EdgeInsets.all(8),
+          shrinkWrap: true,
+          itemCount: multFields.length,
+          itemBuilder: (BuildContext context, int index) {
+            List<String> fieldList = multFields.toList();
+            return Container(
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(fieldList[index]),
+            );
+          },
           ),
             const SizedBox(height: 20),
                 // SAAT BİLGİLERİNİ GİR
@@ -560,9 +598,10 @@ class _SellerAddPageState extends State<SellerAddPage> {
                       Text(
                         "Fiyat",
                         style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600),
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600
+                        ),
                       ),
                       const SizedBox(width: 5),
                     ],
@@ -648,7 +687,6 @@ class _SellerAddPageState extends State<SellerAddPage> {
     }
   }
 
-
   Future<void> fetchCities() async {
     var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
     if (response.statusCode == 200) {
@@ -667,6 +705,42 @@ class _SellerAddPageState extends State<SellerAddPage> {
     }
   }
 
+  // checks if the seller is currently has an active ad
+  Future<bool> checkIfUserIsAlreadySeller() async {
+  final documentSnapshot = await FirebaseFirestore.instance.collection('Users').doc(currentUser).get();
+  userisSeller = documentSnapshot.data()?['sellerDetails'] != null;
+  if (userisSeller) {
+    return true;
+  } else {
+    return false;
+  }
+  }
+
+  Widget buildButton() {
+  return FutureBuilder<bool>(
+    future: checkIfUserIsAlreadySeller(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return CircularProgressIndicator();
+      }
+
+      if (snapshot.hasData) {
+        return Text(
+          snapshot.data! ? 'İlanı Düzenle' : 'İlan Ekle',
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        );
+      }
+
+      return Text('Hata', style: GoogleFonts.inter(fontSize: 20));
+    },
+  );
+}
+
+
   // to populate with districts
   void onCitySelected(String selectedCity) {
     final city = cityData.firstWhere((city) => city['name'] == selectedCity);
@@ -683,7 +757,6 @@ class _SellerAddPageState extends State<SellerAddPage> {
       }
     }
   }
-
   void _removeImage(int index) {
     setState(() {
       imageFileList.removeAt(index);
@@ -822,11 +895,11 @@ class _SellerAddPageState extends State<SellerAddPage> {
 }
   // default resim dosyası path almak için
   Future<File> getDefaultImageFile() async {
+    // bunu sonradan değiştir
     final byteData = await rootBundle.load('lib/images/image1.jpg');
     final tempDir = await getTemporaryDirectory();
     final tempFile = File('${tempDir.path}/image1.jpg');
     await tempFile.writeAsBytes(byteData.buffer.asUint8List());
-    print('file is $tempFile');
     return tempFile;
   }
 
@@ -937,13 +1010,3 @@ Widget build(BuildContext context) {
   );
   }
 }
-
-/*
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-} 
-*/
