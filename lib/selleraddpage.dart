@@ -449,25 +449,65 @@ class _SellerAddPageState extends State<SellerAddPage> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 15),
 
-          ListView.builder(
-          padding: const EdgeInsets.all(8),
-          shrinkWrap: true,
-          itemCount: multFields.length,
-          itemBuilder: (BuildContext context, int index) {
-            List<String> fieldList = multFields.toList();
-            return Container(
-              height: 20,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(fieldList[index]),
-            );
-          },
+          SizedBox(
+            height: 60,
+            width: MediaQuery.of(context).size.width,
+            child: ListView.separated(
+            separatorBuilder: (context,index) => SizedBox(width: 10),
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.all(8),
+            shrinkWrap: true,
+            itemCount: multFields.length,
+            itemBuilder: (BuildContext context, int index) {
+              List<String> fieldList = multFields.toList();
+              return Stack(
+                children: [
+                  Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Center(
+                      child: Text(
+                        fieldList[index]
+                      )
+                    )
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        multFields.remove(fieldList[index]);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 10,
+                      ),
+                    ),
+                  ),
+                ),
+                ],
+              );
+            },
+            ),
           ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
                 // SAAT BİLGİLERİNİ GİR
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
