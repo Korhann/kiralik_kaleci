@@ -11,9 +11,11 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:path_provider/path_provider.dart';
@@ -279,13 +281,15 @@ class _SellerAddPageState extends State<SellerAddPage> {
                       hintStyle: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 14,
-                          fontWeight: FontWeight.w300),
+                          fontWeight: FontWeight.w300
+                      ),
+                      border: InputBorder.none,
                       contentPadding: const EdgeInsets.all(10),
                       fillColor: sellergrey,
-                      filled: true),
+                      filled: true
+                  ),
                 ),
                 const SizedBox(height: 40),
-                
                 /*
                 Seçilen şehire göre ilçeler updateDistrictOptions() fonksiyonu ile popüle ediliyor
                 */
@@ -339,6 +343,17 @@ class _SellerAddPageState extends State<SellerAddPage> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 10),
+                if (selectedCity == null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                      'Boş bırakılamaz',
+                      style: TextStyle(
+                        color: Colors.red
+                      )
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
@@ -682,18 +697,22 @@ class _SellerAddPageState extends State<SellerAddPage> {
                       style: GlobalStyles.buttonPrimary(),
                       onPressed: () async {
                         try {
+                          if (await InternetConnection().hasInternetAccess) {
                             await _insertSellerDetails(context);
                             _clearImageandText();
+                          } else {
+                            Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                          }
                         } catch (e) {
-                          log("error at $e");
+                          Showalert(context: context, text: 'Ooops...').showErrorAlert();
                         }
                       },
                       child: Text(
                         "Onayla",
                         style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
                       )),
                 ),
                 const SizedBox(height: 30),
@@ -812,8 +831,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
   }
 
   Future<void> _insertSellerDetails(BuildContext context) async {
-  if (_formKey.currentState!.validate()) {
+  if (_formKey.currentState!.validate() && selectedCity!.isEmpty && selectedDistrict!.isEmpty && selectedField!.isEmpty) {
     // Show loading dialog
+    print('works fine');
     
     showDialog(
       context: context,
@@ -866,6 +886,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
           _AmenitiesState.selectedHoursByDay.clear();
           isInserted = true;
         });
+        Showalert(context: context, text: 'İlan Başarıyla Yüklenmiştir').showSuccessAlert();
 
         // yükleme ekranından çık
         Navigator.of(context).pop();
@@ -877,8 +898,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
         );
       }
     } catch (e) {
-      log("error $e");
       Navigator.of(context).pop(); // Close the loading dialog if an error occurs
+      Showalert(context: context, text: 'Ooops...').showErrorAlert();
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -1029,19 +1050,22 @@ Widget build(BuildContext context) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: checkContainers.map((container) {
-      return InkWell(
-        splashColor: Colors.cyanAccent,
-        onTap: () => onCheckTap(container),
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 5.0),
-          padding: const EdgeInsets.all(8),
-          color: container.isCheck ? const Color.fromRGBO(33, 150, 243, 1) : Colors.white, // seçim rengini yeşil yap
-          child: Text(
-            container.title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: container.isCheck ? Colors.white : Colors.black,
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          splashColor: Colors.cyanAccent,
+          onTap: () => onCheckTap(container),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 5.0),
+            padding: const EdgeInsets.all(8),
+            color: container.isCheck ? Colors.green : Colors.white, // seçim rengini yeşil yap
+            child: Text(
+              container.title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: container.isCheck ? Colors.white : Colors.black,
+              ),
             ),
           ),
         ),
