@@ -56,8 +56,6 @@ class _SellerAddPageState extends State<SellerAddPage> {
   Set<String> multFields = {};
   String? value1;
 
-  bool isInserted = false;
-
   // for selecting the fields according to the districts
   List<String> fields = [];
 
@@ -87,6 +85,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
         imageFileList.clear();
         sellerFullName.clear();
         sellerPrice.clear();
+        multFields.clear();
       });
     }
   }
@@ -115,19 +114,32 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Fotoğraf Ekle",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
-                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "Fotoğraf Ekle",
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600
+                          ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        "(Opsiyonel)",
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  )
                 ),
                 const SizedBox(height: 10),
                 Container(
                   color: sellergrey,
                   height: 110,
-                  width: double.infinity,
+                  width: MediaQuery.of(context).size.width,
                   child: Row(
                     children: [
                       Padding(
@@ -730,8 +742,10 @@ class _SellerAddPageState extends State<SellerAddPage> {
                       onPressed: () async {
                         try {
                           if (await InternetConnection().hasInternetAccess) {
-                            await _insertSellerDetails(context);
-                            _clearImageandText();
+                            bool isInserted = await _insertSellerDetails(context);
+                            if (isInserted) {
+                              _clearImageandText();
+                            }
                           } else {
                             Showalert(context: context, text: 'Ooops...').showErrorAlert();
                           }
@@ -862,8 +876,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
     }
   }
 
-  Future<void> _insertSellerDetails(BuildContext context) async {
-  if (_formKey.currentState!.validate() && selectedCity!.isNotEmpty && selectedDistrict!.isNotEmpty && selectedField!.isNotEmpty) {
+  Future<bool> _insertSellerDetails(BuildContext context) async {
+  if (_formKey.currentState!.validate() && _AmenitiesState.selectedHoursByDay.isNotEmpty && multFields.isNotEmpty) {
 
     // Show loading dialog    
     showDialog(
@@ -915,7 +929,6 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
         setState(() {
           _AmenitiesState.selectedHoursByDay.clear();
-          isInserted = true;
         });
         Showalert(context: context, text: 'İlan Başarıyla Yüklenmiştir').showSuccessAlert();
 
@@ -928,30 +941,15 @@ class _SellerAddPageState extends State<SellerAddPage> {
           MaterialPageRoute(builder: (context) => const SellerSuccessPage())
         );
       }
+      return true;
     } catch (e) {
-      print('Eksik bilgiler var');
       Navigator.of(context).pop(); // Close the loading dialog if an error occurs
       Showalert(context: context, text: 'Ooops...').showErrorAlert();
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Error"),
-            content: Text("An error occurred: $e"),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the error dialog
-                },
-                child: const Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
+      return false;
     }
   } else {
-    print('eksik bilgi');
+    Showalert(context: context, text: 'Tüm alanları doldurduğunuza emin misiniz?').showErrorAlert();
+    return false;
   }
 }   
 
@@ -1062,21 +1060,28 @@ class _AmenitiesState extends State<Amenities> {
   }
 
 
-  void onCheckTap(CheckContainerModel container) {
-    final index = checkContainers.indexWhere(
-      (element) => element.title == container.title,
+void onCheckTap(CheckContainerModel container) {
+  final index = checkContainers.indexWhere(
+    (element) => element.title == container.title,
+  );
+
+  bool previousIsCheck = checkContainers[index].isCheck;
+  checkContainers[index].isCheck = !previousIsCheck;
+
+  // Ensure the list is initialized
+  selectedHoursByDay[widget.day] ??= [];
+
+  if (checkContainers[index].isCheck) {
+    selectedHoursByDay[widget.day]!.add(checkContainers[index]);
+  } else {
+    selectedHoursByDay[widget.day]!.removeWhere(
+      (element) => element.title == checkContainers[index].title,
     );
-    bool previousIsCheck = checkContainers[index].isCheck;
-    checkContainers[index].isCheck = !previousIsCheck;
-    if (checkContainers[index].isCheck) {
-      selectedHoursByDay[widget.day]!.add(checkContainers[index]);
-    } else {
-      selectedHoursByDay[widget.day]!.removeWhere(
-        (element) => element.title == checkContainers[index].title
-      );
-    }
-    setState(() {});
   }
+  
+  setState(() {});
+}
+
 
 
 @override
