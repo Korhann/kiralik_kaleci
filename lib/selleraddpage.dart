@@ -306,14 +306,11 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 ),
                 const SizedBox(height: 15),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      height: 45,
-                      width: 350,
-                      color: Colors.white,
-                      child: DropdownButton<String>(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<String>(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         isExpanded: true,
                         value: selectedCity,
@@ -338,22 +335,36 @@ class _SellerAddPageState extends State<SellerAddPage> {
                             'Şehir seçin'
                           ),
                         ),
-                        underline: const SizedBox(),
+                        decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            errorStyle: const TextStyle(height: 0),
+                          ),
+                        validator: (value) {
+                          if (value == null) {
+                            return '';
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                    const SizedBox(height: 2),
+                    if (selectedCity == null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5, left: 10),
+                      child: Text(
+                        'Lütfen bir şehir seçin',
+                        style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
                       ),
                     ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 10),
-                if (selectedCity == null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Text(
-                      'Boş bırakılamaz',
-                      style: TextStyle(
-                        color: Colors.red
-                      )
-                    ),
-                  ),
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
@@ -368,26 +379,24 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 ),
                 const SizedBox(height: 15),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      height: 45,
-                      width: 350,
-                      color: Colors.white,
-                      child: DropdownButton<String>(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<String>(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         isExpanded: true,
                         value: selectedDistrict,
                         items: districts.map((district) => DropdownMenuItem<String>(
-                          value: district,
-                          child: Text(
-                            district,
-                            style: GoogleFonts.inter(
-                              color: Colors.black,
+                            value: district,
+                            child: Text(
+                              district,
+                              style: GoogleFonts.inter(
+                                color: Colors.black,
+                              ),
                             ),
-                          ),
                         )).toList(),
+                      
                         onChanged: (value) {
                           setState(() {
                             selectedDistrict = value;
@@ -395,15 +404,37 @@ class _SellerAddPageState extends State<SellerAddPage> {
                             multFields.clear();
                           });
                         },
-                        hint: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: const Text(
-                            'İlçe seçin'
+                        hint: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('İlçe seçin'),
+                        ),
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          errorStyle: const TextStyle(height: 0),
+                        ),
+                        validator: (value) {
+                          if (value == null) {
+                            return '';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 2),
+                      if (selectedDistrict == null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5, left: 10),
+                          child: Text(
+                            'Lütfen bir ilçe seçin',
+                            style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
                           ),
                         ),
-                        underline: const SizedBox(),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -464,7 +495,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
               ),
             ),
           ),
-          const SizedBox(height: 15),
+          
+          const SizedBox(height: 10),
 
           SizedBox(
             height: 60,
@@ -522,7 +554,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
             },
             ),
           ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 5),
                 // SAAT BİLGİLERİNİ GİR
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
@@ -704,7 +736,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                             Showalert(context: context, text: 'Ooops...').showErrorAlert();
                           }
                         } catch (e) {
-                          Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                          Showalert(context: context, text: 'Tüm alanları doldurduğunuza emin misiniz?').showErrorAlert();
                         }
                       },
                       child: Text(
@@ -831,10 +863,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
   }
 
   Future<void> _insertSellerDetails(BuildContext context) async {
-  if (_formKey.currentState!.validate() && selectedCity!.isEmpty && selectedDistrict!.isEmpty && selectedField!.isEmpty) {
-    // Show loading dialog
-    print('works fine');
-    
+  if (_formKey.currentState!.validate() && selectedCity!.isNotEmpty && selectedDistrict!.isNotEmpty && selectedField!.isNotEmpty) {
+
+    // Show loading dialog    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -898,6 +929,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
         );
       }
     } catch (e) {
+      print('Eksik bilgiler var');
       Navigator.of(context).pop(); // Close the loading dialog if an error occurs
       Showalert(context: context, text: 'Ooops...').showErrorAlert();
       showDialog(
@@ -918,6 +950,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
         },
       );
     }
+  } else {
+    print('eksik bilgi');
   }
 }   
 
