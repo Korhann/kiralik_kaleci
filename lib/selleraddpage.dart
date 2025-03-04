@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -62,6 +63,15 @@ class _SellerAddPageState extends State<SellerAddPage> {
   String currentUser = FirebaseAuth.instance.currentUser!.uid;
   bool userisSeller = false;
 
+final GlobalKey<_AmenitiesState> mondayKey = GlobalKey();
+final GlobalKey<_AmenitiesState> tuesdayKey = GlobalKey();
+final GlobalKey<_AmenitiesState> wednesdayKey = GlobalKey();
+final GlobalKey<_AmenitiesState> thursdayKey = GlobalKey();
+final GlobalKey<_AmenitiesState> fridayKey = GlobalKey();
+final GlobalKey<_AmenitiesState> saturdayKey = GlobalKey();
+final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
+
+
 
   @override
   void initState() {
@@ -86,6 +96,15 @@ class _SellerAddPageState extends State<SellerAddPage> {
         sellerFullName.clear();
         sellerPrice.clear();
         multFields.clear();
+        selectedCity = null;
+        selectedDistrict = null;
+        mondayKey.currentState?.resetSelection();
+        tuesdayKey.currentState?.resetSelection();
+        wednesdayKey.currentState?.resetSelection();
+        thursdayKey.currentState?.resetSelection();
+        fridayKey.currentState?.resetSelection();
+        saturdayKey.currentState?.resetSelection();
+        sundayKey.currentState?.resetSelection();
       });
     }
   }
@@ -596,7 +615,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                                   color: Colors.white
                                 ),
                               ),
-                              const Amenities(day: 'Pazartesi',),
+                              Amenities(key: mondayKey ,day: 'Pazartesi',),
                             ],
                         ),
                         const SizedBox(width: 10),
@@ -610,7 +629,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                                 color: Colors.white
                               ),
                             ),
-                            const Amenities(day: 'Salı')
+                            Amenities(key: tuesdayKey ,day: 'Salı')
                           ],
                         ),
                         const SizedBox(width: 10),
@@ -624,7 +643,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                                 color: Colors.white
                               ),
                             ),
-                            const Amenities(day: 'Çarşamba')
+                            Amenities(key: wednesdayKey ,day: 'Çarşamba')
                           ],
                         ),
                         const SizedBox(width: 10),
@@ -638,7 +657,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                                 color: Colors.white
                               ),
                             ),
-                            const Amenities(day: 'Perşembe',)
+                            Amenities(key: thursdayKey ,day: 'Perşembe',)
                           ],
                         ),
                         const SizedBox(width: 10),
@@ -652,7 +671,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                                 color: Colors.white
                               ),
                             ),
-                            const Amenities(day: 'Cuma')
+                            Amenities(key: fridayKey ,day: 'Cuma')
                           ],
                         ),
                         const SizedBox(width: 10),
@@ -666,7 +685,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                                 color: Colors.white
                               ),
                             ),
-                            const Amenities(day: 'Cumartesi')
+                             Amenities(key: saturdayKey ,day: 'Cumartesi')
                           ],
                         ),
                         const SizedBox(width: 10),
@@ -680,7 +699,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                                 color: Colors.white
                               ),
                             ),
-                            const Amenities(day: 'Pazar')
+                            Amenities(key: sundayKey ,day: 'Pazar')
                           ],
                         ),
                         const SizedBox(width: 5),
@@ -930,16 +949,17 @@ class _SellerAddPageState extends State<SellerAddPage> {
         setState(() {
           _AmenitiesState.selectedHoursByDay.clear();
         });
-        Showalert(context: context, text: 'İlan Başarıyla Yüklenmiştir').showSuccessAlert();
 
         // yükleme ekranından çık
         Navigator.of(context).pop();
 
+        Showalert(context: context, text: 'İlan Başarıyla Yüklenmiştir').showSuccessAlert();
+        print('seller details is  $sellerDetails');
+        print('current user is $currentUser');
+
+
         // saat seçme ui ını yenilemesi için pushreplacement
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SellerSuccessPage())
-        );
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUser)));
       }
       return true;
     } catch (e) {
@@ -989,9 +1009,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
   // default resim dosyası path almak için
   Future<File> getDefaultImageFile() async {
     // bunu sonradan değiştir
-    final byteData = await rootBundle.load('lib/images/image1.jpg');
+    final byteData = await rootBundle.load('lib/images/imageDefault.jpg');
     final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/image1.jpg');
+    final tempFile = File('${tempDir.path}/imageDefault.jpg');
     await tempFile.writeAsBytes(byteData.buffer.asUint8List());
     return tempFile;
   }
@@ -1062,7 +1082,7 @@ class _AmenitiesState extends State<Amenities> {
 
 void onCheckTap(CheckContainerModel container) {
   final index = checkContainers.indexWhere(
-    (element) => element.title == container.title,
+    (element) => element.title == container.title, 
   );
 
   bool previousIsCheck = checkContainers[index].isCheck;
@@ -1080,6 +1100,16 @@ void onCheckTap(CheckContainerModel container) {
   }
   
   setState(() {});
+}
+  void resetSelection() {
+  checkContainers = checkContainers.map((container) {
+    return container.copyWith(isCheck: false); // Create a new instance with isCheck = false
+  }).toList(); // Convert back to list
+
+  //selectedHoursByDay[widget.day]?.clear(); // Clear the selected list for the day
+  if (mounted) {
+    setState(() {}); // Refresh the UI
+  }
 }
 
 

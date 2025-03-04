@@ -211,7 +211,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                               child: Text(
                                                 field,
                                                 style: TextStyle(
-                                                  color: Colors.black
+                                                  color: userorseller ? Colors.white : Colors.black
                                                 ),
                                               ),
                                             ),
