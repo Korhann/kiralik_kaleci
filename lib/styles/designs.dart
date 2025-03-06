@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class GlobalStyles {
+  final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
+
   static InputDecoration inputDecoration({required String hintText}) {
     return InputDecoration(
       contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -38,6 +40,7 @@ class GlobalStyles {
     );
   }
 Widget buildTextField(
+
   TextEditingController controller,
   String hintText,
   bool showError,

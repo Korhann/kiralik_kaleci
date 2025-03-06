@@ -99,22 +99,198 @@ class _SignUpState extends State<SignUp> {
                   ),
                   const SizedBox(height: 55),
 
-                  GlobalStyles().buildTextField(fullNameController, "Ad Soyad", _showErrorName, (value) {
-                    setState(() => _showErrorName = value.trim().isEmpty || !RegExp(r'^[a-zA-Z ]+$').hasMatch(value));
-                  }),
+                  // AD SOYAD
+                  SizedBox(
+                    height: 70,
+                        width: MediaQuery.of(context).size.width,
+                        child: TextFormField(
+                          controller: fullNameController,
+                            style: const TextStyle(
+                              color: Colors.black, fontSize: 20),
+                            decoration: GlobalStyles.inputDecoration1(hintText: 'Ad Soyad', showError: _showErrorName),
+                            validator: (value) {
+                              final nameSurname = value?.trim();
+                              if (nameSurname!.isEmpty || !RegExp(r'^[a-z A-Z]+$').hasMatch(nameSurname)) {
+                                setState(() {
+                                  _showErrorName = true;
+                                });
+                                return '';
+                              } else {
+                                setState(() {
+                                  _showErrorName = false;
+                                });
+                                return null;
+                              }
+                            }),
+                      ),
+                
+                    if (_showErrorName)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Geçerli bir isim soyisim giriniz",
+                        textAlign: TextAlign.start,
+                        style: GoogleFonts.inter(
+                          textStyle: GlobalStyles().errorstyle
+                        ),
+                      ),
+                    ),
 
-                  GlobalStyles().buildTextField(emailController, "Email", _showErrorEmail || _emailInUse, (value) {
-                    setState(() => _showErrorEmail = value.trim().isEmpty ||
-                        !RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value));
-                  }),
+                    const SizedBox(height: 10),
 
-                  GlobalStyles().buildTextField(passwordController, "Parola", _showErrorPassword, (value) {
-                    setState(() => _showErrorPassword = value.length < 6 || value.contains(" "));
-                  }, obscureText: true),
+                  // EMAİL
+                      SizedBox(
+                        height: 70,
+                        width: MediaQuery.of(context).size.width,
+                        child: TextFormField(
+                            controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 20),
+                            decoration: GlobalStyles.inputDecoration1(hintText: 'Email', showError: _showErrorEmail),
+                            validator: (value) {
+                              final email = value?.trim();
+                              if (email!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email) || _emailInUse) {
+                                setState(() {
+                                  _showErrorEmail = true;
+                                  _emailInUse = false;
+                                });
+                                return '';
+                              }else {
+                                setState(() {
+                                  _showErrorEmail = false;
+                                });
+                                return null;
+                              }
+                          }
+                        ),
+                      ),
 
-                  GlobalStyles().buildTextField(confirmPasswordController, "Parola tekrar", _showErrorRePassword, (value) {
-                    setState(() => _showErrorRePassword = value != passwordController.text.trim());
-                  }, obscureText: true),
+                    // Email başka bir hesap tarafından kullanımda olmasına rağmen hata vermiyor.
+                    if (_showErrorEmail)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Girdiğiniz mail hatalı veya kullanımda",
+                        textAlign: TextAlign.start,
+                        style: GoogleFonts.inter(
+                          textStyle: GlobalStyles().errorstyle
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                  // PAROLA 
+                      SizedBox(
+                        height: 70,
+                        width: MediaQuery.of(context).size.width,
+                        child: TextFormField(
+                          controller: passwordController,
+                          style:
+                              const TextStyle(color: Colors.black, fontSize: 20),
+                          decoration: GlobalStyles.inputDecoration1(hintText: 'Parola', showError: _showErrorPassword),
+                          validator: (value) {
+                          final password = value?.trim();
+                          if (password!.isEmpty || password.length < 6 || password.contains(" ")) {
+                            setState(() {
+                              _showErrorPassword = true;
+                            });
+                            return '';
+                          } else {
+                            setState(() {
+                              _showErrorPassword = false;
+                            });
+                            return null;
+                          }
+                        },
+                      ),
+                    ),
+                
+                  if (_showErrorPassword && passwordController.text.trim().length < 6)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Parolanız çok kısa",
+                        style: GoogleFonts.inter(
+                          textStyle: GlobalStyles().errorstyle
+                        ),
+                      ),
+                    ),
+                
+                  if (_showErrorPassword && passwordController.text.trim().contains(" "))
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Parolada boşluk bulundurmayınız",
+                        style: GoogleFonts.inter(
+                          textStyle: GlobalStyles().errorstyle
+                        ),
+                      ),
+                    ),
+                  if (_showErrorPassword && passwordController.text.trim().isEmpty)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Parola boş bırakılamaz",
+                        style: GoogleFonts.inter(
+                          textStyle: GlobalStyles().errorstyle
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // PAROLA TEKRAR
+                     SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: TextFormField(
+                          controller: confirmPasswordController,
+                          style:
+                              const TextStyle(color: Colors.black, fontSize: 20),
+                          decoration: GlobalStyles.inputDecoration1(hintText: 'Parola Tekrar', showError: _showErrorRePassword),
+                          validator: (value) {
+                            final repassword = value?.trim();
+                            if (repassword!.isEmpty || confirmPasswordController.text.trim() != passwordController.text.trim()){
+                              setState(() {
+                                _showErrorRePassword = true;
+                              });
+                              return '';
+                            }
+                            else {
+                              setState(() {
+                                _showErrorRePassword = false;
+                              });
+                              return null;
+                            }
+                          },
+                        ),
+                      ),
+                    
+                    const SizedBox(height: 5),
+                
+                    if (_showErrorRePassword && passwordController.text.trim().isEmpty)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Parola boş bırakılamaz",
+                        style: GoogleFonts.inter(
+                          textStyle: GlobalStyles().errorstyle
+                        ),
+                      ),
+                    ),
+                    if (_showErrorRePassword && passwordController.text.trim() != confirmPasswordController.text.trim())
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Parola aynı olmalıdır",
+                        style: GoogleFonts.inter(
+                          textStyle: GlobalStyles().errorstyle
+                        ),
+                      ),
+                    ),
+
+
 
                   const SizedBox(height: 20.0),
 

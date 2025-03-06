@@ -40,6 +40,8 @@ class _LogInState extends State<LogIn> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  bool _obsecureText = true;
+
 
   // Changed the future with void!!
   Future signInUser() async {
@@ -113,16 +115,141 @@ class _LogInState extends State<LogIn> {
                     ),
               
                     const SizedBox(height: 40),
-
-                    GlobalStyles().buildTextField(emailController, "Email", _showErrorEmail, (value) {
-                    setState(() => _showErrorEmail = value.trim().isEmpty ||!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value));
-                  }),
-              
-                    const SizedBox(height: 10),
                     
-                    GlobalStyles().buildTextField(passwordController, 'Parola', _showErrorPassword, (value) {
-                    setState(() => _showErrorPassword = value.length < 6 || value.contains(" "));}, obscureText: true
+                     SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: TextFormField(
+                        keyboardType: TextInputType.emailAddress,
+                        controller: emailController,
+                        style: const TextStyle(color: Colors.black, fontSize: 20),
+                        decoration: GlobalStyles.inputDecoration1(hintText: 'Email',showError: _showErrorEmail),
+                        validator: (value) {
+                          final email = value?.trim();
+                          if (email!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email)) {
+                            setState(() {
+                              _showErrorEmail = true;
+                            });
+                            return '';
+                          } else {
+                            setState(() {
+                              _showErrorEmail = false;
+                            });
+                            return null;
+                          }
+                        },
+                      ),
                     ),
+              
+                    if (_showErrorEmail) 
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Girdiğiniz mail hatalı',
+                          textAlign: TextAlign.start,
+                          style: GoogleFonts.inter(
+                            textStyle: errorstyle
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: TextFormField(
+                        keyboardType: TextInputType.text,
+                        obscureText: _obsecureText,
+                        controller: passwordController,
+                        style: const TextStyle(color: Colors.black, fontSize: 20),
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          hintText: 'Parola',
+                          hintStyle: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.normal, color: grey),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: _showErrorPassword ? Colors.red : Colors.black),
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: _showErrorPassword ? Colors.red : Colors.black),
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.red), // Error border when unfocused
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.red), // Error border when focused
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          fillColor: const Color(0xFFE5E5E5),
+                          filled: true,
+                          errorStyle: const TextStyle(height: 0),
+                            suffixIcon: Padding(
+                              padding: const EdgeInsets.only(right: 10.0),
+                              // I have to change the icon size and add it to sign up page as well
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _obsecureText = !_obsecureText;
+                                  });
+                                },
+                                child: Image.asset(
+                                  _obsecureText
+                                      ? "lib/icons/eye.png"
+                                      : "lib/icons/eye-off.png",
+                                  width: 15,
+                                  height: 15,
+                                ),
+                              ),
+                            )
+                          ),
+                        validator: (value) {
+                          final password = value?.trim();
+                          if (password!.isEmpty || password.length < 6 || password.contains(" ")) {
+                            setState(() {
+                              _showErrorPassword = true;
+                            });
+                            return '';
+                          } else {
+                            setState(() {
+                              _showErrorPassword = false;
+                            });
+                            return null;
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+              
+                    if (_showErrorPassword && passwordController.text.trim().length < 6)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Parolanın çok kısa",
+                          style: GoogleFonts.inter(
+                            textStyle: errorstyle
+                          ),
+                        ),
+                      ),
+                  
+                    if (_showErrorPassword && passwordController.text.trim().contains(" "))
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Parolada boşluk bulundurmayınız",
+                          style: GoogleFonts.inter(
+                            textStyle: errorstyle
+                          ),
+                        ),
+                      ),
+                    if (_showErrorPassword && passwordController.text.trim().isEmpty)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Parola boş bırakılamaz",
+                          style: GoogleFonts.inter(
+                            textStyle: errorstyle
+                          ),
+                        ),
+                      ),
                     
                     
                     const SizedBox(height: 10),
