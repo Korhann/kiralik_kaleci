@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 
@@ -86,14 +88,20 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: sellergrey,
+                color: sellerbackground,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration1(
+                      hintText: 'IBAN', 
+                      showError: wrongIBAN,
+                    ),
                     style: const TextStyle(
-                      color: Colors.white
+                      color: Colors.black,
+                      fontSize: 18,
                     ),
                     controller: _ibanController,
                     focusNode: _ibanFocusNode,
@@ -101,61 +109,54 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                       LengthLimitingTextInputFormatter(32), // Including spaces
                       FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9 ]')),
                       TextInputFormatter.withFunction((oldValue, newValue) {
-  String newText = newValue.text.toUpperCase();
-
-  // Format the input while keeping "TR" at the start
-  if (newText.startsWith('TR') && newText.length > 2) {
-    newText = 'TR${formatIban(newText.substring(2))}';
-  } else if (!newText.startsWith('TR')) {
-    newText = 'TR${formatIban(newText)}';
-  } else {
-    newText = formatIban(newText);
-  }
-
-  // Calculate the correct cursor position
-  int newSelectionIndex = newValue.selection.end;
-
-  // Track spaces in the formatted IBAN
-  int spaceCount = 'TR'.allMatches(newText).length;
-  newSelectionIndex += spaceCount;
-
-  // Make sure the cursor position is within bounds
-  newSelectionIndex = newSelectionIndex.clamp(0, newText.length);
-
-  // Return the updated TextEditingValue with adjusted cursor position
-  return TextEditingValue(
-    text: newText,
-    selection: TextSelection.collapsed(offset: newSelectionIndex),
-  );
-})
+                        String newText = newValue.text.toUpperCase();
+                        if (newText.isEmpty || newText == 'T' || newText == 'TR') {
+                          newText = 'TR'; // Always keep TR as default when empty
+                        } else if (!newText.startsWith('TR')) {
+                          newText = 'TR${formatIban(newText)}';
+                        } else {
+                          newText = 'TR${formatIban(newText.substring(2))}';
+                        }
+                        
+                        return TextEditingValue(
+                          text: newText,
+                          selection: TextSelection.collapsed(offset: newText.length),
+                        );
+                      }),
                     ],
-                    keyboardType: TextInputType.text,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        setState(() {
-                          wrongIBAN = true;
-                        });
-                        return 'Zorunlu alan boş bırakılmaz';
-                      }
-                      final regex = RegExp(_ibanPattern);
-                      if (!regex.hasMatch(value)) {
-                        setState(() {
-                          wrongIBAN = true;
-                        });
-                        return 'Lütfen geçerli bir iban giriniz';
-                      }
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
                       setState(() {
-                        wrongIBAN = false;
+                        wrongIBAN = true;
                       });
-                      return null;
-                    },
-                  ),
-                ),
+                    return 'Zorunlu alan boş bırakılmaz';
+                    }
+                  
+                  final regex = RegExp(_ibanPattern);
+                  if (!regex.hasMatch(value)) {
+                    setState(() {
+                      wrongIBAN = true;
+                    });
+                    return 'Lütfen geçerli bir iban giriniz';
+                  }
+                  setState(() {
+                    wrongIBAN = false;
+                  });
+                  return null;
+                },
+                onTap: () {
+                  if (_ibanController.text.isEmpty) {
+                    setState(() {
+                      _ibanController.text = 'TR';
+                      _ibanController.selection = TextSelection.collapsed(offset: 2);
+                    });
+                  }
+                },
               ),
-              const SizedBox(height: 15),
+            ),
+          ),
+              const SizedBox(height: 30),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Text(
@@ -167,20 +168,20 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: sellergrey,
+                color: sellerbackground,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
+                    decoration: GlobalStyles.inputDecoration1(hintText: 'Ad Soyad', showError: wrongName),
                     style: const TextStyle(
-                      color: Colors.white
+                      color: Colors.black,
+                      fontSize: 20
                     ),
                     controller: _nameController,
                     keyboardType: TextInputType.text,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         setState(() {
@@ -201,8 +202,12 @@ class SellerIbanPageState extends State<SellerIbanPage> {
               Center(
                 child: ElevatedButton(
                   onPressed: () async{
-                    if (formkey.currentState!.validate()) {
+                    if (await InternetConnection().hasInternetAccess) {
+                      if (formkey.currentState!.validate()) {
                       await _updateIbanNo();
+                      }
+                    } else {
+                      Showalert(context: context, text: 'Ooops...').showErrorAlert();
                     }
                   },
                   style: GlobalStyles.buttonPrimary(),
@@ -242,42 +247,15 @@ class SellerIbanPageState extends State<SellerIbanPage> {
           .collection('Users')
           .doc(userId)
           .update({'ibanDetails': ibanDetails});
+
+        Showalert(context: context, text: 'İşlem başarılı bir şekilde gerçeklişmiştir').showSuccessAlert();
         _ibanController.clear();
         _nameController.clear();
-        await showBottomSheetDialog(context);
-        Navigator.of(context).pop();
 
       } catch (e) {
+        Showalert(context: context, text: 'Ooops...').showErrorAlert();
         print('Error $e');
-      } finally {
-        Navigator.of(context).pop();
-      }
+      } 
     }
   }
-  Future<void> showBottomSheetDialog(BuildContext context) async {
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) {
-      return Container(
-        height: 80,
-        padding: const EdgeInsets.all(16.0),
-        color: userorseller ? sellerbackground : background,
-        child: Center(
-          child: Text(
-            ' Iban numarası başarı ile güncellenmiştir',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: userorseller ? Colors.white : Colors.black,
-            ),
-          ),
-        ),
-      );
-    },
-  );
-  // Delay pop to give user time to see the confirmation message
-  await Future.delayed(const Duration(seconds: 1));
-}
 }

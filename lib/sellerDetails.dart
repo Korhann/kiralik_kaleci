@@ -194,6 +194,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                     bool isSelected = _selectedField == field;
                                     return GestureDetector(
                                       onTap: () {
+                                        print('the fields are $field');
                                         setState(() {
                                           _selectedField = field;
                                         });

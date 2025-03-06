@@ -66,12 +66,12 @@ class _ChangeEmailState extends State<ChangeEmail> {
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: userorseller ? sellergrey : background,
+                color: userorseller ? sellerbackground : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
                     decoration: GlobalStyles.inputDecoration1(hintText: 'Email',showError: _showErrorEmail),
-                    style: TextStyle(color: userorseller ? Colors.white : Colors.black),
+                    style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: _emailController,
                     obscureText: false,
                     keyboardType: TextInputType.emailAddress,
@@ -112,12 +112,12 @@ class _ChangeEmailState extends State<ChangeEmail> {
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: userorseller ? sellergrey : background,
+                color: userorseller ? sellerbackground : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
                     decoration: GlobalStyles.inputDecoration1(hintText: 'Şifre', showError: _showErrorPassword),
-                    style: TextStyle(color: userorseller ? Colors.white : Colors.black),
+                    style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: _currentPasswordController,
                     obscureText: true,
                     onChanged: (value) => clearErrors(),

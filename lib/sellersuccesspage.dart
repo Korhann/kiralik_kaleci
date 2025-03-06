@@ -24,7 +24,6 @@ class _SellerSuccessPageState extends State<SellerSuccessPage> {
     // TODO: implement initState
     super.initState();
     _fetchUserDetails();
-    userorseller = false;
   }
 
   Future<void> _fetchUserDetails() async{
@@ -35,11 +34,12 @@ class _SellerSuccessPageState extends State<SellerSuccessPage> {
       .collection('Users')
       .doc(currentUserUid)
       .get();
+
       if (documentSnapshot.exists) {
         Map<String,dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
         if (data.isNotEmpty && data.containsKey('sellerDetails')) {
           Map<String, dynamic> sellerDetails = data['sellerDetails'];
-          Duration duration = const Duration(seconds: 3);
+          Duration duration = const Duration(seconds: 1);
           Timer(duration, () { 
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUserUid)));
           });

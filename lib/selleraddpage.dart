@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,7 +13,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/globals.dart';
-import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -952,14 +950,9 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
 
         // yükleme ekranından çık
         Navigator.of(context).pop();
-
-        Showalert(context: context, text: 'İlan Başarıyla Yüklenmiştir').showSuccessAlert();
-        print('seller details is  $sellerDetails');
-        print('current user is $currentUser');
-
-
+        
         // saat seçme ui ını yenilemesi için pushreplacement
-        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUser)));
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SellerSuccessPage()));
       }
       return true;
     } catch (e) {
