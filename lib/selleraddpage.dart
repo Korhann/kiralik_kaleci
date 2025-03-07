@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
@@ -887,7 +888,7 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
 
 
   Future _pickImageFromGallery() async {
-    final List<XFile> selectedImages = await imagePicker.pickMultiImage();
+    final List<XFile> selectedImages = await imagePicker.pickMultiImage(imageQuality: 5);
     if (selectedImages.isNotEmpty) {
       imageFileList.addAll(selectedImages);
     }
@@ -1006,7 +1007,20 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
     final tempDir = await getTemporaryDirectory();
     final tempFile = File('${tempDir.path}/imageDefault.jpg');
     await tempFile.writeAsBytes(byteData.buffer.asUint8List());
-    return tempFile;
+    Future<File> filePath = testCompressAndGetFile(tempFile,'lib/images/imageDefault.jpg');
+    return filePath;
+  }
+
+  Future<File> testCompressAndGetFile(File file, String targetPath) async {
+    var result = await FlutterImageCompress.compressAndGetFile(
+        file.absolute.path, targetPath,
+        quality: 88,
+        rotate: 180,
+      );
+
+    // xfile ı file a çevir
+    File photoFile = File(result!.path);
+    return photoFile;
   }
 
 }
