@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    getSellerUid();
+    //getSellerUid();
   }
 
   @override
@@ -176,19 +176,19 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   //todo: FirebaseException ([cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.)
-  Future<void> getSellerUid() async {
-    CollectionReference collectionReference = _firestore
-        .collection('Users')
-        .doc(currentuser)
-        .collection('appointmentbuyer');
-    QuerySnapshot querySnapshot = await collectionReference.get();
+  // Future<void> getSellerUid() async {
+  //   CollectionReference collectionReference = _firestore
+  //       .collection('Users')
+  //       .doc(currentuser)
+  //       .collection('appointmentbuyer');
+  //   QuerySnapshot querySnapshot = await collectionReference.get();
 
-    for (var doc in querySnapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
+  //   for (var doc in querySnapshot.docs) {
+  //     final data = doc.data() as Map<String, dynamic>;
 
-      String? sellerUid = data['appointmentDetails']?['selleruid'];
-    }
-  }
+  //     String? sellerUid = data['appointmentDetails']?['selleruid'];
+  //   }
+  // }
 }
 
 class Email extends StatelessWidget {

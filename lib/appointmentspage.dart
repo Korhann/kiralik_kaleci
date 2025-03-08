@@ -15,12 +15,18 @@ class AppointmentsPage extends StatefulWidget {
   State<AppointmentsPage> createState() => _AppointmentsPageState();
 
   // randevular da haftalık olaraka silinecek
-  Future<void> deleteAppointments() async{
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  String currentuser = FirebaseAuth.instance.currentUser!.uid;
+  Future<void> deleteAppointments() async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String currentuser = FirebaseAuth.instance.currentUser!.uid;
 
-    var collectionBuyer = firestore.collection('Users').doc(currentuser).collection('appointmentbuyer');
-    var collectionSeller = firestore.collection('Users').doc(currentuser).collection('appointmentseller');
+    var collectionBuyer = firestore
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentbuyer');
+    var collectionSeller = firestore
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller');
     var appointmentsBuyer = await collectionBuyer.get();
     var appointmentsSeller = await collectionSeller.get();
     for (var doc in appointmentsBuyer.docs) {
@@ -31,7 +37,6 @@ class AppointmentsPage extends StatefulWidget {
     }
   }
 }
-
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -55,18 +60,19 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         leading: IconButton(
           onPressed: () {
             // geri ye basınca yanlış yerden çıkış yaptığı için kullandım
-            if (userorseller){
+            if (userorseller) {
               Navigator.pushAndRemoveUntil<void>(
-              context,
-              MaterialPageRoute<void>(builder: (BuildContext context) => const SellerMainPage()
-              ),
-              ModalRoute.withName('/'),
+                context,
+                MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const SellerMainPage()),
+                ModalRoute.withName('/'),
               );
             } else {
               Navigator.of(context).pop();
             }
           },
-          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
+          icon: Icon(Icons.arrow_back,
+              color: userorseller ? Colors.white : Colors.black),
         ),
       ),
       backgroundColor: userorseller ? sellerbackground : background,
@@ -84,9 +90,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 ),
               ),
             ),
-            if (userorseller == false) 
+            if (userorseller == false)
               buyerStatusInfo()
-            else 
+            else
               sellerStatusInfo(),
             appointments.isEmpty
                 ? Center(
@@ -122,133 +128,44 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final paymentStatus = appointmentDetails['paymentStatus'] ?? 'waiting';
                       final docId = docs?[index] ?? '';
 
-                      // Card background color based on status
+                      // Determine card color based on status
                       Color cardColor = Colors.white;
                       if (status == 'approved' && paymentStatus == 'done') {
                         cardColor = Colors.green.shade500;
-                      } else if (status == 'approved' && paymentStatus == 'waiting') {
+                      } else if (status == 'approved' &&
+                          paymentStatus == 'waiting') {
                         cardColor = Colors.green.shade200;
                       } else if (status == 'rejected') {
                         cardColor = Colors.red.shade200;
                       } else if (status == 'pending') {
                         cardColor = Colors.orange.shade200;
-                      } else if (status == 'approved' && paymentStatus == 'taken') {
+                      } else if (status == 'approved' &&
+                          paymentStatus == 'taken') {
                         cardColor = Colors.grey;
                       }
 
-                      return Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            color: cardColor,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ListTile(
-                                  contentPadding: const EdgeInsets.all(10),
-                                  title: Text(
-                                    '$name $surname',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.calendar_month),
-                                          const SizedBox(width: 5),
-                                          Text('$day'),
-                                          const Spacer(),
-                                          const Icon(Icons.watch_later_outlined),
-                                          const SizedBox(width: 5),
-                                          Text('$hour'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.location_on),
-                                          const SizedBox(width: 5),
-                                          Text('$field'),
-                                          const Spacer(),
-                                          if (userorseller == false)
-                                          status == 'approved' && paymentStatus == 'waiting' ? ElevatedButton(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => PaymentPage(
-                                                  sellerUid: appointmentDetails['selleruid'],
-                                                  buyerUid: currentuser,
-                                                  selectedDay: appointmentDetails['day'],
-                                                  selectedHour: appointmentDetails['hour'],
-                                                  selectedField: appointmentDetails['field'],
-                                                  docId: docId,
-                                                )), // Navigate to PaymentPage
-                                              );
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.green,
-                                            ),
-                                            child: const Text(
-                                              'Ödeme yap',
-                                              style: TextStyle(color: Colors.white),
-                                            ),
-                                          ): paymentStatus == 'taken' ?
-                                          Text(
-                                            'Dolu'
-                                          )
-                                          : Text(
-                                              status == 'pending' ? 'Beklemede' 
-                                              : status == 'rejected' ? 'Reddedildi' 
-                                              : '',
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 14,
-                                                color: Colors.black,
-                                              ),
-                                            )
-                                        ],
-                                      )
-                                    ],
-                                  )
-                                ),
-                                // Show buttons only if status is pending
-                                if (userorseller && status == 'pending') 
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        ElevatedButton(
-                                          onPressed: () async {
-                                            await approveAppointment(docId, index);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.green,
-                                          ),
-                                          child: const Text('Onayla'),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () async {
-                                            await rejectAppointment(docId, index);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                          ),
-                                          child: const Text('Reddet'),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      return AppointmentView(
+                        cardColor: cardColor,
+                        name: name,
+                        surname: surname,
+                        day: day,
+                        hour: hour,
+                        field: field,
+                        status: status,
+                        paymentStatus: paymentStatus,
+                        sellerUid: appointmentDetails!['selleruid'] ?? '',
+                        appointmentDetails: appointmentDetails,
+                        docId: docId,
+                        userorseller: userorseller,
+                        onApprove: () async {
+                          await approveAppointment(docId, index);
+                        },
+                        onReject: () async {
+                          await rejectAppointment(docId, index);
+                        },
                       );
                     },
-                  ),
+                  )
           ],
         ),
       ),
@@ -272,17 +189,15 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .get();
     }
     // Get document IDs for updating a specific user's appointment
-      if (mounted) {
-        setState(() {
-        docs = snapshot.docs.map((doc) => doc.id).toList();
-      });
-      }
     if (mounted) {
       setState(() {
-      appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
-    });
-  }
+        docs = snapshot.docs.map((doc) => doc.id).toList();
+        appointments = snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+      });
     }
+  }
 
   // Updates status to 'approved'
   Future<void> approveAppointment(String docId, int index) async {
@@ -293,22 +208,22 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .doc(currentuser)
           .collection('appointmentseller')
           .doc(docId)
-          .update({
-            'appointmentDetails.status': 'approved'
-          });
+          .update({'appointmentDetails.status': 'approved'});
 
-      DocumentSnapshot<Map<String,dynamic>> documentSnapshot = await _firestore
-      .collection('Users')
-      .doc(currentuser)
-      .collection('appointmentseller')
-      .doc(docId)
-      .get();
-      
+      DocumentSnapshot<Map<String, dynamic>> documentSnapshot = await _firestore
+          .collection('Users')
+          .doc(currentuser)
+          .collection('appointmentseller')
+          .doc(docId)
+          .get();
+
       if (documentSnapshot.exists) {
         Map<String, dynamic>? appointmentData = documentSnapshot.data();
-        if (appointmentData != null && appointmentData.containsKey('appointmentDetails')) {
+        if (appointmentData != null &&
+            appointmentData.containsKey('appointmentDetails')) {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
-          String buyerDocId = appointmentData['appointmentDetails']['buyerDocId'];
+          String buyerDocId =
+              appointmentData['appointmentDetails']['buyerDocId'];
 
           String hour = appointmentData[appointmentDetails]['hour'];
           String day = appointmentData[appointmentDetails]['day'];
@@ -316,23 +231,20 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
           // alıcı için status update (renkleri göstermek için - turuncu,yeşil,kırmzı)
           await _firestore
-          .collection('Users')
-          .doc(buyerUid)
-          .collection('appointmentbuyer')
-          .doc(buyerDocId)
-          .update({
-            'appointmentDetails.status': 'approved'
-          });
+              .collection('Users')
+              .doc(buyerUid)
+              .collection('appointmentbuyer')
+              .doc(buyerDocId)
+              .update({'appointmentDetails.status': 'approved'});
 
           // alıcı ödeme yapması için bildirim gönder
           await PushHelper.sendPushPayment(
-            sellerUid: currentuser,
-            buyerUid: buyerUid,
-            selectedDay: day,
-            selectedHour: hour,
-            selectedField: field,
-            docId: buyerDocId
-          );
+              sellerUid: currentuser,
+              buyerUid: buyerUid,
+              selectedDay: day,
+              selectedHour: hour,
+              selectedField: field,
+              docId: buyerDocId);
         } else {
           print('appointment details does not exist');
         }
@@ -340,12 +252,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         print('document snapshot does not exist');
       }
 
-
-      
       setState(() {
         appointments[index]['appointmentDetails']['status'] = 'approved';
       });
-
     } catch (e) {
       print('Error approving appointment: $e');
     }
@@ -358,31 +267,29 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .doc(currentuser)
           .collection('appointmentseller')
           .doc(docId)
-          .update({
-            'appointmentDetails.status': 'rejected'
-          });
-      DocumentSnapshot<Map<String,dynamic>> documentSnapshot = await _firestore
-      .collection('Users')
-      .doc(currentuser)
-      .collection('appointmentseller')
-      .doc(docId)
-      .get();
+          .update({'appointmentDetails.status': 'rejected'});
+      DocumentSnapshot<Map<String, dynamic>> documentSnapshot = await _firestore
+          .collection('Users')
+          .doc(currentuser)
+          .collection('appointmentseller')
+          .doc(docId)
+          .get();
 
       if (documentSnapshot.exists) {
         Map<String, dynamic>? appointmentData = documentSnapshot.data();
-        if (appointmentData != null && appointmentData.containsKey('appointmentDetails')) {
+        if (appointmentData != null &&
+            appointmentData.containsKey('appointmentDetails')) {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
-          String buyerDocId = appointmentData['appointmentDetails']['buyerDocId'];
+          String buyerDocId =
+              appointmentData['appointmentDetails']['buyerDocId'];
 
           // alıcı için status update (renkleri göstermek için - turuncu,yeşil,kırmzı)
           await _firestore
-          .collection('Users')
-          .doc(buyerUid)
-          .collection('appointmentbuyer')
-          .doc(buyerDocId)
-          .update({
-            'appointmentDetails.status': 'rejected'
-          });
+              .collection('Users')
+              .doc(buyerUid)
+              .collection('appointmentbuyer')
+              .doc(buyerDocId)
+              .update({'appointmentDetails.status': 'rejected'});
         } else {
           print('appointment details does not exist');
         }
@@ -395,161 +302,389 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           appointments[index]['appointmentDetails']['status'] = 'rejected';
         });
       }
-
-
     } catch (e) {
       print('Error rejecting appointment: $e');
     }
   }
-  // 
+
+  //
   Widget buyerStatusInfo() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.green.shade500,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Alındı',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.red.shade200,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Reddedildi',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.orange.shade200,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Beklemede',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.green.shade200,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Ödeme gerekiyor',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Dolu',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                  ],
-                ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.green.shade500,
               ),
-            );
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Alındı',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.red.shade200,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Reddedildi',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.orange.shade200,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Beklemede',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.green.shade200,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Ödeme gerekiyor',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Dolu',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+          ],
+        ),
+      ),
+    );
   }
+
   Widget sellerStatusInfo() {
     return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
+      scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.green.shade500,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Onaylandı',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.red.shade200,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Reddedildi',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.orange.shade200,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Beklemede',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class apptsEmpty extends StatelessWidget {
+  const apptsEmpty({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Align(
+          alignment: Alignment.center,
+          child: Text(
+            'Randevunuz bulunmamaktadır',
+            style: GoogleFonts.poppins(
+              fontSize: 26,
+              color: userorseller ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AppointmentView extends StatelessWidget {
+  final Color cardColor;
+  final String name;
+  final String surname;
+  final String day;
+  final String hour;
+  final String field;
+  final String status;
+  final String paymentStatus;
+  final String sellerUid;
+  final Map<String, dynamic> appointmentDetails;
+  final String docId;
+  final bool userorseller;
+  final VoidCallback? onApprove;
+  final VoidCallback? onReject;
+
+  const AppointmentView({
+    Key? key,
+    required this.cardColor,
+    required this.name,
+    required this.surname,
+    required this.day,
+    required this.hour,
+    required this.field,
+    required this.status,
+    required this.paymentStatus,
+    required this.sellerUid,
+    required this.appointmentDetails,
+    required this.docId,
+    required this.userorseller,
+    this.onApprove,
+    this.onReject,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          color: cardColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                contentPadding: const EdgeInsets.all(10),
+                title: nameSurname(name: name, surname: surname),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.green.shade500,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Onaylandı',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.red.shade200,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Reddedildi',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        height: 10,
-                        width: 10,
-                        color: Colors.orange.shade200,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Beklemede',
-                      style: TextStyle(
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
+                    iconDayHour(day: day, hour: hour),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on),
+                        const SizedBox(width: 5),
+                        Text(field),
+                        const Spacer(),
+                        if (!userorseller)
+                          status == 'approved' && paymentStatus == 'waiting'
+                            ? paymentButton(appointmentDetails: appointmentDetails, docId: docId)
+                            : paymentStatus == 'taken' ? const Text('Dolu')
+                            : showTextBasedOnStatus(status: status)
+                      ],
                     ),
                   ],
                 ),
               ),
-            );
+              if (userorseller && status == 'pending')
+                sellerApproveOrReject(onApprove: onApprove, onReject: onReject)
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
+class iconDayHour extends StatelessWidget {
+  final String day;
+  final String hour;
+  const iconDayHour({
+    Key? key,
+    required this.day,
+    required this.hour,
+    }): super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(Icons.calendar_month),
+        const SizedBox(width: 5),
+        Text(day),
+        const Spacer(),
+        const Icon(Icons.watch_later_outlined),
+        const SizedBox(width: 5),
+        Text(hour),
+      ],
+    );
+  }
+}
+class nameSurname extends StatelessWidget {
+  final String name;
+  final String surname;
+  const nameSurname({
+    super.key,
+    required this.name,
+    required this.surname
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '$name $surname',
+      style: GoogleFonts.poppins(
+        fontSize: 18,
+        color: Colors.black,
+      ),
+    );
+  }
+}
+class paymentButton extends StatelessWidget {
+  final Map<String, dynamic> appointmentDetails;
+  final String docId;
+  const paymentButton({
+    Key? key,
+    required this.appointmentDetails,
+    required this.docId
+  }): super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    String currentUser = FirebaseAuth.instance.currentUser!.uid;
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentPage(
+              sellerUid:appointmentDetails['selleruid'],
+              buyerUid: currentUser,
+              selectedDay:appointmentDetails['day'],
+              selectedHour:appointmentDetails['hour'],
+              selectedField:appointmentDetails['field'],
+              docId: docId,
+            ),
+          ),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green,
+      ),
+      child: const Text(
+        'Ödeme yap',
+        style: TextStyle(color: Colors.white),
+      ),
+    );
+  }
+}
+class showTextBasedOnStatus extends StatelessWidget {
+  final String status;
+  const showTextBasedOnStatus({Key? key,required this.status}): super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      status == 'pending' ? 'Beklemede' : status == 'rejected' ? 'Reddedildi' : '',
+      style: GoogleFonts.poppins(
+        fontSize: 14,
+        color: Colors.black,
+      ),
+    );
+  }
+}
+class sellerApproveOrReject extends StatelessWidget {
+  final VoidCallback? onApprove;
+  final VoidCallback? onReject;
+  const sellerApproveOrReject({
+    Key? key,
+    required this.onApprove,
+    required this.onReject
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: onApprove,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                        ),
+                        child: const Text('Onayla'),
+                      ),
+                      ElevatedButton(
+                        onPressed: onReject,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('Reddet'),
+                      ),
+                    ],
+                  ),
+                );
+  }
+}
+

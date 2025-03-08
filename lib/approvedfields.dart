@@ -39,15 +39,7 @@ class _ApprovedFieldsState extends State<ApprovedFields> {
         itemCount: approvedFields.expand((field) => field.fields).length,
         itemBuilder: (context, index) {
           List<String> allFields = approvedFields.expand((field) => field.fields).toList();
-          return Card(
-            color: userorseller ? sellerbackground : Colors.white,
-            child: ListTile(
-              title: Text(
-                allFields[index]
-              ),
-              leading: const Icon(Icons.sports_soccer_outlined),
-            ),
-          );
+          return showCardFields(allFields: allFields, index: index);
         },
       ),
     );
@@ -58,5 +50,27 @@ class _ApprovedFieldsState extends State<ApprovedFields> {
     setState(() {
       approvedFields = localDb.values.toList();
     });
+  }
+}
+class showCardFields extends StatelessWidget {
+  final List<String> allFields;
+  final int index;
+  const showCardFields({
+    Key? key,
+    required this.allFields,
+    required this.index
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+            color: userorseller ? sellerbackground : Colors.white,
+            child: ListTile(
+              title: Text(
+                allFields[index]
+              ),
+              leading: const Icon(Icons.sports_soccer_outlined),
+            ),
+          );
   }
 }

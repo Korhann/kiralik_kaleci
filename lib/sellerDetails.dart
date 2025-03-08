@@ -126,58 +126,16 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(
-                              child: Stack(
-                                children: [
-                                  Image.network(
-                                    imageUrl,
-                                    height: 180,
-                                    width: double.infinity,
-                                    fit: BoxFit.contain,
-                                  ),
-                                  Positioned(
-                                    top: 15,
-                                    right: 25,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        _toggleFavorite(widget.sellerDetails, widget.sellerUid);
-                                      },
-                                      child: Icon(
-                                        Icons.favorite,
-                                        color: isFavorited ? Colors.red : Colors.grey,
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
+                              child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid)
                             ),
                             const SizedBox(height: 20),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    "${widget.sellerDetails['sellerFullName']}",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w400,
-                                      color: userorseller ? Colors.white : Colors.black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+
+                            showNameSurname(sellerDetails: widget.sellerDetails),
+
                             const SizedBox(height: 7),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              child: Text(
-                                "${widget.sellerDetails['city']} ,${widget.sellerDetails['district']}",
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w300,
-                                  color: userorseller ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            ),
+
+                            showCityDistrict(sellerDetails: widget.sellerDetails),
+                            
                             const SizedBox(height: 5),
                             // kullanıcı buradan kaleci seçecek
                             Padding(
@@ -194,7 +152,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                     bool isSelected = _selectedField == field;
                                     return GestureDetector(
                                       onTap: () {
-                                        print('the fields are $field');
                                         setState(() {
                                           _selectedField = field;
                                         });
@@ -646,5 +603,134 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
         });
       }
     }
+  }
+}
+
+class showImage extends StatefulWidget {
+  final String imageUrl;
+  final bool isFavorited; 
+  final Map<String, dynamic> sellerDetails;
+  final String sellerUid;
+
+  const showImage({
+    super.key,
+    required this.imageUrl,
+    required this.isFavorited,
+    required this.sellerDetails,
+    required this.sellerUid,
+  });
+
+  @override
+  State<showImage> createState() => _showImageState();
+}
+
+class _showImageState extends State<showImage> {
+  late bool _isFavorited; 
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorited = widget.isFavorited; 
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Image.network(
+          widget.imageUrl,
+          height: 180,
+          width: double.infinity,
+          fit: BoxFit.contain,
+        ),
+        Positioned(
+          top: 15,
+          right: 25,
+          child: GestureDetector(
+            onTap: () {
+              _toggleFavorite(widget.sellerDetails, widget.sellerUid);
+            },
+            child: Icon(
+              Icons.favorite,
+              color: _isFavorited ? Colors.red : Colors.grey,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _toggleFavorite(Map<String, dynamic> sellerDetails, String sellerUid) async {
+    final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserUid != null && currentUserUid.isNotEmpty) {
+      if (_isFavorited) {
+        // Remove from favorites
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentUserUid)
+            .collection('favourites')
+            .where('sellerUid', isEqualTo: sellerUid)
+            .get();
+        for (var doc in snapshot.docs) {
+          await doc.reference.delete();
+        }
+        setState(() {
+          _isFavorited = false;
+        });
+      } else {
+        // Add to favorites
+        sellerDetails['sellerUid'] = sellerUid;
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentUserUid)
+            .collection('favourites')
+            .add(sellerDetails);
+        setState(() {
+          _isFavorited = true;
+        });
+      }
+    }
+  }
+}
+class showNameSurname extends StatelessWidget {
+  final Map<String,dynamic> sellerDetails;
+  const showNameSurname({required this.sellerDetails,super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        children: [
+          Text(
+            "${sellerDetails['sellerFullName']}",
+            style: GoogleFonts.inter(
+              fontSize: 17,
+              fontWeight: FontWeight.w400,
+              color: userorseller ? Colors.white : Colors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class showCityDistrict extends StatelessWidget {
+  final Map<String,dynamic> sellerDetails;
+  const showCityDistrict({required this.sellerDetails,super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Text(
+        "${sellerDetails['city']} ,${sellerDetails['district']}",
+        style: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w300,
+          color: userorseller ? Colors.white : Colors.black,
+        ),
+      ),
+    );
   }
 }

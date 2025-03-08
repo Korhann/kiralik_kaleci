@@ -54,17 +54,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
               ? const Center(child: Text('Henüz favori eklenmedi.'))
               : Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'Favorilerim',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: userorseller ? Colors.white : Colors.black,
-                      ),
-                    ),
-                  ),
+                  showFavouritesText(),
                   ListView.builder(
                     shrinkWrap: true,
                     padding: const EdgeInsets.all(10),
@@ -77,9 +67,53 @@ class _FavouritesPageState extends State<FavouritesPage> {
                       final imageUrl = (favourite['imageUrls'] != null && favourite['imageUrls'].isNotEmpty)
                           ? favourite['imageUrls'][0]
                           : 'https://via.placeholder.com/150';
+
+                      return showCardFavourite(imageUrl: imageUrl, sellerFullName: sellerFullName, city: city, district: district, favourite: favourite);
                 
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 10),
+                    },
+                  ),
+                ],
+              ),
+    );
+  }
+}
+class showFavouritesText extends StatelessWidget {
+  const showFavouritesText({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Text(
+        'Favorilerim',
+        style: GoogleFonts.poppins(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: userorseller ? Colors.white : Colors.black,
+        ),
+      ),
+    );
+  }
+}
+class showCardFavourite extends StatelessWidget {
+  final String imageUrl;
+  final String sellerFullName;
+  final String city;
+  final String district;
+  final Map<String,dynamic> favourite;
+  const showCardFavourite({
+    Key? key,
+    required this.imageUrl,
+    required this.sellerFullName,
+    required this.city,
+    required this.district,
+    required this.favourite,
+  }): super (key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         elevation: 4,
                         child: ListTile(
@@ -115,10 +149,5 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           },
                         ),
                       );
-                    },
-                  ),
-                ],
-              ),
-    );
   }
 }
