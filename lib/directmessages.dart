@@ -109,6 +109,7 @@ class _DirectMessagesState extends State<DirectMessages> {
         backgroundColor: background,
         centerTitle: true,
       ),
+      backgroundColor: background,
       body: ListView.builder(
         itemCount: conversations.length,
         itemBuilder: (context, index) {

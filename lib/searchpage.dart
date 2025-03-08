@@ -9,6 +9,9 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
 
+
+//TODO: BURADA LAZY LOADING KULLANILACAK 
+
 class GetUserData extends StatefulWidget {
   const GetUserData({super.key});
 

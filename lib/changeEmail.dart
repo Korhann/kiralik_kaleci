@@ -18,7 +18,6 @@ class ChangeEmail extends StatefulWidget {
 }
 
 class _ChangeEmailState extends State<ChangeEmail> {
-
   final _emailController = TextEditingController();
   final _currentPasswordController = TextEditingController();
   //
@@ -30,7 +29,8 @@ class _ChangeEmailState extends State<ChangeEmail> {
   String _reauthErrorMessage = '';
   bool isUpdated = false;
   //
-  final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
+  final errorstyle = const TextStyle(
+      fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,8 @@ class _ChangeEmailState extends State<ChangeEmail> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
+          icon: Icon(Icons.arrow_back,
+              color: userorseller ? Colors.white : Colors.black),
         ),
       ),
       backgroundColor: userorseller ? sellerbackground : background,
@@ -52,17 +53,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  'Yeni Email',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: userorseller ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
+              newEmail(),
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
@@ -70,7 +61,8 @@ class _ChangeEmailState extends State<ChangeEmail> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
-                    decoration: GlobalStyles.inputDecoration1(hintText: 'Email',showError: _showErrorEmail),
+                    decoration: GlobalStyles.inputDecoration1(
+                        hintText: 'Email', showError: _showErrorEmail),
                     style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: _emailController,
                     obscureText: false,
@@ -78,7 +70,9 @@ class _ChangeEmailState extends State<ChangeEmail> {
                     onChanged: (value) => clearErrors(),
                     validator: (value) {
                       final currentTrimmedemail = value?.trim();
-                      if (currentTrimmedemail!.isEmpty || !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(currentTrimmedemail)) {
+                      if (currentTrimmedemail!.isEmpty ||
+                          !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                              .hasMatch(currentTrimmedemail)) {
                         setState(() {
                           _showErrorEmail = true;
                         });
@@ -93,22 +87,10 @@ class _ChangeEmailState extends State<ChangeEmail> {
                   ),
                 ),
               ),
-              if (_showErrorEmail) 
+              if (_showErrorEmail)
                 errorMessage('Girdiğiniz mail hatalı veya kullanımda'),
-
               const SizedBox(height: 30),
-              
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  'Mevcut Şifre',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: userorseller ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
+              currentPassword(),
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
@@ -116,14 +98,17 @@ class _ChangeEmailState extends State<ChangeEmail> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
-                    decoration: GlobalStyles.inputDecoration1(hintText: 'Şifre', showError: _showErrorPassword),
+                    decoration: GlobalStyles.inputDecoration1(
+                        hintText: 'Şifre', showError: _showErrorPassword),
                     style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: _currentPasswordController,
                     obscureText: true,
                     onChanged: (value) => clearErrors(),
                     validator: (value) {
                       final currentTrimmedPassword = value?.trim();
-                      if (currentTrimmedPassword!.isEmpty || currentTrimmedPassword.length < 6 || currentTrimmedPassword.contains(" ")) {
+                      if (currentTrimmedPassword!.isEmpty ||
+                          currentTrimmedPassword.length < 6 ||
+                          currentTrimmedPassword.contains(" ")) {
                         setState(() {
                           _showErrorPassword = true;
                         });
@@ -138,21 +123,21 @@ class _ChangeEmailState extends State<ChangeEmail> {
                   ),
                 ),
               ),
-
-              if (_showErrorPassword && _currentPasswordController.text.trim().length < 6)
+              if (_showErrorPassword &&
+                  _currentPasswordController.text.trim().length < 6)
                 errorMessage("Parolanız çok kısa"),
-              if (_showErrorPassword && _currentPasswordController.text.trim().contains(" "))
+              if (_showErrorPassword &&
+                  _currentPasswordController.text.trim().contains(" "))
                 errorMessage("Parolada boşluk bulundurmayınız"),
-              if (_showErrorPassword && _currentPasswordController.text.trim().isEmpty)
+              if (_showErrorPassword &&
+                  _currentPasswordController.text.trim().isEmpty)
                 errorMessage("Parola boş bırakılamaz"),
               if (_reauthErrorMessage.isNotEmpty)
                 errorMessage(_reauthErrorMessage),
-
               const SizedBox(height: 30),
-
               Center(
                 child: ElevatedButton(
-                  onPressed: () async{
+                  onPressed: () async {
                     if (_key.currentState!.validate()) {
                       if (await InternetConnection().hasInternetAccess) {
                         await changeEmail();
@@ -160,12 +145,14 @@ class _ChangeEmailState extends State<ChangeEmail> {
                           _emailController.clear();
                           _currentPasswordController.clear();
                           if (mounted) {
-                          Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
+                            Showalert(context: context, text: 'İşlem Başarılı')
+                                .showSuccessAlert();
                           }
                         }
                       } else {
                         if (mounted) {
-                          Showalert(context: context, text: 'Ooopps...').showErrorAlert();
+                          Showalert(context: context, text: 'Ooopps...')
+                              .showErrorAlert();
                         }
                       }
                     }
@@ -188,14 +175,14 @@ class _ChangeEmailState extends State<ChangeEmail> {
       ),
     );
   }
-  
+
   void clearErrors() {
     setState(() {
       _showErrorEmail = false;
       _reauthErrorMessage = '';
     });
   }
-  
+
   Widget errorMessage(String message) {
     return Align(
       alignment: Alignment.centerLeft,
@@ -215,17 +202,17 @@ class _ChangeEmailState extends State<ChangeEmail> {
     String email = _emailController.text.trim();
     String password = _currentPasswordController.text.trim();
     if (user != null && user.email != null) {
-      final cred = EmailAuthProvider.credential(email: user.email.toString(), password: password);
+      final cred = EmailAuthProvider.credential(
+          email: user.email.toString(), password: password);
       try {
         await user.reauthenticateWithCredential(cred);
         // bu yeni güncellenen mail
         // hata yazısına dikkatlice bak anlamaya çalış
         await user.verifyBeforeUpdateEmail(email);
-        await FirebaseFirestore.instance.collection('Users')
-          .doc(currentuser)
-          .update({
-          'email': email
-        });
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentuser)
+            .update({'email': email});
         isUpdated = true;
       } catch (e) {
         setState(() {
@@ -238,5 +225,43 @@ class _ChangeEmailState extends State<ChangeEmail> {
         _reauthErrorMessage = 'Kullanıcı oturumu açılmadı';
       });
     }
+  }
+}
+
+class newEmail extends StatelessWidget {
+  const newEmail({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20),
+      child: Text(
+        'Yeni Email',
+        style: GoogleFonts.roboto(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: userorseller ? Colors.white : Colors.black,
+        ),
+      ),
+    );
+  }
+}
+
+class currentPassword extends StatelessWidget {
+  const currentPassword({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20),
+      child: Text(
+        'Mevcut Şifre',
+        style: GoogleFonts.roboto(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: userorseller ? Colors.white : Colors.black,
+        ),
+      ),
+    );
   }
 }

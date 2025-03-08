@@ -7,14 +7,14 @@ import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 
-class SellerChangePassword extends StatefulWidget {
-  const SellerChangePassword({super.key});
+class ChangePassword extends StatefulWidget {
+  const ChangePassword({super.key});
 
   @override
-  State<SellerChangePassword> createState() => _SellerChangePasswordState();
+  State<ChangePassword> createState() => _ChangePasswordState();
 }
 
-class _SellerChangePasswordState extends State<SellerChangePassword> {
+class _ChangePasswordState extends State<ChangePassword> {
   // Controllers for passwords
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -25,7 +25,8 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
   bool _showErrorNewPassword = false;
 
   String _reauthErrorMessage = '';
-  final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
+  final errorstyle = const TextStyle(
+      fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
 
   bool isUpdated = false;
 
@@ -45,7 +46,8 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
+          icon: Icon(Icons.arrow_back,
+              color: userorseller ? Colors.white : Colors.black),
         ),
       ),
       backgroundColor: userorseller ? sellerbackground : background,
@@ -56,17 +58,7 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  'Mevcut Şifre',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: userorseller ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
+              passwordCurrent(),
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
@@ -74,14 +66,17 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
-                    decoration: GlobalStyles.inputDecoration1(hintText: 'Şifre', showError: _showErrorPassword),
+                    decoration: GlobalStyles.inputDecoration1(
+                        hintText: 'Şifre', showError: _showErrorPassword),
                     style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: _currentPasswordController,
                     obscureText: true,
                     onChanged: (value) => clearErrors(),
                     validator: (value) {
                       final currentTrimmedPassword = value?.trim();
-                      if (currentTrimmedPassword!.isEmpty || currentTrimmedPassword.length < 6 || currentTrimmedPassword.contains(" ")) {
+                      if (currentTrimmedPassword!.isEmpty ||
+                          currentTrimmedPassword.length < 6 ||
+                          currentTrimmedPassword.contains(" ")) {
                         setState(() {
                           _showErrorPassword = true;
                         });
@@ -96,40 +91,37 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
                   ),
                 ),
               ),
-              if (_showErrorPassword && _currentPasswordController.text.trim().length < 6)
+              if (_showErrorPassword &&
+                  _currentPasswordController.text.trim().length < 6)
                 errorMessage("Parolanız çok kısa"),
-              if (_showErrorPassword && _currentPasswordController.text.trim().contains(" "))
+              if (_showErrorPassword &&
+                  _currentPasswordController.text.trim().contains(" "))
                 errorMessage("Parolada boşluk bulundurmayınız"),
-              if (_showErrorPassword && _currentPasswordController.text.trim().isEmpty)
+              if (_showErrorPassword &&
+                  _currentPasswordController.text.trim().isEmpty)
                 errorMessage("Parola boş bırakılamaz"),
               if (_reauthErrorMessage.isNotEmpty)
                 errorMessage(_reauthErrorMessage),
               const SizedBox(height: 15),
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  'Yeni Şifre',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: userorseller ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
+              passwordNew(),
               Container(
                 width: double.infinity,
                 color: userorseller ? sellerbackground : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
-                    decoration: GlobalStyles.inputDecoration1(hintText: 'Yeni Şifre', showError: _showErrorNewPassword),
+                    decoration: GlobalStyles.inputDecoration1(
+                        hintText: 'Yeni Şifre',
+                        showError: _showErrorNewPassword),
                     style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: _newPasswordController,
                     obscureText: true,
                     onChanged: (value) => clearErrors(),
                     validator: (value) {
                       final newTrimmedPassword = value?.trim();
-                      if (newTrimmedPassword!.isEmpty || newTrimmedPassword.length < 6 || newTrimmedPassword.contains(" ")) {
+                      if (newTrimmedPassword!.isEmpty ||
+                          newTrimmedPassword.length < 6 ||
+                          newTrimmedPassword.contains(" ")) {
                         setState(() {
                           _showErrorNewPassword = true;
                         });
@@ -144,30 +136,34 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
                   ),
                 ),
               ),
-              if (_showErrorNewPassword && _newPasswordController.text.trim().length < 6)
+              if (_showErrorNewPassword &&
+                  _newPasswordController.text.trim().length < 6)
                 errorMessage("Parolanız çok kısa"),
-              if (_showErrorNewPassword && _newPasswordController.text.trim().contains(" "))
+              if (_showErrorNewPassword &&
+                  _newPasswordController.text.trim().contains(" "))
                 errorMessage("Parolada boşluk bulundurmayınız"),
-              if (_showErrorNewPassword && _newPasswordController.text.trim().isEmpty)
+              if (_showErrorNewPassword &&
+                  _newPasswordController.text.trim().isEmpty)
                 errorMessage("Parola boş bırakılamaz"),
-                
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
-                  onPressed: () async{
+                  onPressed: () async {
                     if (_key.currentState!.validate()) {
                       if (await InternetConnection().hasInternetAccess) {
                         await changePassword();
-                        if (isUpdated){
+                        if (isUpdated) {
                           _currentPasswordController.clear();
                           _newPasswordController.clear();
                           if (mounted) {
-                          Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
-                        }
+                            Showalert(context: context, text: 'İşlem Başarılı')
+                                .showSuccessAlert();
+                          }
                         }
                       } else {
                         if (mounted) {
-                          Showalert(context: context, text: 'Ooopps...').showErrorAlert();
+                          Showalert(context: context, text: 'Ooopps...')
+                              .showErrorAlert();
                         }
                       }
                     }
@@ -212,7 +208,9 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
   Future<void> changePassword() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && user.email != null) {
-      final cred = EmailAuthProvider.credential(email: user.email.toString(), password: _currentPasswordController.text);
+      final cred = EmailAuthProvider.credential(
+          email: user.email.toString(),
+          password: _currentPasswordController.text);
 
       try {
         await user.reauthenticateWithCredential(cred);
@@ -225,11 +223,50 @@ class _SellerChangePasswordState extends State<SellerChangePassword> {
       }
     }
   }
+
   void clearErrors() {
     setState(() {
       _showErrorPassword = false;
       _showErrorNewPassword = false;
       _reauthErrorMessage = '';
     });
+  }
+}
+
+class passwordCurrent extends StatelessWidget {
+  const passwordCurrent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20),
+      child: Text(
+        'Mevcut Şifre',
+        style: GoogleFonts.roboto(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: userorseller ? Colors.white : Colors.black,
+        ),
+      ),
+    );
+  }
+}
+
+class passwordNew extends StatelessWidget {
+  const passwordNew({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20),
+      child: Text(
+        'Yeni Şifre',
+        style: GoogleFonts.roboto(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: userorseller ? Colors.white : Colors.black,
+        ),
+      ),
+    );
   }
 }
