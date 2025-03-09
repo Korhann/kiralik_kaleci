@@ -1,12 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:kiralik_kaleci/football_field.dart';
-import 'package:kiralik_kaleci/searchpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -20,15 +17,14 @@ class FilterPage extends StatefulWidget {
 }
 
 class _FilterPageState extends State<FilterPage> {
-
   double width = 115;
 
   static String? nameFilter;
   static String? cityFilter;
   static String? districtFilter;
   static String? fieldFilter;
-  static int ?minFilter;
-  static int ?maxFilter;
+  static int? minFilter;
+  static int? maxFilter;
 
   static bool isPressedMonday = false;
   static bool isPressedTuesday = false;
@@ -40,18 +36,22 @@ class _FilterPageState extends State<FilterPage> {
 
   static final TextEditingController _nameController = TextEditingController();
   static final TextEditingController _cityController = TextEditingController();
-  static final TextEditingController _districtController = TextEditingController();
-  static final TextEditingController _minPriceController = TextEditingController();
-  static final TextEditingController _maxPriceController = TextEditingController();
+  static final TextEditingController _districtController =
+      TextEditingController();
+  static final TextEditingController _minPriceController =
+      TextEditingController();
+  static final TextEditingController _maxPriceController =
+      TextEditingController();
 
   List<String> cities = [];
   List<String> districts = [];
   List<String> days = [];
   List<dynamic> cityData = [];
   List<String> fields = [];
-  
+
   bool isCleared = false;
-  TextStyle textStyle = GoogleFonts.roboto(fontSize: 15,fontWeight: FontWeight.normal,color: Colors.grey.shade600);
+  TextStyle textStyle = GoogleFonts.roboto(
+      fontSize: 15, fontWeight: FontWeight.normal, color: Colors.grey.shade600);
 
   @override
   void initState() {
@@ -67,13 +67,13 @@ class _FilterPageState extends State<FilterPage> {
     FootballField.storeFields();
   }
 
-  void clearAllFilters() async{
-      // to clear the shared prefs
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.remove('selectedCity');
-      await prefs.remove('selectedDistrict');
-      await prefs.remove('selectedField');
-      setState(() {
+  void clearAllFilters() async {
+    // to clear the shared prefs
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('selectedCity');
+    await prefs.remove('selectedDistrict');
+    await prefs.remove('selectedField');
+    setState(() {
       nameFilter = null;
       cityFilter = null;
       districtFilter = null;
@@ -86,7 +86,7 @@ class _FilterPageState extends State<FilterPage> {
       _minPriceController.clear();
       _maxPriceController.clear();
       clearDays();
-      });
+    });
   }
 
   void clearDays() {
@@ -129,23 +129,21 @@ class _FilterPageState extends State<FilterPage> {
       appBar: AppBar(
         backgroundColor: background,
         leading: IconButton(
-          onPressed: () {
-            if (isCleared) {
-              Navigator.pop(
-              context,
-              {
-                'nameFilter': nameFilter,
-                'cityFilter': cityFilter,
-                'districtFilter': districtFilter,
-                'fieldFilter':fieldFilter,
-                'minFilter':minFilter,
-                'maxFilter':maxFilter
+            onPressed: () {
+              if (isCleared) {
+                Navigator.pop(context, {
+                  'nameFilter': nameFilter,
+                  'cityFilter': cityFilter,
+                  'districtFilter': districtFilter,
+                  'fieldFilter': fieldFilter,
+                  'minFilter': minFilter,
+                  'maxFilter': maxFilter
+                });
+              } else {
+                Navigator.of(context).pop();
               }
-            );
-            } else {
-              Navigator.of(context).pop();
-            }
-          }, icon: const Icon(Icons.arrow_back, color: Colors.black)),
+            },
+            icon: const Icon(Icons.arrow_back, color: Colors.black)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -160,269 +158,104 @@ class _FilterPageState extends State<FilterPage> {
                     child: Text(
                       'Filtreler',
                       style: GoogleFonts.roboto(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black
-                      ),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
                     ),
                   ),
                   Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
+                      alignment: Alignment.centerRight,
+                      child: clearFilters(ontap: () {
                         clearAllFilters();
                         setState(() {
                           isCleared = true;
                         });
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10),
-                        child: Text(
-                          'Temizle',
-                          style: GoogleFonts.roboto(
-                            fontSize: 18,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.red
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
+                      }))
                 ],
               ),
               const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: SizedBox(
-                          width: 350,
-                          height: 45,
-                          child: TextField(
-                            controller: _nameController,
-                            onChanged: (value) {
-                              nameFilter = value;
-                              _nameController.text = value;
-                            },
-                            decoration: _inputDecoration('Ad Soyad'),
-                            style: TextStyle(decoration: TextDecoration.none),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      height: 45,
-                      width: 350,
-                      color: Colors.white,
-                      child: Stack(
-                        children: [
-                          // Dropdown Button
-                          DropdownButton<String>(
-                            isExpanded: true,
-                            value: cityFilter,
-                            items: cities.map((city) => DropdownMenuItem<String>(
-                              value: city,
-                              child: Text(
-                                city,
-                                style: GoogleFonts.inter(color: Colors.black),
-                              ),
-                            )).toList(),
-                            onChanged: (value) async {
-                              SharedPreferences prefs = await SharedPreferences.getInstance();
-                              // Reset district and field filters when city changes
-                              await prefs.remove('selectedDistrict');
-                              await prefs.remove('selectedField');
-                              await prefs.setString('selectedCity', value!);
-                              setState(() {
-                                // except the city they all have to be emptied
-                                cityFilter = value; 
-                                districtFilter = null; 
-                                fieldFilter = null; 
-                                districts.clear(); 
-                                fields.clear(); 
-                                // Fetch districts for the selected city
-                                onCitySelected(value);
-                              });
-                            },
-                            hint: Padding(
-                              padding: const EdgeInsets.all(5),
-                              child: Text(
-                                'Şehir Seçin',
-                                style: textStyle,
-                              ),
-                            ),
-                            underline: const SizedBox(),
-                          ),
-                          // Clear Icon
-                          if (cityFilter != null)
-                          Positioned(
-                            right: 10,
-                            top: 0,
-                            bottom: 0,
-                            child: IconButton(
-                              icon: const Icon(Icons.clear, color: Colors.grey),
-                              onPressed: () async {
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
-                                await prefs.remove('selectedCity'); // Clear the selected city from prefs
-                                await prefs.remove('selectedDistrict');
-                                setState(() {
-                                  cityFilter = null;
-                                  districtFilter = null;
-                                  fieldFilter = null;
-                                  //cities.clear(); // Optional: Clear dependent data
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 8),
               
-  Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 20),
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(10),
-    child: Container(
-      height: 45,
-      width: 350,
-      color: Colors.white,
-      child: Stack(
-        children: [
-          // Dropdown Button
-          DropdownButton<String>(
-            isExpanded: true,
-            value: districts.contains(districtFilter) ? districtFilter : null,
-            items: districts.map((district) => DropdownMenuItem<String>(
-              value: district,
-              child: Text(
-                district,
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                ),
+              Column(
+                children: [
+                  NameInputField(
+                    controller: _nameController,
+                    onChanged: (value) {
+                      setState(() {
+                        nameFilter = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CityDropdown(
+                    selectedCity: cityFilter,
+                    cities: cities,
+                    onCitySelected: (value) async {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('selectedCity', value!);
+                      setState(() {
+                        cityFilter = value;
+                        districtFilter = null;
+                        fieldFilter = null;
+                        districts.clear();
+                        fields.clear();
+                        onCitySelected(value);
+                      });
+                    },
+                    onClear: () async {
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      await prefs.remove('selectedCity');
+                      setState(() {
+                        cityFilter = null;
+                        districtFilter = null;
+                        fieldFilter = null;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  DistrictDropdown(
+                    selectedDistrict: districtFilter,
+                    districts: districts,
+                    onDistrictSelected: (value) async {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('selectedDistrict', value!);
+                      setState(() {
+                        districtFilter = value;
+                        fetchFields(value);
+                        fieldFilter = null;
+                      });
+                    },
+                    onClear: () async {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      await prefs.remove('selectedDistrict');
+                      setState(() {
+                        districtFilter = null;
+                        fieldFilter = null;
+                        fields.clear();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  FieldDropdown(
+                    selectedField: fieldFilter,
+                    fields: fields,
+                    onFieldSelected: (value) async {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('selectedField', value!);
+                      setState(() {
+                        fieldFilter = value;
+                      });
+                    },
+                    onClear: () async {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      await prefs.remove('selectedField');
+                      setState(() {
+                        fieldFilter = null;
+                      });
+                    },
+                  ),
+                ],
               ),
-            )).toList(),
-            onChanged: (value) async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.setString('selectedDistrict', value!);
-              setState(() {
-                districtFilter = value;
-                fetchFields(value.toString());
-                fieldFilter = null;
-              });
-            },
-            hint: Padding(
-              padding: const EdgeInsets.all(5),
-              child: Text(
-                'İlçe Seçin',
-                style: textStyle,
-                ),
-            ),
-            underline: const SizedBox(),
-          ),
-          // Clear Icon
-          if (districtFilter != null)
-            Positioned(
-              right: 10,
-              top: 0,
-              bottom: 0,
-              child: IconButton(
-                icon: const Icon(Icons.clear, color: Colors.grey),
-                onPressed: () async {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.remove('selectedDistrict');
-                  await prefs.remove('selectedFields');
-                  setState(() {
-                    districtFilter = null;
-                    fieldFilter = null;
-                    fields.clear(); // Clear dependent data
-                  });
-                },
-              ),
-            ),
-        ],
-      ),
-    ),
-  ),
-),
-
-const SizedBox(height: 8),
-
-// Field Dropdown with Clear Icon
-Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 20),
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(10),
-    child: Container(
-      height: 45,
-      width: 350,
-      color: Colors.white,
-      child: Stack(
-        children: [
-          // Dropdown Button
-          DropdownButton<String>(
-            isExpanded: true,
-            value: fields.contains(fieldFilter) ? fieldFilter : null,
-            items: fields.map((field) => DropdownMenuItem<String>(
-              value: field,
-              child: Text(
-                field,
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                ),
-              ),
-            )).toList(),
-            onChanged: (value) async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.setString('selectedField', value!);
-              setState(() {
-                fieldFilter = value;
-              });
-            },
-            hint: Padding(
-              padding: const EdgeInsets.all(5),
-              child: Text(
-                'Halı Saha Seçin',
-                style: textStyle,
-              ),
-            ),
-            underline: const SizedBox(),
-          ),
-          // Clear Icon
-          if (fieldFilter != null)
-            Positioned(
-              right: 10,
-              top: 0,
-              bottom: 0,
-              child: IconButton(
-                icon: const Icon(Icons.clear, color: Colors.grey),
-                onPressed: () async {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.remove('selectedField');
-                  setState(() {
-                    fieldFilter = null;
-                  });
-                },
-              ),
-            ),
-        ],
-      ),
-    ),
-  ),
-),
 
               const SizedBox(height: 40),
               Padding(
@@ -430,10 +263,9 @@ Padding(
                 child: Text(
                   'Gün Seçiniz',
                   style: GoogleFonts.roboto(
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black
-                  ),
+                      fontSize: 18,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black),
                 ),
               ),
               const SizedBox(height: 20),
@@ -444,7 +276,7 @@ Padding(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _dayButton('Pazartesi', isPressedMonday, () { 
+                        _dayButton('Pazartesi', isPressedMonday, () {
                           setState(() {
                             isPressedMonday = !isPressedMonday;
                             if (isPressedMonday) {
@@ -455,7 +287,7 @@ Padding(
                           });
                         }),
                         const SizedBox(width: 5),
-                        _dayButton('Salı', isPressedTuesday, () { 
+                        _dayButton('Salı', isPressedTuesday, () {
                           setState(() {
                             isPressedTuesday = !isPressedTuesday;
                             if (isPressedTuesday) {
@@ -466,7 +298,7 @@ Padding(
                           });
                         }),
                         const SizedBox(width: 5),
-                        _dayButton('Çarşamba', isPressedWednesday, () { 
+                        _dayButton('Çarşamba', isPressedWednesday, () {
                           setState(() {
                             isPressedWednesday = !isPressedWednesday;
                             if (isPressedWednesday) {
@@ -489,7 +321,7 @@ Padding(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _dayButton('Perşembe', isPressedThursday, () { 
+                        _dayButton('Perşembe', isPressedThursday, () {
                           setState(() {
                             isPressedThursday = !isPressedThursday;
                             if (isPressedThursday) {
@@ -500,7 +332,7 @@ Padding(
                           });
                         }),
                         const SizedBox(width: 5),
-                        _dayButton('Cuma', isPressedFriday, () { 
+                        _dayButton('Cuma', isPressedFriday, () {
                           setState(() {
                             isPressedFriday = !isPressedFriday;
                             if (isPressedFriday) {
@@ -511,7 +343,7 @@ Padding(
                           });
                         }),
                         const SizedBox(width: 5),
-                        _dayButton('Cumartesi', isPressedSaturday, () { 
+                        _dayButton('Cumartesi', isPressedSaturday, () {
                           setState(() {
                             isPressedSaturday = !isPressedSaturday;
                             if (isPressedSaturday) {
@@ -532,7 +364,7 @@ Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: _dayButton('Pazar', isPressedSunday, () { 
+                    child: _dayButton('Pazar', isPressedSunday, () {
                       setState(() {
                         isPressedSunday = !isPressedSunday;
                         if (isPressedSunday) {
@@ -551,10 +383,9 @@ Padding(
                 child: Text(
                   'Fiyat Aralığı',
                   style: GoogleFonts.roboto(
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black
-                  ),
+                      fontSize: 18,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black),
                 ),
               ),
               const SizedBox(height: 20),
@@ -577,15 +408,13 @@ Padding(
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
                           decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.all(10),
-                            hintText: 'Min'
-                          ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.all(10),
+                              hintText: 'Min'),
                           style: GoogleFonts.roboto(
-                            fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.black
-                          ),
+                              fontSize: 15,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black),
                         ),
                       ),
                     ),
@@ -599,29 +428,27 @@ Padding(
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
-                          color: Colors.white,
-                          height: 40,
-                          width: 80,
-                          child: TextField(
-                            controller: _maxPriceController,
-                            onChanged: (value) {
-                              maxFilter = int.tryParse(value) ?? 0;
-                              _maxPriceController.text = value; 
-                            },
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            decoration: const InputDecoration(
+                        color: Colors.white,
+                        height: 40,
+                        width: 80,
+                        child: TextField(
+                          controller: _maxPriceController,
+                          onChanged: (value) {
+                            maxFilter = int.tryParse(value) ?? 0;
+                            _maxPriceController.text = value;
+                          },
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          decoration: const InputDecoration(
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.all(10),
-                              hintText: 'Max'
-                            ),
-                            style: GoogleFonts.roboto(
+                              hintText: 'Max'),
+                          style: GoogleFonts.roboto(
                               fontSize: 15,
                               fontWeight: FontWeight.normal,
-                              color: Colors.black
-                            ),
-                          ),
+                              color: Colors.black),
                         ),
+                      ),
                     ),
                   ],
                 ),
@@ -629,27 +456,25 @@ Padding(
               const SizedBox(height: 50),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(
-                      context, {
-                      'nameFilter': nameFilter,
-                      'cityFilter': cityFilter,
-                      'districtFilter': districtFilter,
-                      'fieldFilter':fieldFilter,
-                      'daysFilter': days,
-                      'minFilter':minFilter,
-                      'maxFilter':maxFilter
-                    });
-                },
-                style: GlobalStyles.buttonPrimary(), 
-                child: Text(
-                  'Filtrele',
-                  style: GoogleFonts.roboto(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black
-                  ),
-                )),
+                    onPressed: () {
+                      Navigator.pop(context, {
+                        'nameFilter': nameFilter,
+                        'cityFilter': cityFilter,
+                        'districtFilter': districtFilter,
+                        'fieldFilter': fieldFilter,
+                        'daysFilter': days,
+                        'minFilter': minFilter,
+                        'maxFilter': maxFilter
+                      });
+                    },
+                    style: GlobalStyles.buttonPrimary(),
+                    child: Text(
+                      'Filtrele',
+                      style: GoogleFonts.roboto(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                    )),
               ),
             ],
           ),
@@ -659,10 +484,12 @@ Padding(
   }
 
   Future<void> fetchCities() async {
-    var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
+    var response =
+        await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
     if (response.statusCode == 200) {
       final List<dynamic> citiesData = jsonDecode(response.body)['data'];
-      List<String> cityNames = citiesData.map((city) => city['name'].toString()).toList();
+      List<String> cityNames =
+          citiesData.map((city) => city['name'].toString()).toList();
       if (mounted) {
         setState(() {
           cities = cityNames;
@@ -675,12 +502,16 @@ Padding(
       }
     }
   }
-  Future<void> onCitySelected(String selectedCityFilter) async{
-    final city = cityData.firstWhere((city) => city['name'] == selectedCityFilter);
+
+  Future<void> onCitySelected(String selectedCityFilter) async {
+    final city =
+        cityData.firstWhere((city) => city['name'] == selectedCityFilter);
     if (city != null) {
       final districtsData = city['districts'];
       if (districtsData != null) {
-        final List<String> districtNames = (districtsData as List<dynamic>).map((district) => district['name'].toString()).toList();
+        final List<String> districtNames = (districtsData as List<dynamic>)
+            .map((district) => district['name'].toString())
+            .toList();
 
         setState(() {
           cityFilter = selectedCityFilter;
@@ -690,58 +521,59 @@ Padding(
       }
     }
   }
+
   Future<void> fetchFields(String selectedDistrict) async {
-  var localDb = await Hive.openBox<FootballField>('football_fields');
+    var localDb = await Hive.openBox<FootballField>('football_fields');
 
-  try {
-    var field = localDb.values.firstWhere(
-      (f) => f.city == cityFilter && f.district == selectedDistrict,
-    );
-    setState(() {
-      fields = field.fieldName.toSet().toList();
-      fieldFilter = null;
-      
-      // Retain the fieldFilter if it is valid for the new fields
-      if (!fields.contains(fieldFilter)) {
+    try {
+      var field = localDb.values.firstWhere(
+        (f) => f.city == cityFilter && f.district == selectedDistrict,
+      );
+      setState(() {
+        fields = field.fieldName.toSet().toList();
         fieldFilter = null;
-      }
-    });
-  } catch (e) {
-    setState(() {
-      fields = [];
-      fieldFilter = null;
-    });
-  }
-}
 
+        // Retain the fieldFilter if it is valid for the new fields
+        if (!fields.contains(fieldFilter)) {
+          fieldFilter = null;
+        }
+      });
+    } catch (e) {
+      setState(() {
+        fields = [];
+        fieldFilter = null;
+      });
+    }
+  }
 
   // to show the user the selected data
   Future<void> loadPrefs() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  String? savedCity = prefs.getString('selectedCity');
-  String? savedDistrict = prefs.getString('selectedDistrict');
-  String? savedField = prefs.getString('selectedField');
+    String? savedCity = prefs.getString('selectedCity');
+    String? savedDistrict = prefs.getString('selectedDistrict');
+    String? savedField = prefs.getString('selectedField');
 
-  if (savedCity != null) {
-    // Load districts based on the saved city
-    await onCitySelected(savedCity); // Ensure districts are loaded before continuing
+    if (savedCity != null) {
+      // Load districts based on the saved city
+      await onCitySelected(
+          savedCity); // Ensure districts are loaded before continuing
+    }
+
+    setState(() {
+      cityFilter = savedCity;
+      districtFilter = savedDistrict;
+    });
+
+    if (savedDistrict != null) {
+      // Fetch fields for the saved district
+      await fetchFields(savedDistrict);
+    }
+
+    setState(() {
+      fieldFilter = savedField; // Set fieldFilter only after fields are fetched
+    });
   }
-
-  setState(() {
-    cityFilter = savedCity;
-    districtFilter = savedDistrict;
-  });
-
-  if (savedDistrict != null) {
-    // Fetch fields for the saved district
-    await fetchFields(savedDistrict);
-  }
-
-  setState(() {
-    fieldFilter = savedField; // Set fieldFilter only after fields are fetched
-  });
-}
 
   Widget _dayButton(String day, bool isPressed, VoidCallback onPressed) {
     return SizedBox(
@@ -761,18 +593,269 @@ Padding(
       ),
     );
   }
-InputDecoration _inputDecoration(String hintText) {
-  return InputDecoration(
-    suffixIcon: IconButton(
-      icon: const Icon(Icons.clear),
-      onPressed: () => clearSingleFilter('name'),
-    ),
-    hintText: hintText,
-    hintStyle: textStyle,
-    fillColor: Colors.white,
-    enabledBorder: InputBorder.none, // Remove underline when not focused
-    focusedBorder: InputBorder.none,
-    filled: true,
-  );
+
+  // InputDecoration _inputDecoration(String hintText) {
+  //   return InputDecoration(
+  //     suffixIcon: IconButton(
+  //       icon: const Icon(Icons.clear),
+  //       onPressed: () => clearSingleFilter('name'),
+  //     ),
+  //     hintText: hintText,
+  //     hintStyle: textStyle,
+  //     fillColor: Colors.white,
+  //     enabledBorder: InputBorder.none, // Remove underline when not focused
+  //     focusedBorder: InputBorder.none,
+  //     filled: true,
+  //   );
+  // }
 }
+
+class clearFilters extends StatelessWidget {
+  final VoidCallback? ontap;
+  const clearFilters({required this.ontap, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: ontap,
+      child: Padding(
+        padding: EdgeInsets.only(right: 10),
+        child: Text(
+          'Temizle',
+          style: GoogleFonts.roboto(
+              fontSize: 18, fontWeight: FontWeight.normal, color: Colors.red),
+        ),
+      ),
+    );
+  }
+}
+
+class NameInputField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const NameInputField({
+    required this.controller,
+    required this.onChanged,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          color: Colors.white,
+          width: 350,
+          height: 45,
+          child: TextField(
+            controller: controller,
+            onChanged: onChanged,
+            decoration: InputDecoration(
+              hintText: 'Ad Soyad',
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+            ),
+            style: const TextStyle(decoration: TextDecoration.none),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CityDropdown extends StatelessWidget {
+  final String? selectedCity;
+  final List<String> cities;
+  final ValueChanged<String?> onCitySelected;
+  final VoidCallback onClear;
+
+  const CityDropdown({
+    required this.selectedCity,
+    required this.cities,
+    required this.onCitySelected,
+    required this.onClear,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          height: 45,
+          width: 350,
+          color: Colors.white,
+          child: Stack(
+            children: [
+              DropdownButton<String>(
+                isExpanded: true,
+                value: selectedCity,
+                items: cities
+                    .map((city) => DropdownMenuItem<String>(
+                          value: city,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(city,
+                                style: GoogleFonts.inter(color: Colors.black)),
+                          ),
+                        ))
+                    .toList(),
+                onChanged: onCitySelected,
+                hint: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text('Şehir Seçin', style: GoogleFonts.inter()),
+                ),
+                underline: const SizedBox(),
+              ),
+              if (selectedCity != null)
+                Positioned(
+                  right: 10,
+                  top: 0,
+                  bottom: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.grey),
+                    onPressed: onClear,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DistrictDropdown extends StatelessWidget {
+  final String? selectedDistrict;
+  final List<String> districts;
+  final ValueChanged<String?> onDistrictSelected;
+  final VoidCallback onClear;
+
+  const DistrictDropdown({
+    required this.selectedDistrict,
+    required this.districts,
+    required this.onDistrictSelected,
+    required this.onClear,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          height: 45,
+          width: 350,
+          color: Colors.white,
+          child: Stack(
+            children: [
+              DropdownButton<String>(
+                isExpanded: true,
+                value: districts.contains(selectedDistrict)
+                    ? selectedDistrict
+                    : null,
+                items: districts
+                    .map((district) => DropdownMenuItem<String>(
+                          value: district,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(district,
+                                style: GoogleFonts.inter(color: Colors.black)),
+                          ),
+                        ))
+                    .toList(),
+                onChanged: onDistrictSelected,
+                hint: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text('İlçe Seçin', style: GoogleFonts.inter()),
+                ),
+                underline: const SizedBox(),
+              ),
+              if (selectedDistrict != null)
+                Positioned(
+                  right: 10,
+                  top: 0,
+                  bottom: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.grey),
+                    onPressed: onClear,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FieldDropdown extends StatelessWidget {
+  final String? selectedField;
+  final List<String> fields;
+  final ValueChanged<String?> onFieldSelected;
+  final VoidCallback onClear;
+
+  const FieldDropdown({
+    required this.selectedField,
+    required this.fields,
+    required this.onFieldSelected,
+    required this.onClear,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          height: 45,
+          width: 350,
+          color: Colors.white,
+          child: Stack(
+            children: [
+              DropdownButton<String>(
+                isExpanded: true,
+                value: fields.contains(selectedField) ? selectedField : null,
+                items: fields
+                    .map((field) => DropdownMenuItem<String>(
+                          value: field,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(field,
+                                style: GoogleFonts.inter(color: Colors.black)),
+                          ),
+                        ))
+                    .toList(),
+                onChanged: onFieldSelected,
+                hint: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text('Halı Saha Seçin', style: GoogleFonts.inter()),
+                ),
+                underline: const SizedBox(),
+              ),
+              if (selectedField != null)
+                Positioned(
+                  right: 10,
+                  top: 0,
+                  bottom: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.grey),
+                    onPressed: onClear,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
