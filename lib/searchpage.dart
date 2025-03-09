@@ -24,7 +24,7 @@ class _GetUserDataState extends State<GetUserData> {
   Stream<QuerySnapshot<Map<String, dynamic>>>? _userStream;
 
   String? nameFilter, cityFilter, districtFilter, fieldFilter;
-  List<String>? daysFilter;
+  List<String> daysFilter = [];
   int? minFilter = 0, maxFilter = 0;
 
   @override
@@ -69,7 +69,7 @@ class _GetUserDataState extends State<GetUserData> {
   void _navigateToFilterPage() async {
     final filters = await Navigator.push(
       context,
-      _createRoute(FilterPage()),
+      _createRoute(FilterPage(daysFilter: daysFilter)),
     );
     runFilters(filters);
   }
@@ -118,9 +118,10 @@ class _GetUserDataState extends State<GetUserData> {
       query = query.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
     }
     if (minFilter != null && maxFilter != null) {
+      print(minFilter);
       query = query
-          .where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter)
-          .where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter);
+        .where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter)
+        .where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter);
     }
 
     setState(() {

@@ -10,7 +10,11 @@ import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FilterPage extends StatefulWidget {
-  const FilterPage({super.key});
+  final List<String> daysFilter;
+  const FilterPage({
+    super.key,
+    required this.daysFilter
+  });
 
   @override
   State<FilterPage> createState() => _FilterPageState();
@@ -36,12 +40,9 @@ class _FilterPageState extends State<FilterPage> {
 
   static final TextEditingController _nameController = TextEditingController();
   static final TextEditingController _cityController = TextEditingController();
-  static final TextEditingController _districtController =
-      TextEditingController();
-  static final TextEditingController _minPriceController =
-      TextEditingController();
-  static final TextEditingController _maxPriceController =
-      TextEditingController();
+  static final TextEditingController _districtController = TextEditingController();
+  static final TextEditingController _minPriceController = TextEditingController();
+  static final TextEditingController _maxPriceController = TextEditingController();
 
   List<String> cities = [];
   List<String> districts = [];
@@ -50,14 +51,14 @@ class _FilterPageState extends State<FilterPage> {
   List<String> fields = [];
 
   bool isCleared = false;
-  TextStyle textStyle = GoogleFonts.roboto(
-      fontSize: 15, fontWeight: FontWeight.normal, color: Colors.grey.shade600);
+  TextStyle textStyle = GoogleFonts.roboto(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.grey.shade600);
 
   @override
   void initState() {
     super.initState();
     // todo: halısahayı boş bırakınca hatayı veriyor kalkınca çöz
     runMethods();
+    days = widget.daysFilter;
   }
 
   // if i dont run fetch cities first there is no element
@@ -131,7 +132,8 @@ class _FilterPageState extends State<FilterPage> {
         leading: IconButton(
             onPressed: () {
               if (isCleared) {
-                Navigator.pop(context, {
+                Navigator.pop(
+                  context, {
                   'nameFilter': nameFilter,
                   'cityFilter': cityFilter,
                   'districtFilter': districtFilter,
@@ -269,50 +271,51 @@ class _FilterPageState extends State<FilterPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _dayButton('Pazartesi', isPressedMonday, () {
-                          setState(() {
-                            isPressedMonday = !isPressedMonday;
-                            if (isPressedMonday) {
-                              days.add('Pazartesi');
-                            } else {
-                              days.remove('Pazartesi');
-                            }
-                          });
-                        }),
-                        const SizedBox(width: 5),
-                        _dayButton('Salı', isPressedTuesday, () {
-                          setState(() {
-                            isPressedTuesday = !isPressedTuesday;
-                            if (isPressedTuesday) {
-                              days.add('Salı');
-                            } else {
-                              days.remove('Salı');
-                            }
-                          });
-                        }),
-                        const SizedBox(width: 5),
-                        _dayButton('Çarşamba', isPressedWednesday, () {
-                          setState(() {
-                            isPressedWednesday = !isPressedWednesday;
-                            if (isPressedWednesday) {
-                              days.add('Çarşamba');
-                            } else {
-                              days.remove('Çarşamba');
-                            }
-                          });
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              DayPicker(days: days),
+              // Center(
+              //   child: Padding(
+              //     padding: const EdgeInsets.symmetric(horizontal: 10),
+              //     child: SingleChildScrollView(
+              //       scrollDirection: Axis.horizontal,
+              //       child: Row(
+              //         children: [
+              //           _dayButton('Pazartesi', isPressedMonday, () {
+              //             setState(() {
+              //               isPressedMonday = !isPressedMonday;
+              //               if (isPressedMonday) {
+              //                 days.add('Pazartesi');
+              //               } else {
+              //                 days.remove('Pazartesi');
+              //               }
+              //             });
+              //           }),
+              //           const SizedBox(width: 5),
+              //           _dayButton('Salı', isPressedTuesday, () {
+              //             setState(() {
+              //               isPressedTuesday = !isPressedTuesday;
+              //               if (isPressedTuesday) {
+              //                 days.add('Salı');
+              //               } else {
+              //                 days.remove('Salı');
+              //               }
+              //             });
+              //           }),
+              //           const SizedBox(width: 5),
+              //           _dayButton('Çarşamba', isPressedWednesday, () {
+              //             setState(() {
+              //               isPressedWednesday = !isPressedWednesday;
+              //               if (isPressedWednesday) {
+              //                 days.add('Çarşamba');
+              //               } else {
+              //                 days.remove('Çarşamba');
+              //               }
+              //             });
+              //           }),
+              //         ],
+              //       ),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 10),
               Center(
                 child: Padding(
@@ -457,6 +460,14 @@ class _FilterPageState extends State<FilterPage> {
               Center(
                 child: ElevatedButton(
                     onPressed: () {
+                      print('-------------');
+                      print(nameFilter);
+                      print(cityFilter);
+                      print(districtFilter);
+                      print(fieldFilter);
+                      print(days);
+                      print(minFilter);
+                      print(maxFilter);
                       Navigator.pop(context, {
                         'nameFilter': nameFilter,
                         'cityFilter': cityFilter,
@@ -857,5 +868,71 @@ class FieldDropdown extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+
+class DayPicker extends StatefulWidget {
+  final List<String> days;
+
+  const DayPicker({super.key, required this.days});
+
+  @override
+  State<DayPicker> createState() => _DayPickerState();
+}
+
+class _DayPickerState extends State<DayPicker> {
+  static bool isPressedMonday = false;
+  static bool isPressedTuesday = false;
+  static bool isPressedWednesday = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _dayButton('Pazartesi', isPressedMonday, (value) => isPressedMonday = value),
+              const SizedBox(width: 5),
+              _dayButton('Salı', isPressedTuesday, (value) => isPressedTuesday = value),
+              const SizedBox(width: 5),
+              _dayButton('Çarşamba', isPressedWednesday, (value) => isPressedWednesday = value),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _dayButton(String day, bool isPressed, Function(bool) updateState) {
+    return SizedBox(
+      width: 115,
+      height: 40,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isPressed ? green : Colors.white,
+        ),
+        onPressed: () => toggleDay(day, isPressed, updateState),
+        child: Text(
+          day,
+          style: GoogleFonts.roboto(
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+  void toggleDay(String day, bool isPressed, Function(bool) updateState) {
+    setState(() {
+      updateState(!isPressed);
+      if (!isPressed) {
+        widget.days.add(day);
+      } else {
+        widget.days.remove(day);
+      }
+    });
   }
 }
