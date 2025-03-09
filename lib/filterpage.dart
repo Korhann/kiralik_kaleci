@@ -92,13 +92,6 @@ class _FilterPageState extends State<FilterPage> {
 
   void clearDays() {
     setState(() {
-      isPressedMonday = false;
-      isPressedTuesday = false;
-      isPressedWednesday = false;
-      isPressedThursday = false;
-      isPressedFriday = false;
-      isPressedSaturday = false;
-      isPressedSunday = false;
       days.clear();
     });
   }
@@ -172,7 +165,9 @@ class _FilterPageState extends State<FilterPage> {
                         setState(() {
                           isCleared = true;
                         });
-                      }))
+                      }
+                    )
+                  )
                 ],
               ),
               const SizedBox(height: 10),
@@ -271,115 +266,17 @@ class _FilterPageState extends State<FilterPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              DayPicker(days: days),
-              // Center(
-              //   child: Padding(
-              //     padding: const EdgeInsets.symmetric(horizontal: 10),
-              //     child: SingleChildScrollView(
-              //       scrollDirection: Axis.horizontal,
-              //       child: Row(
-              //         children: [
-              //           _dayButton('Pazartesi', isPressedMonday, () {
-              //             setState(() {
-              //               isPressedMonday = !isPressedMonday;
-              //               if (isPressedMonday) {
-              //                 days.add('Pazartesi');
-              //               } else {
-              //                 days.remove('Pazartesi');
-              //               }
-              //             });
-              //           }),
-              //           const SizedBox(width: 5),
-              //           _dayButton('Salı', isPressedTuesday, () {
-              //             setState(() {
-              //               isPressedTuesday = !isPressedTuesday;
-              //               if (isPressedTuesday) {
-              //                 days.add('Salı');
-              //               } else {
-              //                 days.remove('Salı');
-              //               }
-              //             });
-              //           }),
-              //           const SizedBox(width: 5),
-              //           _dayButton('Çarşamba', isPressedWednesday, () {
-              //             setState(() {
-              //               isPressedWednesday = !isPressedWednesday;
-              //               if (isPressedWednesday) {
-              //                 days.add('Çarşamba');
-              //               } else {
-              //                 days.remove('Çarşamba');
-              //               }
-              //             });
-              //           }),
-              //         ],
-              //       ),
-              //     ),
-              //   ),
-              // ),
+
+              DayPickerFirst(days: days),
+
               const SizedBox(height: 10),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _dayButton('Perşembe', isPressedThursday, () {
-                          setState(() {
-                            isPressedThursday = !isPressedThursday;
-                            if (isPressedThursday) {
-                              days.add('Perşembe');
-                            } else {
-                              days.remove('Perşembe');
-                            }
-                          });
-                        }),
-                        const SizedBox(width: 5),
-                        _dayButton('Cuma', isPressedFriday, () {
-                          setState(() {
-                            isPressedFriday = !isPressedFriday;
-                            if (isPressedFriday) {
-                              days.add('Cuma');
-                            } else {
-                              days.remove('Cuma');
-                            }
-                          });
-                        }),
-                        const SizedBox(width: 5),
-                        _dayButton('Cumartesi', isPressedSaturday, () {
-                          setState(() {
-                            isPressedSaturday = !isPressedSaturday;
-                            if (isPressedSaturday) {
-                              days.add('Cumartesi');
-                            } else {
-                              days.remove('Cumartesi');
-                            }
-                          });
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+
+              DayPickerSecond(days: days),
+
               const SizedBox(height: 10),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: _dayButton('Pazar', isPressedSunday, () {
-                      setState(() {
-                        isPressedSunday = !isPressedSunday;
-                        if (isPressedSunday) {
-                          days.add('Pazar');
-                        } else {
-                          days.remove('Pazar');
-                        }
-                      });
-                    }),
-                  ),
-                ),
-              ),
+              
+              dayPickerThird(days: days),
+
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.only(left: 15),
@@ -872,20 +769,16 @@ class FieldDropdown extends StatelessWidget {
 }
 
 
-class DayPicker extends StatefulWidget {
+class DayPickerFirst extends StatefulWidget {
   final List<String> days;
 
-  const DayPicker({super.key, required this.days});
+  const DayPickerFirst({super.key, required this.days});
 
   @override
-  State<DayPicker> createState() => _DayPickerState();
+  State<DayPickerFirst> createState() => _DayPickerFirstState();
 }
 
-class _DayPickerState extends State<DayPicker> {
-  static bool isPressedMonday = false;
-  static bool isPressedTuesday = false;
-  static bool isPressedWednesday = false;
-
+class _DayPickerFirstState extends State<DayPickerFirst> {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -895,11 +788,11 @@ class _DayPickerState extends State<DayPicker> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _dayButton('Pazartesi', isPressedMonday, (value) => isPressedMonday = value),
+              _dayButton('Pazartesi'),
               const SizedBox(width: 5),
-              _dayButton('Salı', isPressedTuesday, (value) => isPressedTuesday = value),
+              _dayButton('Salı'),
               const SizedBox(width: 5),
-              _dayButton('Çarşamba', isPressedWednesday, (value) => isPressedWednesday = value),
+              _dayButton('Çarşamba'),
             ],
           ),
         ),
@@ -907,7 +800,9 @@ class _DayPickerState extends State<DayPicker> {
     );
   }
 
-  Widget _dayButton(String day, bool isPressed, Function(bool) updateState) {
+  Widget _dayButton(String day) {
+    bool isPressed = widget.days.contains(day);
+
     return SizedBox(
       width: 115,
       height: 40,
@@ -915,7 +810,7 @@ class _DayPickerState extends State<DayPicker> {
         style: ElevatedButton.styleFrom(
           backgroundColor: isPressed ? green : Colors.white,
         ),
-        onPressed: () => toggleDay(day, isPressed, updateState),
+        onPressed: () => toggleDay(day),
         child: Text(
           day,
           style: GoogleFonts.roboto(
@@ -925,13 +820,131 @@ class _DayPickerState extends State<DayPicker> {
       ),
     );
   }
-  void toggleDay(String day, bool isPressed, Function(bool) updateState) {
+
+  void toggleDay(String day) {
     setState(() {
-      updateState(!isPressed);
-      if (!isPressed) {
-        widget.days.add(day);
-      } else {
+      if (widget.days.contains(day)) {
         widget.days.remove(day);
+      } else {
+        widget.days.add(day);
+      }
+    });
+  }
+}
+
+
+class DayPickerSecond extends StatefulWidget {
+  final List<String> days;
+  const DayPickerSecond({required this.days, super.key});
+
+  @override
+  State<DayPickerSecond> createState() => DayPickerSecondState();
+}
+
+class DayPickerSecondState extends State<DayPickerSecond> {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _dayButton('Perşembe'),
+              const SizedBox(width: 5),
+              _dayButton('Cuma'),
+              const SizedBox(width: 5),
+              _dayButton('Cumartesi'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  Widget _dayButton(String day) {
+    bool isPressed = widget.days.contains(day);
+
+    return SizedBox(
+      width: 115,
+      height: 40,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isPressed ? green : Colors.white,
+        ),
+        onPressed: () => toggleDay(day),
+        child: Text(
+          day,
+          style: GoogleFonts.roboto(
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void toggleDay(String day) {
+    setState(() {
+      if (widget.days.contains(day)) {
+        widget.days.remove(day);
+      } else {
+        widget.days.add(day);
+      }
+    });
+  }
+}
+
+class dayPickerThird extends StatefulWidget {
+  final List<String> days;
+  const dayPickerThird({required this.days, super.key});
+
+  @override
+  State<dayPickerThird> createState() => _dayPickerThirdState();
+}
+
+class _dayPickerThirdState extends State<dayPickerThird> {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _dayButton('Pazar'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  Widget _dayButton(String day) {
+    bool isPressed = widget.days.contains(day);
+
+    return SizedBox(
+      width: 115,
+      height: 40,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isPressed ? green : Colors.white,
+        ),
+        onPressed: () => toggleDay(day),
+        child: Text(
+          day,
+          style: GoogleFonts.roboto(
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
+  void toggleDay(String day) {
+    setState(() {
+      if (widget.days.contains(day)) {
+        widget.days.remove(day);
+      } else {
+        widget.days.add(day);
       }
     });
   }

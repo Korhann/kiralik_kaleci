@@ -95,6 +95,8 @@ class _GetUserDataState extends State<GetUserData> {
         minFilter = filter['minFilter'];
         maxFilter = filter['maxFilter'];
       });
+      print(maxFilter);
+      print(daysFilter);
       applyFilter();
     }
   }
