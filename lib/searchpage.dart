@@ -95,41 +95,45 @@ class _GetUserDataState extends State<GetUserData> {
         minFilter = filter['minFilter'];
         maxFilter = filter['maxFilter'];
       });
-      print(maxFilter);
-      print(daysFilter);
+      print('max filter is $maxFilter');
+      print('min filter is $minFilter');
       applyFilter();
     }
   }
 
   void applyFilter() {
-    Query<Map<String, dynamic>> query = _firestore.collection('Users');
+  Query<Map<String, dynamic>> query = _firestore.collection('Users');
 
-    if (nameFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
-    }
-    if (cityFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.city', isEqualTo: cityFilter);
-    }
-    if (districtFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.district', isEqualTo: districtFilter);
-    }
-    if (fieldFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.fields', arrayContains: fieldFilter);
-    }
-    if (daysFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
-    }
-    if (minFilter != null && maxFilter != null) {
-      print(minFilter);
-      query = query
-        .where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter)
-        .where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter);
-    }
-
-    setState(() {
-      _userStream = query.snapshots();
-    });
+  if (nameFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
   }
+  if (cityFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.city', isEqualTo: cityFilter);
+  }
+  if (districtFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.district', isEqualTo: districtFilter);
+  }
+  if (fieldFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.fields', arrayContains: fieldFilter);
+  }
+  if (daysFilter.isNotEmpty) {
+    query = query.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
+  }
+  if (minFilter != null && maxFilter != null) {
+    query = query
+      .where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter!)
+      .where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
+  } else if (minFilter != null) {
+    query = query.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter!);
+  } else if (maxFilter != null) {
+    query = query.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
+  }
+
+  setState(() {
+    _userStream = query.snapshots();
+  });
+}
+
 
   Route _createRoute(Widget child) {
     return PageRouteBuilder(

@@ -30,14 +30,6 @@ class _FilterPageState extends State<FilterPage> {
   static int? minFilter;
   static int? maxFilter;
 
-  static bool isPressedMonday = false;
-  static bool isPressedTuesday = false;
-  static bool isPressedWednesday = false;
-  static bool isPressedThursday = false;
-  static bool isPressedFriday = false;
-  static bool isPressedSaturday = false;
-  static bool isPressedSunday = false;
-
   static final TextEditingController _nameController = TextEditingController();
   static final TextEditingController _cityController = TextEditingController();
   static final TextEditingController _districtController = TextEditingController();
@@ -118,7 +110,7 @@ class _FilterPageState extends State<FilterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: background,
       appBar: AppBar(
         backgroundColor: background,
@@ -277,7 +269,7 @@ class _FilterPageState extends State<FilterPage> {
               
               dayPickerThird(days: days),
 
-              const SizedBox(height: 20),
+
               Padding(
                 padding: const EdgeInsets.only(left: 15),
                 child: Text(
@@ -288,83 +280,19 @@ class _FilterPageState extends State<FilterPage> {
                       color: Colors.black),
                 ),
               ),
+
               const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(left: 15),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        color: Colors.white,
-                        height: 40,
-                        width: 80,
-                        child: TextField(
-                          controller: _minPriceController,
-                          onChanged: (value) {
-                            minFilter = int.tryParse(value) ?? 0;
-                            _minPriceController.text = value;
-                          },
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.all(10),
-                              hintText: 'Min'),
-                          style: GoogleFonts.roboto(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      height: 2,
-                      width: 15,
-                      color: Colors.black,
-                    ),
-                    const SizedBox(width: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        color: Colors.white,
-                        height: 40,
-                        width: 80,
-                        child: TextField(
-                          controller: _maxPriceController,
-                          onChanged: (value) {
-                            maxFilter = int.tryParse(value) ?? 0;
-                            _maxPriceController.text = value;
-                          },
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.all(10),
-                              hintText: 'Max'),
-                          style: GoogleFonts.roboto(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+
+              PriceRanger(
+                minPriceController: _minPriceController,
+                maxPriceController: _maxPriceController,
+                onPriceChanged: updatePriceFilters
               ),
+
               const SizedBox(height: 50),
               Center(
                 child: ElevatedButton(
                     onPressed: () {
-                      print('-------------');
-                      print(nameFilter);
-                      print(cityFilter);
-                      print(districtFilter);
-                      print(fieldFilter);
-                      print(days);
-                      print(minFilter);
-                      print(maxFilter);
                       Navigator.pop(context, {
                         'nameFilter': nameFilter,
                         'cityFilter': cityFilter,
@@ -482,6 +410,13 @@ class _FilterPageState extends State<FilterPage> {
       fieldFilter = savedField; // Set fieldFilter only after fields are fetched
     });
   }
+
+  void updatePriceFilters(int min, int max) {
+  setState(() {
+    minFilter = min;
+    maxFilter = max;
+  });
+}
 
   Widget _dayButton(String day, bool isPressed, VoidCallback onPressed) {
     return SizedBox(
@@ -949,3 +884,112 @@ class _dayPickerThirdState extends State<dayPickerThird> {
     });
   }
 }
+
+class PriceRanger extends StatefulWidget {
+  final TextEditingController minPriceController;
+  final TextEditingController maxPriceController;
+  final Function(int, int) onPriceChanged; // Callback to send values back
+
+  const PriceRanger({
+    required this.minPriceController,
+    required this.maxPriceController,
+    required this.onPriceChanged,
+    super.key,
+  });
+
+  @override
+  _PriceRangerState createState() => _PriceRangerState();
+}
+
+class _PriceRangerState extends State<PriceRanger> {
+  int? minFilter;
+  int? maxFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    // minFilter = int.tryParse(widget.minPriceController.text);
+    // maxFilter = int.tryParse(widget.maxPriceController.text);
+  }
+
+  void updateMinFilter(String value) {
+  setState(() {
+    minFilter = value.isEmpty ? null : int.tryParse(value);
+    widget.onPriceChanged(minFilter ?? 0, maxFilter ?? 999999); 
+  });
+}
+
+  void updateMaxFilter(String value) {
+    setState(() {
+      maxFilter = value.isEmpty ? null : int.tryParse(value);
+      widget.onPriceChanged(minFilter ?? 0, maxFilter ?? 999999);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    minFilter = int.tryParse(widget.minPriceController.text);
+    maxFilter = int.tryParse(widget.maxPriceController.text);
+    return Padding(
+      padding: const EdgeInsets.only(left: 15),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              color: Colors.white,
+              height: 40,
+              width: 80,
+              child: TextField(
+                controller: widget.minPriceController,
+                onChanged: updateMinFilter,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.all(10),
+                    hintText: 'Min'
+                ),
+                style: GoogleFonts.roboto(
+                    fontSize: 15,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Container(
+            height: 2,
+            width: 15,
+            color: Colors.black,
+          ),
+          const SizedBox(width: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              color: Colors.white,
+              height: 40,
+              width: 80,
+              child: TextField(
+                controller: widget.maxPriceController,
+                onChanged: updateMaxFilter,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.all(10),
+                    hintText: 'Max'
+                ),
+                style: GoogleFonts.roboto(
+                    fontSize: 15,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
