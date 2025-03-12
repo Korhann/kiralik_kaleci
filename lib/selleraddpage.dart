@@ -206,65 +206,16 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   ),
                 ),
                 const SizedBox(height: 15),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DropdownButtonFormField<String>(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        isExpanded: true,
-                        value: selectedCity,
-                        items: cities.map((city) => DropdownMenuItem<String>(
-                          value: city,
-                          child: Text(
-                            city,
-                            style: GoogleFonts.inter(
-                              color: Colors.black
-                            ),
-                          ),
-                        )).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            onCitySelected(value);
-                          }
-                          multFields.clear();
-                        },
-                        hint: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: const Text(
-                            'Şehir seçin'
-                          ),
-                        ),
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            errorStyle: const TextStyle(height: 0),
-                          ),
-                        validator: (value) {
-                          if (value == null) {
-                            return '';
-                          } else {
-                            return null;
-                          }
-                        },
-                      ),
-                    const SizedBox(height: 2),
-                    if (selectedCity == null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 10),
-                      child: Text(
-                        'Lütfen bir şehir seçin',
-                        style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
-                    ],
-                  ),
+
+                CityDropdown(
+                  selectedCity: selectedCity,
+                  cities: cities,
+                  onCitySelected: (value) {
+                    setState(() {
+                      onCitySelected(value!);
+                    });
+                  },
+                  multFields: multFields
                 ),
 
                 const SizedBox(height: 20),
@@ -280,65 +231,74 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   ),
                 ),
                 const SizedBox(height: 15),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DropdownButtonFormField<String>(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        isExpanded: true,
-                        value: selectedDistrict,
-                        items: districts.map((district) => DropdownMenuItem<String>(
-                            value: district,
-                            child: Text(
-                              district,
-                              style: GoogleFonts.inter(
-                                color: Colors.black,
-                              ),
-                            ),
-                        )).toList(),
-                      
-                        onChanged: (value) {
-                          setState(() {
-                            selectedDistrict = value;
-                            fetchFields(value.toString());
-                            multFields.clear();
-                          });
-                        },
-                        hint: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('İlçe seçin'),
-                        ),
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          errorStyle: const TextStyle(height: 0),
-                        ),
-                        validator: (value) {
-                          if (value == null) {
-                            return '';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 2),
-                      if (selectedDistrict == null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 5, left: 10),
-                          child: Text(
-                            'Lütfen bir ilçe seçin',
-                            style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
-                          ),
-                        ),
-                    ],
-                  ),
+                DistrictDropDown(
+                  selectedDistrict: selectedDistrict,
+                  districts: districts,
+                  onDistrictSelected: (value) {
+                    selectedDistrict = value;
+                    fetchFields(value.toString());
+                  },
+                  multFields: multFields
                 ),
+                // Padding(
+                //   padding: EdgeInsets.symmetric(horizontal: 10),
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       DropdownButtonFormField<String>(
+                //         padding: EdgeInsets.symmetric(horizontal: 10),
+                //         isExpanded: true,
+                //         value: selectedDistrict,
+                //         items: districts.map((district) => DropdownMenuItem<String>(
+                //             value: district,
+                //             child: Text(
+                //               district,
+                //               style: GoogleFonts.inter(
+                //                 color: Colors.black,
+                //               ),
+                //             ),
+                //         )).toList(),
+                      
+                //         onChanged: (value) {
+                //           setState(() {
+                //             selectedDistrict = value;
+                //             fetchFields(value.toString());
+                //             multFields?.clear();
+                //           });
+                //         },
+                //         hint: const Padding(
+                //           padding: EdgeInsets.symmetric(horizontal: 10),
+                //           child: Text('İlçe seçin'),
+                //         ),
+                //         decoration: InputDecoration(
+                //           contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                //           border: OutlineInputBorder(
+                //             borderRadius: BorderRadius.circular(10),
+                //             borderSide: BorderSide.none,
+                //           ),
+                //           filled: true,
+                //           fillColor: Colors.white,
+                //           errorStyle: const TextStyle(height: 0),
+                //         ),
+                //         validator: (value) {
+                //           if (value == null) {
+                //             return '';
+                //           }
+                //           return null;
+                //         },
+                //       ),
+                //       const SizedBox(height: 2),
+                //       if (selectedDistrict == null)
+                //         Padding(
+                //           padding: const EdgeInsets.only(top: 5, left: 10),
+                //           child: Text(
+                //             'Lütfen bir ilçe seçin',
+                //             style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
+                //           ),
+                //         ),
+                //     ],
+                //   ),
+                // ),
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
@@ -352,110 +312,121 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   ),
                 ),
                 const SizedBox(height: 15),
-                // TODO: hint text eklenecek ve seçtiğin halı sahalar kutu halinde gözükecek
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        height: 45,
-                        width: 350,
-                        color: Colors.white,
-                        child: GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (context) {
-                              return StatefulBuilder(
-                                builder: (context, _setState) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: ListView(
-                                    children: fields.map((e) {
-                                    return CheckboxListTile(
-                                      title: Text(e),
-                                      value: multFields.contains(e),
-                                      onChanged: (isSelected) {
-                                        if (isSelected == true) {
-                                          multFields.add(e);
-                                        } else {
-                                          multFields.remove(e);
-                                        }
-                                        _setState(() {});
-                                        setState(() {}); 
-                                      },
-                                    );
-                                }).toList(),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
+
+                FieldsDropDown(
+                  multFields: multFields,
+                  fields: fields, 
+                  onSelectionChanged: (updatedFields) {
+                    setState(() {
+                      multFields = updatedFields;
+                    });
                   },
                 ),
-              ),
-            ),
-          ),
+          //       Padding(
+          //         padding: const EdgeInsets.symmetric(horizontal: 20),
+          //           child: ClipRRect(
+          //             borderRadius: BorderRadius.circular(10),
+          //             child: Container(
+          //               height: 45,
+          //               width: 350,
+          //               color: Colors.white,
+          //               child: GestureDetector(
+          //                 onTap: () {
+          //                   showModalBottomSheet(
+          //                     context: context,
+          //                     builder: (context) {
+          //                     return StatefulBuilder(
+          //                       builder: (context, _setState) {
+          //                       return Padding(
+          //                         padding: const EdgeInsets.all(20.0),
+          //                         child: ListView(
+          //                           children: fields.map((e) {
+          //                           return CheckboxListTile(
+          //                             title: Text(e),
+          //                             value: multFields.contains(e),
+          //                             onChanged: (isSelected) {
+          //                               if (isSelected == true) {
+          //                                 multFields.add(e);
+          //                               } else {
+          //                                 multFields.remove(e);
+          //                               }
+          //                               _setState(() {});
+          //                               setState(() {}); 
+          //                             },
+          //                           );
+          //                       }).toList(),
+          //                     ),
+          //                   );
+          //                 },
+          //               );
+          //             },
+          //           );
+          //         },
+          //       ),
+          //     ),
+          //   ),
+          // ),
           
           const SizedBox(height: 10),
 
-          SizedBox(
-            height: 60,
-            width: MediaQuery.of(context).size.width,
-            child: ListView.separated(
-            separatorBuilder: (context,index) => SizedBox(width: 10),
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.all(8),
-            shrinkWrap: true,
-            itemCount: multFields.length,
-            itemBuilder: (BuildContext context, int index) {
-              List<String> fieldList = multFields.toList();
-              return Stack(
-                children: [
-                  Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Center(
-                      child: Text(
-                        fieldList[index]
-                      )
-                    )
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        multFields.remove(fieldList[index]);
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.red
-                      ),
-                      child: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 10,
-                      ),
-                    ),
-                  ),
-                ),
-                ],
-              );
-            },
-            ),
-          ),
+          showFields(multFields: multFields),
+
+          // SizedBox(
+          //   height: 60,
+          //   width: MediaQuery.of(context).size.width,
+          //   child: ListView.separated(
+          //   separatorBuilder: (context,index) => SizedBox(width: 10),
+          //   scrollDirection: Axis.horizontal,
+          //   padding: const EdgeInsets.all(8),
+          //   shrinkWrap: true,
+          //   itemCount: multFields.length,
+          //   itemBuilder: (BuildContext context, int index) {
+          //     List<String> fieldList = multFields.toList();
+          //     return Stack(
+          //       children: [
+          //         Container(
+          //         height: 40,
+          //         decoration: BoxDecoration(
+          //           color: Colors.white,
+          //           borderRadius: BorderRadius.circular(10),
+          //         ),
+          //         child: Padding(
+          //           padding: EdgeInsets.all(10),
+          //           child: Center(
+          //             child: Text(
+          //               fieldList[index]
+          //             )
+          //           )
+          //         ),
+          //       ),
+          //       Positioned(
+          //         right: 0,
+          //         top: 0,
+          //         child: GestureDetector(
+          //           onTap: () {
+          //             setState(() {
+          //               multFields.remove(fieldList[index]);
+          //             });
+          //           },
+          //           child: Container(
+          //             padding: const EdgeInsets.all(4),
+          //             decoration: const BoxDecoration(
+          //               shape: BoxShape.circle,
+          //               color: Colors.red
+          //             ),
+          //             child: const Icon(
+          //               Icons.close,
+          //               color: Colors.white,
+          //               size: 10,
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //       ],
+          //     );
+          //   },
+          //   ),
+          // ),
             const SizedBox(height: 5),
                 // SAAT BİLGİLERİNİ GİR
                 Padding(
@@ -597,34 +568,36 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextFormField(
-                  controller: sellerPrice,
-                  keyboardType: TextInputType.number,
-                  maxLines: null,
-                  textInputAction: TextInputAction.done,
-                  validator: (price) {
-                    if (price == null || price.isEmpty) {
-                      return  "Fiyat bilgisi girmelisiniz!";
-                    } else {
-                      return null;
-                    }
-                  },
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600),
-                  decoration: InputDecoration(
-                      border: InputBorder.none,
-                      fillColor: sellergrey,
-                      filled: true,
-                      suffixText: 'TL',
-                      suffixStyle: GoogleFonts.inter(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white
-                      )
-                  ),
-                ),
+
+                priceField(controller: sellerPrice),
+                // TextFormField(
+                //   controller: sellerPrice,
+                //   keyboardType: TextInputType.number,
+                //   maxLines: null,
+                //   textInputAction: TextInputAction.done,
+                //   validator: (price) {
+                //     if (price == null || price.isEmpty) {
+                //       return  "Fiyat bilgisi girmelisiniz!";
+                //     } else {
+                //       return null;
+                //     }
+                //   },
+                //   style: GoogleFonts.inter(
+                //       color: Colors.white,
+                //       fontSize: 17,
+                //       fontWeight: FontWeight.w600),
+                //   decoration: InputDecoration(
+                //       border: InputBorder.none,
+                //       fillColor: sellergrey,
+                //       filled: true,
+                //       suffixText: 'TL',
+                //       suffixStyle: GoogleFonts.inter(
+                //         fontSize: 17,
+                //         fontWeight: FontWeight.w600,
+                //         color: Colors.white
+                //       )
+                //   ),
+                // ),
                 const SizedBox(height: 40),
                 Center(
                   child: ElevatedButton(
@@ -874,14 +847,13 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
 }
   // default resim dosyası path almak için
   Future<File> getDefaultImageFile() async {
-    // bunu sonradan değiştir
-    final byteData = await rootBundle.load('lib/images/imageDefault.jpg');
-    final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/imageDefault.jpg');
-    await tempFile.writeAsBytes(byteData.buffer.asUint8List());
-    Future<File> filePath = testCompressAndGetFile(tempFile,'lib/images/imageDefault.jpg');
-    return filePath;
+  final byteData = await rootBundle.load('lib/images/imageDefault.jpg');
+  final tempDir = await getTemporaryDirectory();
+  final tempFile = File('${tempDir.path}/imageDefault.jpg');
+  await tempFile.writeAsBytes(byteData.buffer.asUint8List());
+  return tempFile; // ✅ No need to compress it again
   }
+
 
   Future<File> testCompressAndGetFile(File file, String targetPath) async {
     var result = await FlutterImageCompress.compressAndGetFile(
@@ -894,7 +866,6 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
     File photoFile = File(result!.path);
     return photoFile;
   }
-
 }
 /*
   BURDAN SONRAKİ TEXTLER KULLANICI İÇİN SAAT SEÇİCİ OLACAK
@@ -1214,6 +1185,332 @@ class NameField extends StatelessWidget {
                       contentPadding: const EdgeInsets.all(10),
                       fillColor: sellergrey,
                       filled: true
+                  ),
+                );
+  }
+}
+class CityDropdown extends StatelessWidget {
+  final String? selectedCity;
+  final List<String> cities;
+  final ValueChanged<String?> onCitySelected;
+  final Set<String> ?multFields;
+
+  const CityDropdown({
+    super.key,
+    required this.selectedCity,
+    required this.cities,
+    required this.onCitySelected,
+    required this.multFields
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        isExpanded: true,
+                        value: selectedCity,
+                        items: cities.map((city) => DropdownMenuItem<String>(
+                          value: city,
+                          child: Text(
+                            city,
+                            style: GoogleFonts.inter(
+                              color: Colors.black
+                            ),
+                          ),
+                        )).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            onCitySelected(value);
+                          }
+                          multFields!.clear();
+                        },
+                        hint: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: const Text(
+                            'Şehir seçin'
+                          ),
+                        ),
+                        decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            errorStyle: const TextStyle(height: 0),
+                          ),
+                        validator: (value) {
+                          if (value == null) {
+                            return '';
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                    const SizedBox(height: 2),
+                    if (selectedCity == null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5, left: 10),
+                      child: Text(
+                        'Lütfen bir şehir seçin',
+                        style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                    ],
+                  ),
+                );
+  }
+}
+
+class DistrictDropDown extends StatelessWidget {
+  final String? selectedDistrict;
+  final List<String> districts;
+  final ValueChanged<String?> onDistrictSelected;
+  final Set<String> ?multFields;
+
+  const DistrictDropDown({
+    super.key,
+    required this.selectedDistrict,
+    required this.districts,
+    required this.onDistrictSelected,
+    required this.multFields
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        isExpanded: true,
+                        value: selectedDistrict,
+                        items: districts.map((district) => DropdownMenuItem<String>(
+                            value: district,
+                            child: Text(
+                              district,
+                              style: GoogleFonts.inter(
+                                color: Colors.black,
+                              ),
+                            ),
+                        )).toList(),
+
+                        onChanged: (value) {
+                          onDistrictSelected(value);
+                          multFields?.clear();
+                        },
+                        hint: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('İlçe seçin'),
+                        ),
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          errorStyle: const TextStyle(height: 0),
+                        ),
+                        validator: (value) {
+                          if (value == null) {
+                            return '';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 2),
+                      if (selectedDistrict == null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5, left: 10),
+                          child: Text(
+                            'Lütfen bir ilçe seçin',
+                            style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+  }
+}
+class FieldsDropDown extends StatelessWidget {
+  final Set<String> multFields;
+  final List<String> fields;
+  final ValueChanged<Set<String>> onSelectionChanged; // Callback to parent
+
+  const FieldsDropDown({
+    super.key,
+    required this.multFields,
+    required this.fields,
+    required this.onSelectionChanged, // Receive function from parent
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          height: 45,
+          width: 350,
+          color: Colors.white,
+          child: GestureDetector(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return StatefulBuilder(
+                    builder: (context, _setState) {
+                      return Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: ListView(
+                          children: fields.map((e) {
+                            return CheckboxListTile(
+                              title: Text(e),
+                              value: multFields.contains(e),
+                              onChanged: (isSelected) {
+                                _setState(() { // First, update the modal UI
+                                if (isSelected == true) {
+                                  multFields.add(e);
+                                } else {
+                                  multFields.remove(e);
+                                }
+                              });
+                              // Then, notify the parent about the change
+                              onSelectionChanged(Set.from(multFields));
+                            },
+                            );
+                          }).toList(),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+class showFields extends StatefulWidget {
+  final Set<String> multFields;
+  const showFields({
+    super.key,
+    required this.multFields
+  });
+
+  @override
+  State<showFields> createState() => _showFieldsState();
+}
+
+class _showFieldsState extends State<showFields> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+            height: 60,
+            width: MediaQuery.of(context).size.width,
+            child: ListView.separated(
+            separatorBuilder: (context,index) => SizedBox(width: 10),
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.all(8),
+            shrinkWrap: true,
+            itemCount: widget.multFields.length,
+            itemBuilder: (BuildContext context, int index) {
+              List<String> fieldList = widget.multFields.toList();
+              return Stack(
+                children: [
+                  Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Center(
+                      child: Text(
+                        fieldList[index]
+                      )
+                    )
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        widget.multFields.remove(fieldList[index]);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 10,
+                      ),
+                    ),
+                  ),
+                ),
+                ],
+              );
+            },
+            ),
+          );
+  }
+}
+class priceField extends StatelessWidget {
+  final TextEditingController controller;
+  const priceField({
+    super.key,
+    required this.controller
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  maxLines: null,
+                  textInputAction: TextInputAction.done,
+                  validator: (price) {
+                    if (price == null || price.isEmpty) {
+                      return  "Fiyat bilgisi girmelisiniz!";
+                    } else {
+                      return null;
+                    }
+                  },
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      fillColor: sellergrey,
+                      filled: true,
+                      suffixText: 'TL',
+                      suffixStyle: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white
+                      )
                   ),
                 );
   }

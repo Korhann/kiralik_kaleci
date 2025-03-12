@@ -175,6 +175,7 @@ class _FilterPageState extends State<FilterPage> {
                     },
                   ),
                   const SizedBox(height: 8),
+
                   CityDropdown(
                     selectedCity: cityFilter,
                     cities: cities,
@@ -191,8 +192,7 @@ class _FilterPageState extends State<FilterPage> {
                       });
                     },
                     onClear: () async {
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
                       await prefs.remove('selectedCity');
                       setState(() {
                         cityFilter = null;
@@ -202,6 +202,7 @@ class _FilterPageState extends State<FilterPage> {
                     },
                   ),
                   const SizedBox(height: 8),
+
                   DistrictDropdown(
                     selectedDistrict: districtFilter,
                     districts: districts,
@@ -225,6 +226,7 @@ class _FilterPageState extends State<FilterPage> {
                     },
                   ),
                   const SizedBox(height: 8),
+
                   FieldDropdown(
                     selectedField: fieldFilter,
                     fields: fields,
@@ -340,8 +342,7 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Future<void> onCitySelected(String selectedCityFilter) async {
-    final city =
-        cityData.firstWhere((city) => city['name'] == selectedCityFilter);
+    final city = cityData.firstWhere((city) => city['name'] == selectedCityFilter);
     if (city != null) {
       final districtsData = city['districts'];
       if (districtsData != null) {
