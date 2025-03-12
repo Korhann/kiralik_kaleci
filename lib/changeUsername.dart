@@ -37,7 +37,7 @@ class _ChangeUserNameState extends State<ChangeUserName> {
         backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.of(context).pop();
           },
           icon: Icon(Icons.arrow_back,
               color: userorseller ? Colors.white : Colors.black),

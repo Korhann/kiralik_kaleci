@@ -154,135 +154,23 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   )
                 ),
                 const SizedBox(height: 10),
-                Container(
-                  color: sellergrey,
-                  height: 110,
-                  width: MediaQuery.of(context).size.width,
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: GestureDetector(
-                            child: Container(
-                              width: 100,
-                              height: 90,
-                              color: sellerwhite,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.camera_alt, size: 24),
-                                  const SizedBox(height: 2),
-                                  Text("Fotoğraf",
-                                    style: GoogleFonts.inter(
-                                        color: Colors.black,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  Text("Ekle",
-                                      style: GoogleFonts.inter(
-                                          color: Colors.black,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            ),
-                            onTap: () {
-                              _pickImageFromGallery();
-                            },
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(
-                          width: 100,
-                          height: 90,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: imageFileList.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: GestureDetector(
-                                        child: Image.file(
-                                          File(imageFileList[index].path),
-                                          fit: BoxFit.fitHeight,
-                                        ),
-                                        onTap: () {
-                                          currentIndex = index;
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return Dialog(
-                                                child: SizedBox(
-                                                  width: MediaQuery.of(context).size.width,
-                                                  height: MediaQuery.of(context).size.height,
-                                                  child: Expanded(
-                                                    child: CarouselSlider(
-                                                      options: CarouselOptions(
-                                                        aspectRatio: 1,
-                                                        viewportFraction: 1,
-                                                        enableInfiniteScroll:false,
-                                                        padEnds: false,
-                                                        initialPage:currentIndex,
-                                                      ),
-                                                      items: imageFileList.map<Widget>(
-                                                        (imageFile) {
-                                                          return Builder(
-                                                            builder: (BuildContext context) {
-                                                            return Image.file(File(imageFile.path),
-                                                              fit: BoxFit.cover);
-                                                          },
-                                                        );
-                                                      }).toList(),
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 0,
-                                      right: 0,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          _removeImage(index);
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.red,
-                                          ),
-                                          child: const Icon(
-                                            Icons.close,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+
+                // image picker
+                PickImageGallery(
+                  imageFileList: imageFileList,
+                  onTap: () async {
+                    final ImagePicker picker = ImagePicker();
+                    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                    if (image != null) {
+                      setState(() {
+                        imageFileList.add(image);
+                      });
+                    }
+                  },
                 ),
 
                 const SizedBox(height: 20),
+
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
                   child: Text(
@@ -294,30 +182,13 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextFormField(
+                NameField(
                   controller: sellerFullName,
-                  validator: (name) {
-                    if (name == null || name.isEmpty) {
-                      return "Boş Bırakılamaz !";
-                    }
-                    return null;
-                  },
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300),
-                  decoration: InputDecoration(
-                      hintText: "İsminizi giriniz",
-                      hintStyle: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.all(10),
-                      fillColor: sellergrey,
-                      filled: true
-                  ),
+                  // onChanged: (value) {
+                  //   setState(() {
+                  //     sellerFullName.text = value;
+                  //   });
+                  // }
                 ),
                 const SizedBox(height: 40),
                 /*
@@ -395,6 +266,7 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
@@ -1150,3 +1022,201 @@ Widget build(BuildContext context) {
   );
   }
 }
+class PickImageGallery extends StatefulWidget {
+  final List<XFile> imageFileList;
+  final VoidCallback onTap;
+
+  const PickImageGallery({
+    Key? key,
+    required this.imageFileList,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  _PickImageGalleryState createState() => _PickImageGalleryState();
+}
+
+class _PickImageGalleryState extends State<PickImageGallery> {
+  int currentIndex = 0;
+
+  void _removeImage(int index) {
+    setState(() {
+      widget.imageFileList.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: sellergrey, 
+      height: 110,
+      width: MediaQuery.of(context).size.width,
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: GestureDetector(
+                onTap: widget.onTap,
+                child: Container(
+                  width: 100,
+                  height: 90,
+                  color: Colors.white, 
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.camera_alt, size: 24),
+                      const SizedBox(height: 2),
+                      Text(
+                        "Fotoğraf",
+                        style: GoogleFonts.inter(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        "Ekle",
+                        style: GoogleFonts.inter(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: SizedBox(
+              width: 100,
+              height: 90,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: widget.imageFileList.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                currentIndex = index;
+                              });
+
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    child: SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      height: MediaQuery.of(context).size.height,
+                                      child: CarouselSlider(
+                                        options: CarouselOptions(
+                                          aspectRatio: 1,
+                                          viewportFraction: 1,
+                                          enableInfiniteScroll: false,
+                                          padEnds: false,
+                                          initialPage: currentIndex,
+                                        ),
+                                        items: widget.imageFileList.map((imageFile) {
+                                          return Builder(
+                                            builder: (BuildContext context) {
+                                              return Image.file(
+                                                File(imageFile.path),
+                                                fit: BoxFit.cover,
+                                              );
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: Image.file(
+                              File(widget.imageFileList[index].path),
+                              fit: BoxFit.fitHeight,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () {
+                              _removeImage(index);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.red,
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class NameField extends StatelessWidget {
+  final TextEditingController controller;
+  // final ValueChanged<String> onChanged;
+  const NameField({
+    required this.controller,
+    // required this.onChanged,
+    super.key
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+                  controller: controller,
+                  validator: (name) {
+                    if (name == null || name.isEmpty) {
+                      return "Boş Bırakılamaz !";
+                    }
+                    return null;
+                  },
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300),
+                  decoration: InputDecoration(
+                      hintText: "İsminizi giriniz",
+                      hintStyle: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.all(10),
+                      fillColor: sellergrey,
+                      filled: true
+                  ),
+                );
+  }
+}
+
+

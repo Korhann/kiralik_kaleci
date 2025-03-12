@@ -33,42 +33,63 @@ class _SettingsMenuState extends State<SettingsMenu> {
           children: [
             const SizedBox(height: 30),
 
-            Menus(text: 'Kullanıcı Adı Değiştir', route: MaterialPageRoute(builder: (context) => const ChangeUserName())),
+            Menus(text: 'Kullanıcı Adı Değiştir', ontap:() => _navigateToPage('username') ),
 
             Container(
               height: 1,
               color: sellerwhite,
             ),
 
-            Menus(text: 'Şifre Değiştir', route: MaterialPageRoute(builder: (context) => const ChangePassword())),
+            Menus(text: 'Şifre Değiştir', ontap:() => _navigateToPage('password')),
 
             Container(
               height: 1,
               color: sellerwhite,
             ),
 
-            Menus(text: 'Email Değiştir', route: MaterialPageRoute(builder: (context) => const ChangeEmail()))
+            Menus(text: 'Email Değiştir', ontap:() => _navigateToPage('email'))
 
           ],
         ),
       ),
     );
   }
+
+  void _navigateToPage(String menuOption) async {
+    Widget page;
+    switch (menuOption) {
+      case 'username':
+        page = const ChangeUserName();
+        break;
+      case 'password':
+        page = const ChangePassword();
+        break;
+      case 'email':
+        page = const ChangeEmail(); 
+        break;
+      default:
+        return; 
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
 }
+
 
 class Menus extends StatelessWidget {
 
   final String text;
-  final Route route;
+  final VoidCallback ontap;
 
-  const Menus({required this.text, required this.route});
+  const Menus({required this.text, required this.ontap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(context, route);
-      },
+      onTap: ontap,
       child: Container(
         height: 50,
         width: double.infinity,
