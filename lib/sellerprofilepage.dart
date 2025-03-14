@@ -5,7 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/homepage.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
+import 'package:kiralik_kaleci/profilepage.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/selleribanpage.dart';
@@ -51,7 +53,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 10.0),
-                    child: _userName(),
+                    child: UserNameHeaderText(),
                   ),
                   const Spacer(),
                   IconButton(
@@ -69,63 +71,64 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                   ],
                 ),
               const SizedBox(height: 30),
-              Container(
-                color: sellergrey,
-                height: 50,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Kaleci Ol",
-                        style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white),
-                      ),
-                      ToggleSwitch(
-                        minWidth: 80.0,
-                        cornerRadius: 20.0,
-                        activeBgColors: [
-                          [Colors.green[800]!],
-                          [Colors.red[800]!]
-                        ],
-                        activeFgColor: Colors.white,
-                        inactiveBgColor: Colors.grey,
-                        inactiveFgColor: Colors.white,
-                        initialLabelIndex: toggleIndex,
-                        totalSwitches: 2,
-                        labels: const ['Kullanıcı', 'Satıcı'],
-                        radiusStyle: true,
-                        onToggle: (index) {
-                          if (mounted) {
-                            setState(() {
-                              toggleIndex = index!;
-                            });
-                          }
-                          // case 0 aynı sayfada kalacak case 1 satıcı sayfasına geçecek
-                          switch (index) {
-                            // aynı sayfada kal
-                            case 0:
-                              // settings in rengini değiştirmek için(beyaz yapıyor)
-                              userorseller = false;
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const MainPage()),
-                              );
-                              break;
-                            // satıcı sayfasına geç
-                            case 1:
-                              return;
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              BeSellerOrUser(),
+              // Container(
+              //   color: sellergrey,
+              //   height: 50,
+              //   child: Padding(
+              //     padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //       children: [
+              //         Text(
+              //           "Kaleci Ol",
+              //           style: GoogleFonts.inter(
+              //               fontSize: 18,
+              //               fontWeight: FontWeight.w500,
+              //               color: Colors.white),
+              //         ),
+              //         ToggleSwitch(
+              //           minWidth: 80.0,
+              //           cornerRadius: 20.0,
+              //           activeBgColors: [
+              //             [Colors.green[800]!],
+              //             [Colors.red[800]!]
+              //           ],
+              //           activeFgColor: Colors.white,
+              //           inactiveBgColor: Colors.grey,
+              //           inactiveFgColor: Colors.white,
+              //           initialLabelIndex: toggleIndex,
+              //           totalSwitches: 2,
+              //           labels: const ['Kullanıcı', 'Satıcı'],
+              //           radiusStyle: true,
+              //           onToggle: (index) {
+              //             if (mounted) {
+              //               setState(() {
+              //                 toggleIndex = index!;
+              //               });
+              //             }
+              //             // case 0 aynı sayfada kalacak case 1 satıcı sayfasına geçecek
+              //             switch (index) {
+              //               // aynı sayfada kal
+              //               case 0:
+              //                 // settings in rengini değiştirmek için(beyaz yapıyor)
+              //                 userorseller = false;
+              //                 Navigator.push(
+              //                   context,
+              //                   MaterialPageRoute(
+              //                       builder: (context) => const MainPage()),
+              //                 );
+              //                 break;
+              //               // satıcı sayfasına geç
+              //               case 1:
+              //                 return;
+              //             }
+              //           },
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 30),
 
               // kullanıcı hesap bilgileri
@@ -142,52 +145,14 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 ),
               ),
               const SizedBox(height: 10),
-              Container(
-                height: 70,
-                width: double.infinity,
-                color: sellergrey,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Ad Soyad",
-                        style: GoogleFonts.inter(
-                            fontSize: 22, fontWeight: FontWeight.w500,color: Colors.white
-                            ),
-                      ),
-                      _getUserName()
-                    ],
-                  ),
-                ),
-              ),
+              UserName(),
+
               Container(
                 height: 1,
                 color: sellerwhite,
               ),
-              Container(
-                height: 70,
-                width: double.infinity,
-                color: sellergrey,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Email",
-                        style: GoogleFonts.inter(
-                            fontSize: 22, fontWeight: FontWeight.w500,color: Colors.white
-                        ),
-                      ),
-                      _getEmail()
-                    ],
-                  ),
-                ),
-              ),
+
+              Email(),
               const SizedBox(height: 30),
               Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -259,41 +224,11 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                       MaterialPageRoute(builder: (context) => const EarningsPage())
                     );
                   },
-                  child: Stack(
-                    children: [
-                      Container(
-                      height: 70,
-                      width: double.infinity,
-                      color: sellergrey,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 20.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Kazançlarım',
-                              style: GoogleFonts.roboto(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 30,
-                      top: 20,
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    )
-                    ],
-                  ),
+                  child: OtherBars(
+                    text: 'Kazançlarım',
+                    icon: Icons.forward,
+                    iconColor: Colors.white,
+                  )
                 ),
               const SizedBox(height: 30),
 
@@ -311,35 +246,17 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
               const SizedBox(height: 10),
 
               GestureDetector(
-                //TODO user or seller a göre de yapabilirsin belki yada yeni bir sellerappointment page de yapabilirsin
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AppointmentsPage())
                   );
                 },
-                child: Container(
-                  height: 60,
-                  width: double.infinity,
-                  color: sellergrey,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Randevularım',
-                          style: GoogleFonts.roboto(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white
-                          ),
-                        ),
-                        const Icon(Icons.alarm, size: 24, color: Colors.white,)
-                      ],
-                    ),
-                  ),
-                ),
+                child: OtherBars(
+                  text: 'Randevularım',
+                  icon: Icons.alarm,
+                  iconColor: Colors.white
+                )
               ),
               Container(
                 height: 1,
@@ -352,62 +269,16 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                     MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentuser))
                   );
                 },
-                child: Container(
-                  height: 60,
-                  width: double.infinity,
-                  color: sellergrey,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'İlanlarım',
-                          style: GoogleFonts.roboto(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white
-                          ),
-                        ),
-                        const Icon(Icons.diamond, size: 24, color: Colors.white,)
-                      ],
-                    ),
-                  ),
-                ),
+                child: OtherBars(
+                  text: 'İlanlarım',
+                  icon: Icons.diamond,
+                  iconColor: Colors.white,
+                )
               ),
               // İlanlarım sayfası
               const SizedBox(height: 60),
-              Center(
-                child: SizedBox(
-                  width: 200,
-                  height: 60,
-                  child: ElevatedButton(
-                      onPressed: () async{
-                        // sign out the user
-                        _auth.signOut();
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => const MainPage()),
-                          (Route<dynamic> route) => false,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: sellergrey),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Çıkış Yap",
-                            style: GoogleFonts.inter(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                          const Icon(Icons.door_back_door,
-                              size: 24, color: Colors.white)
-                        ],
-                      )),
-                ),
-              ),
+
+              SignUserOut()
             ],
           ),
         ),
@@ -415,29 +286,6 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
     );
   }
 
-
-  Widget _getUserName() {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const Text('Veri bulunamadı');
-        }
-        var userData = snapshot.data!.data() as Map<String, dynamic>;
-        return Text(
-          userData['fullName'] ?? '',
-          style: GoogleFonts.roboto(
-            fontSize: 16,
-            fontWeight:FontWeight.w400,
-            color: Colors.white
-          )
-        );
-      },
-    );
-  }
 
   Widget _getEmail() {
     return StreamBuilder<DocumentSnapshot>(
@@ -496,28 +344,6 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
       },
     );
   }
-  Widget _userName() {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const Text('Veri bulunamadı');
-        }
-        var userData = snapshot.data!.data() as Map<String, dynamic>;
-        return Text(
-          userData['fullName'] ?? '',
-          style: GoogleFonts.roboto(
-            fontSize: 20,
-            fontWeight:FontWeight.bold,
-            color: Colors.white
-          )
-        );
-      },
-    );
-  }
   Future<void> getUserDetails() async{
     try{
       DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
@@ -534,5 +360,256 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
     }catch (e) {
       print('$e');
     }
+  }
+}
+
+class UserName extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 70,
+      width: double.infinity,
+      color: sellergrey,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Ad Soyad",
+              style: GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500, color: Colors.white),
+            ),
+            UserNameText(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class UserNameText extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentuser)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        return Text(userData['fullName'] ?? '',
+            style: GoogleFonts.roboto(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: Colors.white));
+      },
+    );
+  }
+}
+
+class UserNameHeaderText extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
+    return StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentuser)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator();
+          }
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Text('Veri bulunamadı');
+          }
+          var userData = snapshot.data!.data() as Map<String, dynamic>;
+          return Text(userData['fullName'] ?? '',
+              style: GoogleFonts.roboto(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white));
+        });
+  }
+}
+
+class OtherBars extends StatelessWidget {
+  final String text;
+  final IconData icon;
+  final Color iconColor;
+
+  const OtherBars({required this.text, required this.icon,this.iconColor = Colors.white});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 60,
+      width: double.infinity,
+      color: sellergrey,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              text,
+              style: GoogleFonts.roboto(
+                fontSize: 22, fontWeight: FontWeight.w500, color: Colors.white
+            ),
+            ),
+            Icon(icon,color: iconColor)
+          ],
+        ),
+      ),
+    );
+  }
+}
+class SignUserOut extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    return Center(
+      child: SizedBox(
+        width: 200,
+        height: 60,
+        child: ElevatedButton(
+            onPressed: () async {
+              // sign out the user
+              _auth.signOut();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: sellergrey),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Çıkış Yap",
+                  style: GoogleFonts.roboto(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
+                const Icon(Icons.door_back_door, size: 24, color: Colors.white)
+              ],
+            )),
+      ),
+    );
+  }
+}
+
+class Email extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 70,
+      width: double.infinity,
+      color: sellergrey,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Email",
+              style:GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500, color: Colors.white),
+            ),
+            EmailText()
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class EmailText extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentuser)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text('Veri bulunamadı');
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        return Text(
+          userData['email'] ?? '',
+          style: GoogleFonts.roboto(
+              fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+        );
+      },
+    );
+  }
+}
+
+class BeSellerOrUser extends StatelessWidget {
+  const BeSellerOrUser({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+                color: sellergrey,
+                height: 50,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Kaleci Ol",
+                        style: GoogleFonts.roboto(
+                            fontSize: 18, fontWeight: FontWeight.w500, color: Colors.white),
+                      ),
+                      ToggleSwitch(
+                        minWidth: 80.0,
+                        cornerRadius: 20.0,
+                        activeBgColors: [
+                          [Colors.green[800]!],
+                          [Colors.red[800]!]
+                        ],
+                        activeFgColor: Colors.white,
+                        inactiveBgColor: Colors.grey,
+                        inactiveFgColor: Colors.white,
+                        initialLabelIndex: 1,
+                        totalSwitches: 2,
+                        labels: const ['Kullanıcı', 'Satıcı'],
+                        radiusStyle: true,
+                        onToggle: (index) {
+                          // case 0 aynı sayfada kalacak case 1 satıcı sayfasına geçecek
+                          switch (index) {
+                            // aynı sayfada kal
+                            case 0:
+                              // settings in rengini değiştirmek için(beyaz yapıyor)
+                              userorseller = false;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const MainPage()),
+                              );
+                              break;
+                            // satıcı sayfasına geç
+                            case 1:
+                              return;
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
   }
 }
