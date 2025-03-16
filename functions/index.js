@@ -4,11 +4,10 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
-// Set region & time zone
-setGlobalOptions({ region: 'europe-west2' });  // London (closest stable region)
+setGlobalOptions({ region: 'europe-west2' });
 
 exports.resetAppointments = onSchedule(
-  { schedule: 'every Monday 00:00', timeZone: 'Europe/Istanbul' },  // Runs at 00:00 Turkey time
+  { schedule: 'every Monday 00:00', timeZone: 'Europe/Istanbul' },
   async () => {
     try {
       const usersRef = admin.firestore().collection('Users');
@@ -21,9 +20,10 @@ exports.resetAppointments = onSchedule(
         const userRef = userDoc.ref;
         const userData = userDoc.data();
 
-        // Haftalık randevu durumu resetleme
+        // Reset `istaken` values properly by making a deep copy
         if (userData.sellerDetails && userData.sellerDetails.selectedHoursByDay) {
-          let updatedHours = userData.sellerDetails.selectedHoursByDay;
+          const updatedHours = JSON.parse(JSON.stringify(userData.sellerDetails.selectedHoursByDay));
+
           Object.keys(updatedHours).forEach((day) => {
             updatedHours[day] = updatedHours[day].map((hourSlot) => ({
               ...hourSlot,
@@ -35,7 +35,7 @@ exports.resetAppointments = onSchedule(
           batchCounter++;
         }
 
-        // Haftalık randevuları silme
+        // Delete old appointments
         const appointmentBuyerRef = userRef.collection("appointmentbuyer");
         const appointmentSellerRef = userRef.collection("appointmentseller");
 
@@ -60,7 +60,7 @@ exports.resetAppointments = onSchedule(
         }
       }
 
-      // Commit any remaining batch writes
+      // Commit remaining batch writes
       if (batchCounter > 0) {
         await batch.commit();
       }

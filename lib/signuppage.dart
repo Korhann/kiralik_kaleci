@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/loginpage.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'styles/colors.dart';
 import 'mainpage.dart';
@@ -10,8 +11,7 @@ import 'mainpage.dart';
 //TODO: ANİMASYON EKLENECEK !!!
 
 class SignUp extends StatefulWidget {
-  final VoidCallback? showLoginPage;
-  const SignUp({super.key, required this.showLoginPage});
+  const SignUp({super.key});
 
   @override
   State<SignUp> createState() => _SignUpState();
@@ -302,7 +302,9 @@ class _SignUpState extends State<SignUp> {
                       ),
                       const Spacer(),
                       GestureDetector(
-                        onTap: widget.showLoginPage,
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn()));
+                        },
                         child: PlatformText(
                           "Giriş Yap",
                           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: green),

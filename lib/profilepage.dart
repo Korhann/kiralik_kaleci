@@ -20,7 +20,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // veri tabanından çektiğim veriler
   String? fullName;

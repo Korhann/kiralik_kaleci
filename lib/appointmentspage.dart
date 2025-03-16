@@ -64,7 +64,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               Navigator.pushAndRemoveUntil<void>(
                 context,
                 MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const SellerMainPage()),
+                  builder: (BuildContext context) => const SellerMainPage()),
                 ModalRoute.withName('/'),
               );
             } else {
@@ -164,8 +164,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           await rejectAppointment(docId, index);
                         },
                       );
+                      
                     },
-                  )
+                  ),
+                  const SizedBox(height: 20)
           ],
         ),
       ),

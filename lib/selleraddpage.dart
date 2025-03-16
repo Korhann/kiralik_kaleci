@@ -725,19 +725,6 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
       }
     }
   }
-  void _removeImage(int index) {
-    setState(() {
-      imageFileList.removeAt(index);
-    });
-  }
-
-
-  Future _pickImageFromGallery() async {
-    final List<XFile> selectedImages = await imagePicker.pickMultiImage(imageQuality: 5);
-    if (selectedImages.isNotEmpty) {
-      imageFileList.addAll(selectedImages);
-    }
-  }
 
   Future<bool> _insertSellerDetails(BuildContext context) async {
   if (_formKey.currentState!.validate() && _AmenitiesState.selectedHoursByDay.isNotEmpty && multFields.isNotEmpty) {

@@ -4,6 +4,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kiralik_kaleci/forgetpasswordpage.dart';
+import 'package:kiralik_kaleci/signuppage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 
@@ -11,8 +12,7 @@ import 'package:kiralik_kaleci/styles/designs.dart';
 //TODO: ANİMASYON EKLENECEK !!!
 
 class LogIn extends StatefulWidget {
-  final VoidCallback showRegisterPage;
-  const LogIn({super.key, required this.showRegisterPage});
+  const LogIn({super.key});
 
   @override
   State<LogIn> createState() => _LogInState();
@@ -348,7 +348,9 @@ class _LogInState extends State<LogIn> {
                         ),
                         const SizedBox(width: 10),
                         GestureDetector(
-                          onTap: widget.showRegisterPage,
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => SignUp()));
+                          },
                           child: PlatformText(
                             "Kayıt Ol",
                             style: GoogleFonts.inter(

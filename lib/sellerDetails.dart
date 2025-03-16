@@ -347,11 +347,14 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             // duruma göre renk belirliyor
             if (istaken) {
               if (takenby == currentUserUid) {
+                print('ben saat seçtim');
                 hourColors[dayHourKey] = Colors.green;
               } else {
+                print('başkası seçti');
                 hourColors[dayHourKey] = Colors.grey.shade600;  
               }
             } else {
+              print('saat seçilmedi');
               hourColors[dayHourKey] = Colors.cyan;
             }
             hourTitles.add(title);
@@ -365,38 +368,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     }
   }
 }
-
-  void _toggleFavorite(Map<String, dynamic> sellerDetails, String sellerUid) async {
-    final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserUid != null && currentUserUid.isNotEmpty) {
-      if (isFavorited) {
-        // Remove from favorites
-        QuerySnapshot snapshot = await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(currentUserUid)
-            .collection('favourites')
-            .where('sellerUid', isEqualTo: sellerUid)
-            .get();
-        for (var doc in snapshot.docs) {
-          await doc.reference.delete();
-        }
-        setState(() {
-          isFavorited = false;
-        });
-      } else {
-        // Add to favorites
-        sellerDetails['sellerUid'] = sellerUid; 
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(currentUserUid)
-            .collection('favourites')
-            .add(sellerDetails);
-        setState(() {
-          isFavorited = true;
-        });
-      }
-    }
-  }
 }
 
 class showImage extends StatefulWidget {

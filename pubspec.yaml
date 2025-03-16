@@ -56,6 +56,8 @@ dependencies:
   internet_connection_checker_plus: ^2.7.0
   flutter_image_compress: ^2.4.0
   cached_network_image: ^3.4.1
+  internet_connection_checker: ^3.0.1
+  rename_app: ^1.6.2
 
   
 dev_dependencies:
