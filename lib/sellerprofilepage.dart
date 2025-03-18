@@ -514,12 +514,6 @@ class SignUserOut extends StatelessWidget {
             onPressed: () async {
               // sign out the user
               await _auth.signOut();
-
-              // Navigator.pushAndRemoveUntil(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => LogIn()), 
-              //   (route) => false, // Clears all previous routes
-              // );
             },
             style: ElevatedButton.styleFrom(backgroundColor: sellergrey),
             child: Row(

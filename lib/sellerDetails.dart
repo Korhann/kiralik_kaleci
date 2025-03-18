@@ -57,6 +57,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     _checkIfFavorited();
   }
 
+
   Future<void> _getData() async {
     if (widget.sellerUid.isNotEmpty) {
       await _getDaysName(widget.sellerUid);
@@ -322,43 +323,24 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             // Determine the color based on istaken and whether the day is past
             String dayHourKey = '$day $title';
             bool isPastDay = i < currentDayIndex;
-
-            // eski false değeri kaldırıp yerine true değerini koyuyor aşşağıda
-            if (isPastDay && istaken) {
-              await FirebaseFirestore.instance
-              .collection('Users')
-              .doc(userId)
-              .update({
-                'sellerDetails.selectedHoursByDay.$day':
-                FieldValue.arrayUnion([{'title': title, 'istaken': false}])
-              });
-
-              // buradada günü geçti yani alındı olarak işaretliyor
-              await FirebaseFirestore.instance
-              .collection('Users')
-              .doc(userId)
-              .update({
-                'sellerDetails.selectedHoursByDay.$day':
-                FieldValue.arrayRemove([{'title': title, 'istaken': true, 'takenby': 'empty'}])
-              });
-              istaken = false;
+            
+            if (isPastDay) {
+              markPastDayAsTaken(userId: userId, day: day, title: title);
             }
 
             // duruma göre renk belirliyor
             if (istaken) {
               if (takenby == currentUserUid) {
-                print('ben saat seçtim');
                 hourColors[dayHourKey] = Colors.green;
               } else {
-                print('başkası seçti');
                 hourColors[dayHourKey] = Colors.grey.shade600;  
               }
             } else {
-              print('saat seçilmedi');
               hourColors[dayHourKey] = Colors.cyan;
             }
             hourTitles.add(title);
           }
+        
 
           setState(() {
             hoursByDay[day] = hourTitles;
@@ -368,6 +350,24 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     }
   }
 }
+Future<void> markPastDayAsTaken({required String userId,required String day,required String title}) async {
+
+  final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+  List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
+  print(data);
+  List<dynamic> updatedData = data.map((hour) {
+      return {
+        'title': 'Geçmiş',
+        'istaken': true,
+        'takenby': 'empty'
+      };
+  }).toList();
+
+  await FirebaseFirestore.instance.collection('Users').doc(userId).update({
+    'sellerDetails.selectedHoursByDay.$day': updatedData
+  });
+}
+
 }
 
 class showImage extends StatefulWidget {
