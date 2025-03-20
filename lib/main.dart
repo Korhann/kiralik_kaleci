@@ -107,7 +107,7 @@ void setupNotificationListener() {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AppointmentsPage()
+                  builder: (context) => AppointmentsPage(whereFrom: 'fromNoti')
                 )
               );
             }

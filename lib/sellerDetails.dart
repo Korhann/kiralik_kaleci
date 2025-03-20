@@ -354,10 +354,9 @@ Future<void> markPastDayAsTaken({required String userId,required String day,requ
 
   final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
   List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
-  print(data);
   List<dynamic> updatedData = data.map((hour) {
       return {
-        'title': 'Geçmiş',
+        'title': hour['title'],
         'istaken': true,
         'takenby': 'empty'
       };

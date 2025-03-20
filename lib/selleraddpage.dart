@@ -727,7 +727,8 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
   }
 
   Future<bool> _insertSellerDetails(BuildContext context) async {
-  if (_formKey.currentState!.validate() && _AmenitiesState.selectedHoursByDay.isNotEmpty && multFields.isNotEmpty) {
+  bool hasSelectedAnyHour = _AmenitiesState.selectedHoursByDay.values.any((list) => list.isNotEmpty);
+  if (_formKey.currentState!.validate() && hasSelectedAnyHour && multFields.isNotEmpty) {
 
     // Show loading dialog    
     showDialog(
@@ -756,7 +757,7 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   'istaken': false,
                   'takenby': 'empty'
                 }).toList();
-          }
+          } 
         });
 
         int? price = int.tryParse(sellerPrice.text);
@@ -930,13 +931,16 @@ void onCheckTap(CheckContainerModel container) {
 
   if (checkContainers[index].isCheck) {
     selectedHoursByDay[widget.day]!.add(checkContainers[index]);
+    selectedHours.add(checkContainers[index]);
   } else {
     selectedHoursByDay[widget.day]!.removeWhere(
       (element) => element.title == checkContainers[index].title,
     );
   }
   
-  setState(() {});
+  if (mounted) {
+    setState(() {});
+  }
 }
   void resetSelection() {
   checkContainers = checkContainers.map((container) {

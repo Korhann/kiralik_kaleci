@@ -9,7 +9,12 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 import 'globals.dart';
 
 class AppointmentsPage extends StatefulWidget {
-  const AppointmentsPage({super.key});
+  const AppointmentsPage({
+    super.key,
+    required this.whereFrom
+  });
+
+  final String whereFrom;
 
   @override
   State<AppointmentsPage> createState() => _AppointmentsPageState();
@@ -61,12 +66,16 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           onPressed: () {
             // geri ye basınca yanlış yerden çıkış yaptığı için kullandım
             if (userorseller) {
-              Navigator.pushAndRemoveUntil<void>(
+              if (widget.whereFrom == 'fromProfile') {
+                Navigator.of(context).pop();
+              } else if (widget.whereFrom == 'fromNoti') {
+                Navigator.pushAndRemoveUntil<void>(
                 context,
                 MaterialPageRoute<void>(
                   builder: (BuildContext context) => const SellerMainPage()),
                 ModalRoute.withName('/'),
-              );
+                );
+              }
             } else {
               Navigator.of(context).pop();
             }

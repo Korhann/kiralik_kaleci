@@ -110,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AppointmentsPage())
+                  MaterialPageRoute(builder: (context) => AppointmentsPage(whereFrom: 'fromProfile'))
                 );
                 },
                 child: OtherBars(

@@ -191,7 +191,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AppointmentsPage())
+                    MaterialPageRoute(builder: (context) => const AppointmentsPage(whereFrom: 'fromProfile'))
                   );
                 },
                 child: OtherBars(
