@@ -105,6 +105,7 @@ class _DirectMessagesState extends State<DirectMessages> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Mesajlar', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20)),
         backgroundColor: background,
         centerTitle: true,

@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:kiralik_kaleci/SellerGridItem.dart';
+import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -38,32 +40,35 @@ class _GetUserDataState extends State<GetUserData> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: background,
-      body: StreamBuilder(
-        stream: _userStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text("Bağlantı hatası"));
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          var docs = snapshot.data!.docs
-              .where((doc) => doc.data().containsKey('sellerDetails'))
-              .toList();
-
-          return Column(
-            children: [
-              _HeaderSection(onFilterTap: _navigateToFilterPage),
-              docs.isEmpty ? _EmptyState() : _SellerGrid(docs: docs, onCardTap: _handleCardTap),
-            ],
-          );
-        },
+    return ConnectivityWrapper(
+      child: Scaffold(
+        backgroundColor: background,
+        body: StreamBuilder(
+          stream: _userStream,
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return const Center(child: Text("Bağlantı hatası"));
+            }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+      
+            var docs = snapshot.data!.docs
+                .where((doc) => doc.data().containsKey('sellerDetails'))
+                .toList();
+      
+            return Column(
+              children: [
+                _HeaderSection(onFilterTap: _navigateToFilterPage),
+                docs.isEmpty ? _EmptyState() : _SellerGrid(docs: docs, onCardTap: _handleCardTap),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
+
 
   void _navigateToFilterPage() async {
     final filters = await Navigator.push(
