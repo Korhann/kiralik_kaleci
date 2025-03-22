@@ -17,6 +17,7 @@ class FootballField {
     required this.fieldName
   });
 
+  //todo: Bunu sadece istanbul yap
   static Future<void> storeFields() async {
   var localDb = await Hive.openBox<FootballField>('football_fields');
 

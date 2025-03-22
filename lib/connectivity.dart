@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:kiralik_kaleci/styles/colors.dart';
 
 class ConnectivityWrapper extends StatefulWidget {
   final Widget child;
@@ -28,31 +29,16 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
         });
       }
     });
-    // connectionStream.listen((status) async {
-    //   if (mounted) {
-    //     if (status == InternetConnectionStatus.connected) {
-    //       await Future.delayed(const Duration(seconds: 1));
-    //       final recheck = await connectionChecker.hasConnection;
-    //       if (mounted) {
-    //         setState(() {
-    //           hasInternet = recheck;
-    //         });
-    //       }
-    //     } else {
-    //       hasInternet = false;
-    //     }
-    //   }
-    // });
   }
 
   @override
   Widget build(BuildContext context) {
-    print('hasInternet $hasInternet');
     // Only show the child when there is internet, otherwise show offline screen
     return hasInternet
         ? widget.child
         : Scaffold(
-            backgroundColor: Colors.white,
+          
+            backgroundColor: background,
             body: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -79,6 +65,20 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
                       fontWeight: FontWeight.w300,
                     ),
                   ),
+                  const SizedBox(height: 5),
+                  ElevatedButton(
+                    onPressed: () async{
+                      if (await InternetConnection().hasInternetAccess) {
+                        hasInternet = true;
+                      }
+                    },
+                    child: Text(
+                      'Tekrar dene',
+                      style: TextStyle(
+                        color: Colors.black
+                      ),
+                    )
+                  )
                 ],
               ),
             ),

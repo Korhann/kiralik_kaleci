@@ -3,9 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
-import 'package:kiralik_kaleci/sharedvalues.dart';
-import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:shimmer/shimmer.dart';
 import 'direct2messagepage.dart';
 
 class DirectMessages extends StatefulWidget {
@@ -19,10 +18,12 @@ class _DirectMessagesState extends State<DirectMessages> {
   String currentUser = FirebaseAuth.instance.currentUser!.uid;
   List<Map<String, dynamic>> conversations = [];
 
+  late Future<void> fetchConvos;
+
   @override
   void initState() {
     super.initState();
-    _fetchConversations();
+    fetchConvos = _fetchConversations();
   }
 
   Future<void> _fetchConversations() async {
@@ -104,36 +105,102 @@ class _DirectMessagesState extends State<DirectMessages> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ConnectivityWrapper(
+      child: FutureBuilder(
+        future: fetchConvos,
+        builder: (context,snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return MessagesShimmer();
+          }
+      return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Mesajlar', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20)),
+        title: Padding(
+          padding: EdgeInsets.only(top: 30),
+          child: Text('Mesajlar', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20)
+          )
+        ),
         backgroundColor: background,
         centerTitle: true,
       ),
       backgroundColor: background,
       body: ListView.builder(
-        itemCount: conversations.length,
+          itemCount: conversations.length,
+          itemBuilder: (context, index) {
+            var conversation = conversations[index];
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
+                child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
+              ),
+              title: Text(conversation['receiverName']),
+              subtitle: Text(conversation['lastMessage']),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+    );
+        }
+      ),
+    );
+  }
+}
+
+class MessagesShimmer extends StatelessWidget {
+  const MessagesShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Container(
+          height: 24,
+          width: 120,
+          color: Colors.grey.shade300,
+        ),
+        backgroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      backgroundColor: Colors.white,
+      body: ListView.builder(
+        itemCount: 8, // number of shimmer items
         itemBuilder: (context, index) {
-          var conversation = conversations[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
-              child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
-            ),
-            title: Text(conversation['receiverName']),
-            subtitle: Text(conversation['lastMessage']),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
+          return Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: ListTile(
+              leading: Container(
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  shape: BoxShape.circle,
                 ),
-              );
-            },
+              ),
+              title: Container(
+                height: 14,
+                width: double.infinity,
+                color: Colors.grey.shade300,
+                margin: const EdgeInsets.only(bottom: 8),
+              ),
+              subtitle: Container(
+                height: 10,
+                width: double.infinity,
+                color: Colors.grey.shade300,
+              ),
+            ),
           );
         },
       ),
     );
   }
 }
+

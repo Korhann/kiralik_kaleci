@@ -7,6 +7,7 @@ import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:shimmer/shimmer.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
 
@@ -27,20 +28,42 @@ class _GetUserDataState extends State<GetUserData> {
   String? nameFilter, cityFilter, districtFilter, fieldFilter;
   List<String> daysFilter = [];
   int? minFilter = 0, maxFilter = 0;
-  final bool isLoading = true;
+
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _userStream = _firestore
+    getUserStream();
+    userorseller = false;
+  }
+
+  Future<void> getUserStream() async {
+    try {
+      _userStream = _firestore
         .collection("Users")
         .where('sellerDetails', isNotEqualTo: null)
         .snapshots();
-    userorseller = false;
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoading = true;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return SellerGridShimmer();
+    }
+    
     return Scaffold(
       backgroundColor: background,
       body: StreamBuilder(
@@ -50,7 +73,7 @@ class _GetUserDataState extends State<GetUserData> {
             return const Center(child: Text("Bağlantı hatası"));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const SellerGridShimmer();
           }
           var docs = snapshot.data!.docs
               .where((doc) => doc.data().containsKey('sellerDetails'))
@@ -59,7 +82,7 @@ class _GetUserDataState extends State<GetUserData> {
           return Column(
             children: [
               _HeaderSection(onFilterTap: _navigateToFilterPage),
-              docs.isEmpty ? _EmptyState() : _SellerGrid(docs: docs, onCardTap: _handleCardTap, isLoading: isLoading,),
+              docs.isEmpty ? _EmptyState() : _SellerGrid(docs: docs, onCardTap: _handleCardTap, isLoading: isLoading),
             ],
           );
         },
@@ -241,4 +264,71 @@ class _SellerGrid extends StatelessWidget {
     );
   }
 }
+class SellerGridShimmer extends StatelessWidget {
+  const SellerGridShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.7,
+          ),
+          itemCount: 6, // showing 6 shimmer cards
+          itemBuilder: (context, index) {
+            return Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      height: 15,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 5),
+                    Container(
+                      height: 15,
+                      width: 60,
+                      color: Colors.grey[400],
+                    ),
+                    const Spacer(),
+                    Container(
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 

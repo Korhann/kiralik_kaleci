@@ -28,8 +28,6 @@ class SellerDetailsPage extends StatefulWidget {
 
 class _SellerDetailsPageState extends State<SellerDetailsPage> {
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   // kullanıcı saatleri ile ilgili kısım
   List<String> days = [];
   String? day;
@@ -54,40 +52,41 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
   bool isEmpty = false;
 
-  Stream<QuerySnapshot<Map<String, dynamic>>>? userStream;
+  //Stream<QuerySnapshot<Map<String, dynamic>>>? userStream;
+  late Future<void> _daysNameFuture;
 
   @override
   void initState() {
     super.initState();
-    userStream = _firestore
-        .collection("Users")
-        .where('sellerDetails', isNotEqualTo: null)
-        .snapshots();
-    _getData();
+    // userStream = _firestore
+    //     .collection("Users")
+    //     .where('sellerDetails', isNotEqualTo: null)
+    //     .snapshots();
+     _daysNameFuture = _getDaysName(widget.sellerUid);
     _checkIfFavorited();
   }
 
 
-  Future<void> _getData() async {
-  try {
-    if (widget.sellerUid.isNotEmpty) {
-      await _getDaysName(widget.sellerUid);
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  } catch (e) {
-    // burada hiç internet yok demek 
-    if (mounted) {
-      setState(() {
-        isLoading = true;
-        isEmpty = true; // means error or no data
-      });
-    }
-  }
-}
+//   Future<void> _getData() async {
+//   try {
+//     if (widget.sellerUid.isNotEmpty) {
+//       await _getDaysName(widget.sellerUid);
+//       if (mounted) {
+//         setState(() {
+//           isLoading = false;
+//         });
+//       }
+//     }
+//   } catch (e) {
+//     // burada hiç internet yok demek 
+//     if (mounted) {
+//       setState(() {
+//         isLoading = true;
+//         isEmpty = true; // means error or no data
+//       });
+//     }
+//   }
+// }
 
 
   Future<void> _checkIfFavorited() async {
@@ -110,208 +109,201 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('-------');
-    print('1 $isLoading');
-    print('-------');
-    if (isLoading) {
-    return ShimmerClass();
-  }
     var imageUrl = widget.sellerDetails['imageUrls'][0];
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: userorseller ? sellerbackground : background,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black),
-        ),
-      ),
-      body: StreamBuilder(
-        stream: userStream,
+    return ConnectivityWrapper(
+      child: FutureBuilder(
+        future: _daysNameFuture,
         builder: (context,snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text("Bağlantı hatası"));
-          }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const ShimmerClass();
+            return ShimmerClass();
           }
-        Stack(
-        children: [
-          Container(
-            color: userorseller ? sellerbackground : background,
-            child: Column(
-              children: [
-                const SizedBox(height: 25),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      color: userorseller ? sellergrey: Colors.white,
-                      height: 440,
-                      width: double.infinity,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid)
-                            ),
-                            const SizedBox(height: 20),
-                            
-                            showNameSurname(sellerDetails: widget.sellerDetails),
-                            
-                            const SizedBox(height: 7),
-                            
-                            showCityDistrict(sellerDetails: widget.sellerDetails),
-                            
-                            const SizedBox(height: 5),
-                            // kullanıcı buradan kaleci seçecek
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: 40,
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  shrinkWrap: true,
-                                  itemCount: widget.sellerDetails['fields'].length,
-                                  itemBuilder: (context,int index) {
-                                    String field = widget.sellerDetails['fields'][index];
-                                    bool isSelected = _selectedField == field;
-                                    return chooseCard(
-                                      field: field,
-                                      isSelected: isSelected,
-                                      onTap: () {
-                                        setState(() {
-                                        _selectedField = field;
-                                        });
-                                      },
-                                      userorseller: userorseller
-                                    );
-                                  },
+          return Scaffold(
+          appBar: AppBar(
+          backgroundColor: userorseller ? sellerbackground : background,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black),
+          ),
+        ),
+          body:  Stack(
+          children: [
+            Container(
+              color: userorseller ? sellerbackground : background,
+              child: Column(
+                children: [
+                  const SizedBox(height: 25),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        color: userorseller ? sellergrey: Colors.white,
+                        height: 440,
+                        width: double.infinity,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid)
+                              ),
+                              const SizedBox(height: 20),
+                              
+                              showNameSurname(sellerDetails: widget.sellerDetails),
+                              
+                              const SizedBox(height: 7),
+                              
+                              showCityDistrict(sellerDetails: widget.sellerDetails),
+                              
+                              const SizedBox(height: 5),
+                              // kullanıcı buradan kaleci seçecek
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 40,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    shrinkWrap: true,
+                                    itemCount: widget.sellerDetails['fields'].length,
+                                    itemBuilder: (context,int index) {
+                                      String field = widget.sellerDetails['fields'][index];
+                                      bool isSelected = _selectedField == field;
+                                      return chooseCard(
+                                        field: field,
+                                        isSelected: isSelected,
+                                        onTap: () {
+                                          setState(() {
+                                          _selectedField = field;
+                                          });
+                                        },
+                                        userorseller: userorseller
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "Saatler",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: userorseller ? Colors.white : Colors.black,
+                              const SizedBox(height: 10),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "Saatler",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: userorseller ? Colors.white : Colors.black,
+                                      ),
+                                    ),
+                                    SingleChildScrollView(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          // Print days horizontally using the DayHourListView widget
+                                          DayHourListView(
+                                            days: days,
+                                            hoursByDay: hoursByDay,
+                                            hourColors: hourColors,
+                                            selectedDay: _selectedDay,
+                                            selectedHour: _selectedHour,
+                                            userorseller: userorseller,
+                                            onDaySelected: (selectedDay) {
+                                              setState(() {
+                                                _selectedDay = selectedDay;
+                                              });
+                                            },
+                                            onHourSelected: (selectedHour) {
+                                              setState(() {
+                                                _selectedHour = selectedHour;
+                                              });
+                                            },
+                                            onClearSelection: () {
+                                              setState(() {
+                                                _selectedDay = null;
+                                                _selectedHour = null;
+                                                hourColors.forEach((key, value) {
+                                                  if (value != Colors.grey.shade600 && value != Colors.green) {
+                                                    hourColors[key] = Colors.cyan;
+                                                  }
+                                                });
+                                              });
+                                            },
+                                        ),
+                                        const SizedBox(height: 10),
+                                      ],
                                     ),
                                   ),
-                                  SingleChildScrollView(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        // Print days horizontally using the DayHourListView widget
-                                        DayHourListView(
-                                          days: days,
-                                          hoursByDay: hoursByDay,
-                                          hourColors: hourColors,
-                                          selectedDay: _selectedDay,
-                                          selectedHour: _selectedHour,
-                                          userorseller: userorseller,
-                                          onDaySelected: (selectedDay) {
-                                            setState(() {
-                                              _selectedDay = selectedDay;
-                                            });
-                                          },
-                                          onHourSelected: (selectedHour) {
-                                            setState(() {
-                                              _selectedHour = selectedHour;
-                                            });
-                                          },
-                                          onClearSelection: () {
-                                            setState(() {
-                                              _selectedDay = null;
-                                              _selectedHour = null;
-                                              hourColors.forEach((key, value) {
-                                                if (value != Colors.grey.shade600 && value != Colors.green) {
-                                                  hourColors[key] = Colors.cyan;
-                                                }
-                                              });
-                                            });
-                                          },
-                                      ),
-                                      const SizedBox(height: 10),
-                                    ],
-                                  ),
+                                    const SizedBox(height: 10,)
+                                  ],
                                 ),
-                                  const SizedBox(height: 10,)
-                                ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 15),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: showInfoAppointments()
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_selectedDay == null || _selectedHour == null || _selectedField == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Saat, gün ve saha seçiniz'),
-                          backgroundColor: Colors.red,
-                        )
+                  const SizedBox(height: 15),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: showInfoAppointments()
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_selectedDay == null || _selectedHour == null || _selectedField == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Saat, gün ve saha seçiniz'),
+                            backgroundColor: Colors.red,
+                          )
+                        );
+                      } else if (widget.sellerUid == currentUserUid) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Kullanıcı kendini seçemez'),
+                            backgroundColor: Colors.red,
+                          )
+                        );
+                      }
+                      else {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ApptRequest(
+                            sellerUid: widget.sellerUid,
+                            selectedDay: _selectedDay!,
+                            selectedHour: _selectedHour!,
+                            selectedField: _selectedField!,
+                          )
+                        ),
                       );
-                    } else if (widget.sellerUid == currentUserUid) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Kullanıcı kendini seçemez'),
-                          backgroundColor: Colors.red,
-                        )
-                      );
-                    }
-                    else {
-                      Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ApptRequest(
-                          sellerUid: widget.sellerUid,
-                          selectedDay: _selectedDay!,
-                          selectedHour: _selectedHour!,
-                          selectedField: _selectedField!,
-                        )
+                      }
+                    },
+                    style: GlobalStyles.buttonPrimary(),
+                    child: Text(
+                      "Ödeme (₺${widget.sellerDetails['sellerPrice']})",
+                      style: GoogleFonts.inter(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                        color: userorseller ? Colors.white : Colors.black,
                       ),
-                    );
-                    }
-                  },
-                  style: GlobalStyles.buttonPrimary(),
-                  child: Text(
-                    "Ödeme (₺${widget.sellerDetails['sellerPrice']})",
-                    style: GoogleFonts.inter(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w600,
-                      color: userorseller ? Colors.white : Colors.black,
                     ),
                   ),
-                ),
-                const SizedBox(height: 30),
-              ],
+                  const SizedBox(height: 30),
+                ],
+              ),
             ),
-          ),
-          ChatButton(sellerUid: widget.sellerUid)
-        ],
-      );
+            ChatButton(sellerUid: widget.sellerUid)
+          ],
+        )
+          );
         }
-      )
+      ),
     );
   }
 

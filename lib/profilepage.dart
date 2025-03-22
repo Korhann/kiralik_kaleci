@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/approvedfields.dart';
-import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/policiespage.dart';

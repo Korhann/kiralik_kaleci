@@ -9,6 +9,7 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 
 class FilterPage extends StatefulWidget {
   final List<String> daysFilter;
@@ -46,19 +47,22 @@ class _FilterPageState extends State<FilterPage> {
   bool isCleared = false;
   TextStyle textStyle = GoogleFonts.roboto(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.grey.shade600);
 
+  late Future<void> _runMethods;
+
   @override
   void initState() {
     super.initState();
     // todo: halısahayı boş bırakınca hatayı veriyor kalkınca çöz
-    runMethods();
+    _runMethods = runMethods();
     days = widget.daysFilter;
+    // çok zaman aldığı için runMethods ta çalıştırmıyorum
+    FootballField.storeFields();
   }
 
   // if i dont run fetch cities first there is no element
-  void runMethods() async {
+  Future<void> runMethods() async {
     await fetchCities();
     await loadPrefs();
-    FootballField.storeFields();
   }
 
   void clearAllFilters() async {
@@ -110,215 +114,225 @@ class _FilterPageState extends State<FilterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: background,
-      appBar: AppBar(
+    return ConnectivityWrapper(
+      child: FutureBuilder(
+        future: _runMethods,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return FilterPageShimmer();
+          }
+        return Scaffold(
+        resizeToAvoidBottomInset: true,
         backgroundColor: background,
-        leading: IconButton(
-            onPressed: () {
-              if (isCleared) {
-                Navigator.pop(
-                  context, {
-                  'nameFilter': nameFilter,
-                  'cityFilter': cityFilter,
-                  'districtFilter': districtFilter,
-                  'fieldFilter': fieldFilter,
-                  'minFilter': minFilter,
-                  'maxFilter': maxFilter
-                });
-              } else {
-                Navigator.of(context).pop();
-              }
-            },
-            icon: const Icon(Icons.arrow_back, color: Colors.black)),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Filtreler',
-                      style: GoogleFonts.roboto(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
+        appBar: AppBar(
+          backgroundColor: background,
+          leading: IconButton(
+              onPressed: () {
+                if (isCleared) {
+                  Navigator.pop(
+                    context, {
+                    'nameFilter': nameFilter,
+                    'cityFilter': cityFilter,
+                    'districtFilter': districtFilter,
+                    'fieldFilter': fieldFilter,
+                    'minFilter': minFilter,
+                    'maxFilter': maxFilter
+                  });
+                } else {
+                  Navigator.of(context).pop();
+                }
+              },
+              icon: const Icon(Icons.arrow_back, color: Colors.black)),
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Filtreler',
+                        style: GoogleFonts.roboto(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      ),
                     ),
-                  ),
-                  Align(
-                      alignment: Alignment.centerRight,
-                      child: clearFilters(ontap: () {
-                        clearAllFilters();
-                        setState(() {
-                          isCleared = true;
-                        });
-                      }
+                    Align(
+                        alignment: Alignment.centerRight,
+                        child: clearFilters(ontap: () {
+                          clearAllFilters();
+                          setState(() {
+                            isCleared = true;
+                          });
+                        }
+                      )
                     )
-                  )
-                ],
-              ),
-              const SizedBox(height: 10),
-              
-              Column(
-                children: [
-                  NameInputField(
-                    controller: _nameController,
-                    onChanged: (value) {
-                      setState(() {
-                        nameFilter = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
-    
-                  CityDropdown(
-                    selectedCity: cityFilter,
-                    cities: cities,
-                    onCitySelected: (value) async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('selectedCity', value!);
-                      setState(() {
-                        cityFilter = value;
-                        districtFilter = null;
-                        fieldFilter = null;
-                        districts.clear();
-                        fields.clear();
-                        onCitySelected(value);
-                      });
-                    },
-                    onClear: () async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.remove('selectedCity');
-                      setState(() {
-                        cityFilter = null;
-                        districtFilter = null;
-                        fieldFilter = null;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
-    
-                  DistrictDropdown(
-                    selectedDistrict: districtFilter,
-                    districts: districts,
-                    onDistrictSelected: (value) async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('selectedDistrict', value!);
-                      setState(() {
-                        districtFilter = value;
-                        fetchFields(value);
-                        fieldFilter = null;
-                      });
-                    },
-                    onClear: () async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.remove('selectedDistrict');
-                      setState(() {
-                        districtFilter = null;
-                        fieldFilter = null;
-                        fields.clear();
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
-    
-                  FieldDropdown(
-                    selectedField: fieldFilter,
-                    fields: fields,
-                    onFieldSelected: (value) async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('selectedField', value!);
-                      setState(() {
-                        fieldFilter = value;
-                      });
-                    },
-                    onClear: () async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.remove('selectedField');
-                      setState(() {
-                        fieldFilter = null;
-                      });
-                    },
-                  ),
-                ],
-              ),
-    
-              const SizedBox(height: 40),
-              Padding(
-                padding: const EdgeInsets.only(left: 15),
-                child: Text(
-                  'Gün Seçiniz',
-                  style: GoogleFonts.roboto(
-                      fontSize: 18,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 20),
-    
-              DayPickerFirst(days: days),
-    
-              const SizedBox(height: 10),
-    
-              DayPickerSecond(days: days),
-    
-              const SizedBox(height: 10),
-              
-              dayPickerThird(days: days),
-    
-    
-              Padding(
-                padding: const EdgeInsets.only(left: 15),
-                child: Text(
-                  'Fiyat Aralığı',
-                  style: GoogleFonts.roboto(
-                      fontSize: 18,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black),
+                const SizedBox(height: 10),
+                
+                Column(
+                  children: [
+                    NameInputField(
+                      controller: _nameController,
+                      onChanged: (value) {
+                        setState(() {
+                          nameFilter = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 8),
+      
+                    CityDropdown(
+                      selectedCity: cityFilter,
+                      cities: cities,
+                      onCitySelected: (value) async {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('selectedCity', value!);
+                        setState(() {
+                          cityFilter = value;
+                          districtFilter = null;
+                          fieldFilter = null;
+                          districts.clear();
+                          fields.clear();
+                          onCitySelected(value);
+                        });
+                      },
+                      onClear: () async {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        await prefs.remove('selectedCity');
+                        setState(() {
+                          cityFilter = null;
+                          districtFilter = null;
+                          fieldFilter = null;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 8),
+      
+                    DistrictDropdown(
+                      selectedDistrict: districtFilter,
+                      districts: districts,
+                      onDistrictSelected: (value) async {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('selectedDistrict', value!);
+                        setState(() {
+                          districtFilter = value;
+                          fetchFields(value);
+                          fieldFilter = null;
+                        });
+                      },
+                      onClear: () async {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        await prefs.remove('selectedDistrict');
+                        setState(() {
+                          districtFilter = null;
+                          fieldFilter = null;
+                          fields.clear();
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 8),
+      
+                    FieldDropdown(
+                      selectedField: fieldFilter,
+                      fields: fields,
+                      onFieldSelected: (value) async {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('selectedField', value!);
+                        setState(() {
+                          fieldFilter = value;
+                        });
+                      },
+                      onClear: () async {
+                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                        await prefs.remove('selectedField');
+                        setState(() {
+                          fieldFilter = null;
+                        });
+                      },
+                    ),
+                  ],
                 ),
-              ),
-    
-              const SizedBox(height: 20),
-    
-              PriceRanger(
-                minPriceController: _minPriceController,
-                maxPriceController: _maxPriceController,
-                onPriceChanged: updatePriceFilters
-              ),
-    
-              const SizedBox(height: 50),
-              Center(
-                child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context, {
-                        'nameFilter': nameFilter,
-                        'cityFilter': cityFilter,
-                        'districtFilter': districtFilter,
-                        'fieldFilter': fieldFilter,
-                        'daysFilter': days,
-                        'minFilter': minFilter,
-                        'maxFilter': maxFilter
-                      });
-                    },
-                    style: GlobalStyles.buttonPrimary(),
-                    child: Text(
-                      'Filtrele',
-                      style: GoogleFonts.roboto(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
-                    )),
-              ),
-            ],
+      
+                const SizedBox(height: 40),
+                Padding(
+                  padding: const EdgeInsets.only(left: 15),
+                  child: Text(
+                    'Gün Seçiniz',
+                    style: GoogleFonts.roboto(
+                        fontSize: 18,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black),
+                  ),
+                ),
+                const SizedBox(height: 20),
+      
+                DayPickerFirst(days: days),
+      
+                const SizedBox(height: 10),
+      
+                DayPickerSecond(days: days),
+      
+                const SizedBox(height: 10),
+                
+                dayPickerThird(days: days),
+      
+      
+                Padding(
+                  padding: const EdgeInsets.only(left: 15),
+                  child: Text(
+                    'Fiyat Aralığı',
+                    style: GoogleFonts.roboto(
+                        fontSize: 18,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black),
+                  ),
+                ),
+      
+                const SizedBox(height: 20),
+      
+                PriceRanger(
+                  minPriceController: _minPriceController,
+                  maxPriceController: _maxPriceController,
+                  onPriceChanged: updatePriceFilters
+                ),
+      
+                const SizedBox(height: 50),
+                Center(
+                  child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context, {
+                          'nameFilter': nameFilter,
+                          'cityFilter': cityFilter,
+                          'districtFilter': districtFilter,
+                          'fieldFilter': fieldFilter,
+                          'daysFilter': days,
+                          'minFilter': minFilter,
+                          'maxFilter': maxFilter
+                        });
+                      },
+                      style: GlobalStyles.buttonPrimary(),
+                      child: Text(
+                        'Filtrele',
+                        style: GoogleFonts.roboto(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      )),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
+      );
+        }
+      )
     );
   }
 
@@ -420,24 +434,24 @@ class _FilterPageState extends State<FilterPage> {
   });
 }
 
-  Widget _dayButton(String day, bool isPressed, VoidCallback onPressed) {
-    return SizedBox(
-      width: width,
-      height: 40,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPressed ? green : Colors.white,
-        ),
-        onPressed: onPressed,
-        child: Text(
-          day,
-          style: GoogleFonts.roboto(
-            color: Colors.black,
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _dayButton(String day, bool isPressed, VoidCallback onPressed) {
+  //   return SizedBox(
+  //     width: width,
+  //     height: 40,
+  //     child: ElevatedButton(
+  //       style: ElevatedButton.styleFrom(
+  //         backgroundColor: isPressed ? green : Colors.white,
+  //       ),
+  //       onPressed: onPressed,
+  //       child: Text(
+  //         day,
+  //         style: GoogleFonts.roboto(
+  //           color: Colors.black,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // InputDecoration _inputDecoration(String hintText) {
   //   return InputDecoration(
@@ -990,6 +1004,63 @@ class _PriceRangerState extends State<PriceRanger> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+class FilterPageShimmer extends StatelessWidget {
+  const FilterPageShimmer({super.key});
+
+  Widget shimmerContainer({
+    double height = 20,
+    double width = double.infinity,
+    double radius = 12,
+  }) {
+    return Container(
+      height: height,
+      width: width,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white, // Make sure background is white (or your custom light background color)
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
+        period: const Duration(milliseconds: 1200),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              shimmerContainer(height: 30, width: 120), // "Filtreler" title
+              const SizedBox(height: 30),
+              shimmerContainer(height: 50), // Name Input Field
+              shimmerContainer(height: 50), // City Dropdown
+              shimmerContainer(height: 50), // District Dropdown
+              shimmerContainer(height: 50), // Field Dropdown
+              const SizedBox(height: 30),
+              shimmerContainer(height: 25, width: 140), // Gün Seçiniz
+              shimmerContainer(height: 40), // DayPicker 1
+              shimmerContainer(height: 40), // DayPicker 2
+              shimmerContainer(height: 40), // DayPicker 3
+              const SizedBox(height: 30),
+              shimmerContainer(height: 25, width: 140), // Fiyat Aralığı
+              shimmerContainer(height: 50), // Price Range
+              const SizedBox(height: 50),
+              Center(
+                child: shimmerContainer(height: 50, width: 200), // Button
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
