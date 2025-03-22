@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ConnectivityWrapper extends StatefulWidget {
   final Widget child;
@@ -23,34 +24,64 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
     connectionStream.listen((status) {
       if (mounted) {
         setState(() {
-        hasInternet = status == InternetConnectionStatus.connected;
-      });
+          hasInternet = status == InternetConnectionStatus.connected;
+        });
       }
     });
+    // connectionStream.listen((status) async {
+    //   if (mounted) {
+    //     if (status == InternetConnectionStatus.connected) {
+    //       await Future.delayed(const Duration(seconds: 1));
+    //       final recheck = await connectionChecker.hasConnection;
+    //       if (mounted) {
+    //         setState(() {
+    //           hasInternet = recheck;
+    //         });
+    //       }
+    //     } else {
+    //       hasInternet = false;
+    //     }
+    //   }
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        widget.child,
-        if (!hasInternet)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              color: Colors.red,
-              padding: const EdgeInsets.all(12),
-              child: const Center(
-                child: Text(
-                  'No internet connection',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+    print('hasInternet $hasInternet');
+    // Only show the child when there is internet, otherwise show offline screen
+    return hasInternet
+        ? widget.child
+        : Scaffold(
+            backgroundColor: Colors.white,
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'lib/icons/no-wifi.png',
+                    height: 100,
+                    width: 100,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Bağlantı Yok',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Lütfen bağlantınızı kontrol edin ve tekrar deneyin',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-      ],
-    );
+          );
   }
 }

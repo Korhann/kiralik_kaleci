@@ -3,12 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
 import 'package:kiralik_kaleci/apptRequest.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
@@ -25,6 +27,8 @@ class SellerDetailsPage extends StatefulWidget {
 }
 
 class _SellerDetailsPageState extends State<SellerDetailsPage> {
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // kullanıcı saatleri ile ilgili kısım
   List<String> days = [];
@@ -50,22 +54,41 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
   bool isEmpty = false;
 
+  Stream<QuerySnapshot<Map<String, dynamic>>>? userStream;
+
   @override
   void initState() {
     super.initState();
+    userStream = _firestore
+        .collection("Users")
+        .where('sellerDetails', isNotEqualTo: null)
+        .snapshots();
     _getData();
     _checkIfFavorited();
   }
 
 
   Future<void> _getData() async {
+  try {
     if (widget.sellerUid.isNotEmpty) {
       await _getDaysName(widget.sellerUid);
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  } catch (e) {
+    // burada hiç internet yok demek 
+    if (mounted) {
       setState(() {
-        isLoading = false;
+        isLoading = true;
+        isEmpty = true; // means error or no data
       });
     }
   }
+}
+
 
   Future<void> _checkIfFavorited() async {
     final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
@@ -87,14 +110,12 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('-------');
+    print('1 $isLoading');
+    print('-------');
     if (isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
+    return ShimmerClass();
+  }
     var imageUrl = widget.sellerDetails['imageUrls'][0];
 
     return Scaffold(
@@ -107,7 +128,16 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
           icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black),
         ),
       ),
-      body: Stack(
+      body: StreamBuilder(
+        stream: userStream,
+        builder: (context,snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text("Bağlantı hatası"));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const ShimmerClass();
+          }
+        Stack(
         children: [
           Container(
             color: userorseller ? sellerbackground : background,
@@ -130,11 +160,11 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                               child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid)
                             ),
                             const SizedBox(height: 20),
-
+                            
                             showNameSurname(sellerDetails: widget.sellerDetails),
-
+                            
                             const SizedBox(height: 7),
-
+                            
                             showCityDistrict(sellerDetails: widget.sellerDetails),
                             
                             const SizedBox(height: 5),
@@ -279,7 +309,9 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
           ),
           ChatButton(sellerUid: widget.sellerUid)
         ],
-      ),
+      );
+        }
+      )
     );
   }
 
@@ -297,12 +329,14 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
           return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
         }).toList();
 
-        setState(() {
+        if (mounted) {
+          setState(() {
           days.clear();
           days.addAll(userDays);
           hoursByDay.clear(); // Clean up for another user
           hourColors.clear(); // Reset hourColors for new data
         });
+        }
 
         // Get the current day
         final now = DateTime.now().toUtc().add(const Duration(hours: 3));
@@ -341,10 +375,11 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             hourTitles.add(title);
           }
         
-
+        if (mounted) {
           setState(() {
             hoursByDay[day] = hourTitles;
           });
+        }
         }
       }
     }
@@ -405,6 +440,14 @@ class _showImageState extends State<showImage> {
           height: 180,
           width: double.infinity,
           fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+    return Image.asset(
+      'lib/images/imageDefault.jpg',
+      fit: BoxFit.contain,
+      height: 180,
+      width: MediaQuery.of(context).size.width,
+    );
+  },
         ),
         Positioned(
           top: 15,
@@ -794,6 +837,46 @@ class ChatButton extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ShimmerClass extends StatelessWidget {
+  const ShimmerClass({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: userorseller ? sellerbackground : background,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Shimmer.fromColors(
+          baseColor: Colors.grey.shade300,
+          highlightColor: Colors.grey.shade100,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(height: 200, width: double.infinity, color: Colors.white), // image placeholder
+              const SizedBox(height: 20),
+              Container(height: 20, width: 150, color: Colors.white), // name placeholder
+              const SizedBox(height: 10),
+              Container(height: 20, width: 100, color: Colors.white), // location placeholder
+              const SizedBox(height: 30),
+              Container(height: 40, width: double.infinity, color: Colors.white), // fields list placeholder
+              const SizedBox(height: 20),
+              Container(height: 200, width: double.infinity, color: Colors.white), // hours list placeholder
+            ],
           ),
         ),
       ),

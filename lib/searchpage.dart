@@ -27,6 +27,7 @@ class _GetUserDataState extends State<GetUserData> {
   String? nameFilter, cityFilter, districtFilter, fieldFilter;
   List<String> daysFilter = [];
   int? minFilter = 0, maxFilter = 0;
+  final bool isLoading = true;
 
   @override
   void initState() {
@@ -40,31 +41,28 @@ class _GetUserDataState extends State<GetUserData> {
 
   @override
   Widget build(BuildContext context) {
-    return ConnectivityWrapper(
-      child: Scaffold(
-        backgroundColor: background,
-        body: StreamBuilder(
-          stream: _userStream,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return const Center(child: Text("Bağlantı hatası"));
-            }
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-      
-            var docs = snapshot.data!.docs
-                .where((doc) => doc.data().containsKey('sellerDetails'))
-                .toList();
-      
-            return Column(
-              children: [
-                _HeaderSection(onFilterTap: _navigateToFilterPage),
-                docs.isEmpty ? _EmptyState() : _SellerGrid(docs: docs, onCardTap: _handleCardTap),
-              ],
-            );
-          },
-        ),
+    return Scaffold(
+      backgroundColor: background,
+      body: StreamBuilder(
+        stream: _userStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text("Bağlantı hatası"));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator();
+          }
+          var docs = snapshot.data!.docs
+              .where((doc) => doc.data().containsKey('sellerDetails'))
+              .toList();
+    
+          return Column(
+            children: [
+              _HeaderSection(onFilterTap: _navigateToFilterPage),
+              docs.isEmpty ? _EmptyState() : _SellerGrid(docs: docs, onCardTap: _handleCardTap, isLoading: isLoading,),
+            ],
+          );
+        },
       ),
     );
   }
@@ -210,8 +208,9 @@ class _EmptyState extends StatelessWidget {
 class _SellerGrid extends StatelessWidget {
   final List<QueryDocumentSnapshot<Map<String, dynamic>>> docs;
   final Function(BuildContext, Map<String, dynamic>, String) onCardTap;
+  final bool isLoading;
 
-  const _SellerGrid({required this.docs, required this.onCardTap});
+  const _SellerGrid({required this.docs, required this.onCardTap, required this.isLoading});
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +229,7 @@ class _SellerGrid extends StatelessWidget {
           itemBuilder: (context, index) {
             var sellerDetails = docs[index]['sellerDetails'];
             var sellerUid = docs[index].id;
-
+    
             return SellerGridItem(
               sellerDetails: sellerDetails,
               sellerUid: sellerUid,

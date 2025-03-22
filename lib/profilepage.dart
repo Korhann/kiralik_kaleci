@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/approvedfields.dart';
+import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/policiespage.dart';
@@ -48,7 +49,8 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
-              Row(children: [
+              Row(
+                children: [
                 Padding(
                     padding: const EdgeInsets.only(left: 10.0),
                     child: UserNameHeaderText()),
@@ -86,12 +88,12 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 10),
               // kullanıcı adı
               UserName(),
-
+    
               Container(
                 height: 1,
                 color: Colors.black,
               ),
-
+    
               // email
               Email(),
               const SizedBox(height: 30),
@@ -106,7 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 10),
-
+    
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
@@ -118,9 +120,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   icons: Icon(Icons.alarm, size: 24),
                 ),
               ),
-
+    
               Container(height: 1, color: Colors.black),
-
+    
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
@@ -132,9 +134,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   icons: Icon(Icons.favorite_border,size: 24,),
                 ),
               ),
-
+    
               Container(height: 1, color: Colors.black),
-
+    
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
@@ -147,9 +149,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   Icons.location_on,size: 24,),
                 ),
               ),
-
+    
               Container(height: 1, color: Colors.black),
-
+    
               GestureDetector(
                 onTap: () {
                   Navigator.push(context,
@@ -161,11 +163,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   icons: Icon(Icons.handshake_outlined,size: 24,),
                 ),
               ),
-
+    
               const SizedBox(height: 60),
-
+    
               SignUserOut(),
-
+    
               const SizedBox(height: 30)
             ],
           ),

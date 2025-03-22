@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
@@ -175,7 +176,7 @@ class _FilterPageState extends State<FilterPage> {
                     },
                   ),
                   const SizedBox(height: 8),
-
+    
                   CityDropdown(
                     selectedCity: cityFilter,
                     cities: cities,
@@ -202,7 +203,7 @@ class _FilterPageState extends State<FilterPage> {
                     },
                   ),
                   const SizedBox(height: 8),
-
+    
                   DistrictDropdown(
                     selectedDistrict: districtFilter,
                     districts: districts,
@@ -226,7 +227,7 @@ class _FilterPageState extends State<FilterPage> {
                     },
                   ),
                   const SizedBox(height: 8),
-
+    
                   FieldDropdown(
                     selectedField: fieldFilter,
                     fields: fields,
@@ -247,7 +248,7 @@ class _FilterPageState extends State<FilterPage> {
                   ),
                 ],
               ),
-
+    
               const SizedBox(height: 40),
               Padding(
                 padding: const EdgeInsets.only(left: 15),
@@ -260,18 +261,18 @@ class _FilterPageState extends State<FilterPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
+    
               DayPickerFirst(days: days),
-
+    
               const SizedBox(height: 10),
-
+    
               DayPickerSecond(days: days),
-
+    
               const SizedBox(height: 10),
               
               dayPickerThird(days: days),
-
-
+    
+    
               Padding(
                 padding: const EdgeInsets.only(left: 15),
                 child: Text(
@@ -282,15 +283,15 @@ class _FilterPageState extends State<FilterPage> {
                       color: Colors.black),
                 ),
               ),
-
+    
               const SizedBox(height: 20),
-
+    
               PriceRanger(
                 minPriceController: _minPriceController,
                 maxPriceController: _maxPriceController,
                 onPriceChanged: updatePriceFilters
               ),
-
+    
               const SizedBox(height: 50),
               Center(
                 child: ElevatedButton(
