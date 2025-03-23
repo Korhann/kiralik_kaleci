@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
+import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
 import 'package:kiralik_kaleci/apptRequest.dart';
@@ -111,7 +112,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   Widget build(BuildContext context) {
     var imageUrl = widget.sellerDetails['imageUrls'][0];
 
-    return ConnectivityWrapper(
+    return ConnectivityWithBackButton(
       child: FutureBuilder(
         future: _daysNameFuture,
         builder: (context,snapshot) {

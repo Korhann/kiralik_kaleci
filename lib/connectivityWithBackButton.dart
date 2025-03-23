@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
-class ConnectivityWrapper extends StatefulWidget {
+class ConnectivityWithBackButton extends StatefulWidget {
   final Widget child;
 
-  const ConnectivityWrapper({Key? key, required this.child}) : super(key: key);
+  const ConnectivityWithBackButton({Key? key, required this.child}) : super(key: key);
 
   @override
-  _ConnectivityWrapperState createState() => _ConnectivityWrapperState();
+  _ConnectivityWithBackButtonState createState() => _ConnectivityWithBackButtonState();
 }
 
-class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
+class _ConnectivityWithBackButtonState extends State<ConnectivityWithBackButton> {
   late InternetConnectionChecker connectionChecker;
   late Stream<InternetConnectionStatus> connectionStream;
   bool hasInternet = true;
@@ -37,6 +38,15 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
     return hasInternet
         ? widget.child
         : Scaffold(
+          appBar: AppBar(
+          backgroundColor: userorseller ? sellerbackground : background,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black),
+          ),
+        ),
             backgroundColor: background,
             body: Center(
               child: Column(

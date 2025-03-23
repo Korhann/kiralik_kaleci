@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
+import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ApprovedFields extends StatefulWidget {
   const ApprovedFields({super.key});
@@ -15,16 +17,28 @@ class _ApprovedFieldsState extends State<ApprovedFields> {
 
   List<ApprovedField> approvedFields = [];
 
+  late Future<void> getFields;
+
   @override
   void initState() { 
     super.initState();
-    getApprovedFields();
+    getFields = getApprovedFields();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return ConnectivityWithBackButton(
+      child: FutureBuilder(
+        future: getFields,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Padding(
+              padding: EdgeInsets.only(top: 30),
+              child: ApprovedFieldsShimmer()
+            );
+          }
+        return Scaffold(
+        appBar: AppBar(
         backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
           onPressed: () {
@@ -42,6 +56,9 @@ class _ApprovedFieldsState extends State<ApprovedFields> {
           return showCardFields(allFields: allFields, index: index);
         },
       ),
+    );
+        }
+      ) ,
     );
   }
   Future<void> getApprovedFields() async {
@@ -72,5 +89,42 @@ class showCardFields extends StatelessWidget {
               leading: const Icon(Icons.sports_soccer_outlined),
             ),
           );
+  }
+}
+
+class ApprovedFieldsShimmer extends StatelessWidget {
+  const ApprovedFieldsShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: 6, // You can adjust the placeholder count
+      itemBuilder: (context, index) {
+        return Card(
+          color: Colors.white,  // Keep it clean on a white background
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              title: Container(
+                height: 16,
+                width: 150,
+                color: Colors.grey.shade300,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

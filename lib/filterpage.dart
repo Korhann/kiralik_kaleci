@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
+import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
+
+//todo: Filter page takes too long to load
 
 class FilterPage extends StatefulWidget {
   final List<String> daysFilter;
@@ -114,7 +117,7 @@ class _FilterPageState extends State<FilterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ConnectivityWrapper(
+    return ConnectivityWithBackButton(
       child: FutureBuilder(
         future: _runMethods,
         builder: (context, snapshot) {

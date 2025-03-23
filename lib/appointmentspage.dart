@@ -2,10 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/connectivity.dart';
+import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:shimmer/shimmer.dart';
 import 'globals.dart';
 
 class AppointmentsPage extends StatefulWidget {
@@ -51,15 +54,27 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   List<String>? docs;
   Color paymentColor = Colors.green;
 
+  late Future<void> fetchAppts;
+
   @override
   void initState() {
     super.initState();
-    _fetchAppointments();
+   fetchAppts =  _fetchAppointments();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ConnectivityWithBackButton(
+      child: FutureBuilder(
+        future: fetchAppts,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Padding(
+              padding: EdgeInsets.only(top: 40),
+              child: AppointmentsShimmer()
+            );
+          }
+          return Scaffold(
       appBar: AppBar(
         backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
@@ -179,6 +194,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   const SizedBox(height: 20)
           ],
         ),
+      ),
+    );
+        } 
       ),
     );
   }
@@ -698,4 +716,88 @@ class sellerApproveOrReject extends StatelessWidget {
                 );
   }
 }
+
+class AppointmentsShimmer extends StatelessWidget {
+  const AppointmentsShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(top: 40),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        itemCount: 4, // show 4 shimmer items
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Name Surname Placeholder
+                        Container(
+                          height: 16,
+                          width: 150,
+                          color: Colors.white,
+                          margin: const EdgeInsets.only(bottom: 10),
+                        ),
+                        // Day + Hour Placeholder
+                        Container(
+                          height: 14,
+                          width: 100,
+                          color: Colors.white,
+                          margin: const EdgeInsets.only(bottom: 10),
+                        ),
+                        // Location row
+                        Row(
+                          children: [
+                            Container(
+                              height: 14,
+                              width: 14,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              height: 14,
+                              width: 80,
+                              color: Colors.white,
+                            ),
+                            const Spacer(),
+                            Container(
+                              height: 30,
+                              width: 60,
+                              color: Colors.white,
+                            )
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        // Approve/Reject buttons shimmer if needed
+                        Container(
+                          height: 35,
+                          width: double.infinity,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 
