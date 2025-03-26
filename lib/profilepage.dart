@@ -413,7 +413,7 @@ class BeSellerOrUser extends StatelessWidget {
                         inactiveFgColor: Colors.white,
                         initialLabelIndex: 0,
                         totalSwitches: 2,
-                        labels: const ['Kullanıcı', 'Satıcı'],
+                        labels: const ['Kullanıcı', 'Kaleci'],
                         radiusStyle: true,
                         onToggle: (index) {
                           // case 0 aynı sayfada kalacak case 1 satıcı sayfasına geçecek

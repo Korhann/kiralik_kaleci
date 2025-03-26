@@ -1,13 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:kiralik_kaleci/SellerGridItem.dart';
-import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'package:shimmer/shimmer.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
 
@@ -120,8 +118,6 @@ class _GetUserDataState extends State<GetUserData> {
         minFilter = filter['minFilter'];
         maxFilter = filter['maxFilter'];
       });
-      print('max filter is $maxFilter');
-      print('min filter is $minFilter');
       applyFilter();
     }
   }
@@ -264,71 +260,6 @@ class _SellerGrid extends StatelessWidget {
     );
   }
 }
-class SellerGridShimmer extends StatelessWidget {
-  const SellerGridShimmer({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.7,
-          ),
-          itemCount: 6, // showing 6 shimmer cards
-          itemBuilder: (context, index) {
-            return Shimmer.fromColors(
-              baseColor: Colors.grey.shade300,
-              highlightColor: Colors.grey.shade100,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[400],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      height: 15,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 5),
-                    Container(
-                      height: 15,
-                      width: 60,
-                      color: Colors.grey[400],
-                    ),
-                    const Spacer(),
-                    Container(
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[400],
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
 
 

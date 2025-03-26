@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'package:shimmer/shimmer.dart';
 
 class FavouritesPage extends StatefulWidget {
   const FavouritesPage({super.key});
@@ -166,58 +166,5 @@ class showCardFavourite extends StatelessWidget {
                           },
                         ),
                       );
-  }
-}
-
-class FavouritesShimmer extends StatelessWidget {
-  const FavouritesShimmer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(10),
-      itemCount: 5, // Show shimmer for 5 items
-      itemBuilder: (context, index) {
-        return Card(
-          color: Colors.white,
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 4,
-          child: Shimmer.fromColors(
-            baseColor: Colors.grey.shade300,
-            highlightColor: Colors.grey.shade100,
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(15),
-              leading: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              title: Container(
-                height: 16,
-                width: 120,
-                color: Colors.white,
-                margin: const EdgeInsets.only(bottom: 8),
-              ),
-              subtitle: Container(
-                height: 14,
-                width: 80,
-                color: Colors.white,
-              ),
-              trailing: Container(
-                width: 15,
-                height: 15,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        );
-      },
-    );
   }
 }

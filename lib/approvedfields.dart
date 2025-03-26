@@ -3,8 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'package:shimmer/shimmer.dart';
 
 class ApprovedFields extends StatefulWidget {
   const ApprovedFields({super.key});
@@ -89,42 +89,5 @@ class showCardFields extends StatelessWidget {
               leading: const Icon(Icons.sports_soccer_outlined),
             ),
           );
-  }
-}
-
-class ApprovedFieldsShimmer extends StatelessWidget {
-  const ApprovedFieldsShimmer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 6, // You can adjust the placeholder count
-      itemBuilder: (context, index) {
-        return Card(
-          color: Colors.white,  // Keep it clean on a white background
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          child: Shimmer.fromColors(
-            baseColor: Colors.grey.shade300,
-            highlightColor: Colors.grey.shade100,
-            child: ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              title: Container(
-                height: 16,
-                width: 150,
-                color: Colors.grey.shade300,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-              ),
-            ),
-          ),
-        );
-      },
-    );
   }
 }

@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'package:shimmer/shimmer.dart';
 import 'direct2messagepage.dart';
 
 class DirectMessages extends StatefulWidget {
@@ -148,57 +148,6 @@ class _DirectMessagesState extends State<DirectMessages> {
         ),
     );
         }
-      ),
-    );
-  }
-}
-
-class MessagesShimmer extends StatelessWidget {
-  const MessagesShimmer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Container(
-          height: 24,
-          width: 120,
-          color: Colors.grey.shade300,
-        ),
-        backgroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      backgroundColor: Colors.white,
-      body: ListView.builder(
-        itemCount: 8, // number of shimmer items
-        itemBuilder: (context, index) {
-          return Shimmer.fromColors(
-            baseColor: Colors.grey.shade300,
-            highlightColor: Colors.grey.shade100,
-            child: ListTile(
-              leading: Container(
-                width: 45,
-                height: 45,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              title: Container(
-                height: 14,
-                width: double.infinity,
-                color: Colors.grey.shade300,
-                margin: const EdgeInsets.only(bottom: 8),
-              ),
-              subtitle: Container(
-                height: 10,
-                width: double.infinity,
-                color: Colors.grey.shade300,
-              ),
-            ),
-          );
-        },
       ),
     );
   }

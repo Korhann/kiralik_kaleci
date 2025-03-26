@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/direct2messagepage.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'sharedvalues.dart';
 
 class SellerDirectMessages extends StatefulWidget {
   const SellerDirectMessages({super.key});
@@ -17,10 +18,12 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
   String currentUser = FirebaseAuth.instance.currentUser!.uid;
   List<Map<String, dynamic>> conversations = [];
 
+  late Future<void> fetchConvos;
+
   @override
   void initState() {
     super.initState();
-    _fetchConversations();
+    fetchConvos = _fetchConversations();
   }
 
   Future<void> _fetchConversations() async {
@@ -102,8 +105,15 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return ConnectivityWrapper(
+      child: FutureBuilder(
+        future: fetchConvos,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return MessagesShimmer();
+          }
+          return Scaffold(
+          appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text('Mesajlar', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20, color: Colors.white)),
         backgroundColor: sellerbackground,
@@ -131,6 +141,9 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
             },
           );
         },
+      ),
+    );
+        }
       ),
     );
   }
