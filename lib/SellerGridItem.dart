@@ -34,10 +34,8 @@ class SellerGridItem extends StatelessWidget {
                 height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    const Center(child: CircularProgressIndicator()),
-                errorWidget: (context, url, error) =>
-                    const Icon(Icons.error),
+                placeholder: (context, url) => Container(color: Colors.white),
+                errorWidget: (context, url, error) => Container(color: Colors.white),
               ),
             ),
             Padding(

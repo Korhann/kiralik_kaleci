@@ -319,7 +319,7 @@ class UserNameText extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const LoadingWidget();
         }
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const Text('Veri bulunamadı');
@@ -346,7 +346,7 @@ class UserNameHeaderText extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const LoadingWidget();
           }
           if (!snapshot.hasData || !snapshot.data!.exists) {
             return const Text('Veri bulunamadı');
@@ -429,7 +429,7 @@ class EmailText extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const LoadingWidget();
         }
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const Text('Veri bulunamadı');
@@ -531,5 +531,13 @@ class SignUserOut extends StatelessWidget {
             )),
       ),
     );
+  }
+}
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(color: sellergrey);
   }
 }

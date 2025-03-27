@@ -139,7 +139,7 @@ class AppointmentsShimmer extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Shimmer.fromColors(
-                baseColor: userorseller ? sellerbackground : Colors.grey.shade300,
+                baseColor: userorseller ? sellergrey : Colors.grey.shade300,
                 highlightColor: userorseller ? Colors.grey.shade700 : Colors.grey.shade100,
                 child: Container(
                   color: userorseller ? sellerbackground :Colors.white,

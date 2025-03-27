@@ -117,6 +117,8 @@ class _FilterPageState extends State<FilterPage> {
 
   @override
   Widget build(BuildContext context) {
+    double w = MediaQuery.sizeOf(context).width;
+    double h = MediaQuery.sizeOf(context).height;
     return ConnectivityWithBackButton(
       child: FutureBuilder(
         future: _runMethods,
@@ -329,6 +331,7 @@ class _FilterPageState extends State<FilterPage> {
                             color: Colors.black),
                       )),
                 ),
+                const SizedBox(height: 30)
               ],
             ),
           ),
@@ -436,40 +439,6 @@ class _FilterPageState extends State<FilterPage> {
     maxFilter = max;
   });
 }
-
-  // Widget _dayButton(String day, bool isPressed, VoidCallback onPressed) {
-  //   return SizedBox(
-  //     width: width,
-  //     height: 40,
-  //     child: ElevatedButton(
-  //       style: ElevatedButton.styleFrom(
-  //         backgroundColor: isPressed ? green : Colors.white,
-  //       ),
-  //       onPressed: onPressed,
-  //       child: Text(
-  //         day,
-  //         style: GoogleFonts.roboto(
-  //           color: Colors.black,
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // InputDecoration _inputDecoration(String hintText) {
-  //   return InputDecoration(
-  //     suffixIcon: IconButton(
-  //       icon: const Icon(Icons.clear),
-  //       onPressed: () => clearSingleFilter('name'),
-  //     ),
-  //     hintText: hintText,
-  //     hintStyle: textStyle,
-  //     fillColor: Colors.white,
-  //     enabledBorder: InputBorder.none, // Remove underline when not focused
-  //     focusedBorder: InputBorder.none,
-  //     filled: true,
-  //   );
-  // }
 }
 
 class clearFilters extends StatelessWidget {
@@ -510,7 +479,7 @@ class NameInputField extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           color: Colors.white,
-          width: 350,
+          width: MediaQuery.sizeOf(context).width,
           height: 45,
           child: TextField(
             controller: controller,
@@ -520,7 +489,7 @@ class NameInputField extends StatelessWidget {
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 10),
             ),
-            style: const TextStyle(decoration: TextDecoration.none),
+            style: const TextStyle(decoration: TextDecoration.none, color: Colors.grey, fontWeight: FontWeight.w300),
           ),
         ),
       ),
@@ -550,7 +519,7 @@ class CityDropdown extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           height: 45,
-          width: 350,
+          width: MediaQuery.sizeOf(context).width,
           color: Colors.white,
           child: Stack(
             children: [
@@ -614,7 +583,7 @@ class DistrictDropdown extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           height: 45,
-          width: 350,
+          width: MediaQuery.sizeOf(context).width,
           color: Colors.white,
           child: Stack(
             children: [
@@ -680,7 +649,7 @@ class FieldDropdown extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           height: 45,
-          width: 350,
+          width: MediaQuery.sizeOf(context).width,
           color: Colors.white,
           child: Stack(
             children: [
@@ -735,19 +704,23 @@ class DayPickerFirst extends StatefulWidget {
 class _DayPickerFirstState extends State<DayPickerFirst> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _dayButton('Pazartesi'),
-              const SizedBox(width: 5),
-              _dayButton('Salı'),
-              const SizedBox(width: 5),
-              _dayButton('Çarşamba'),
-            ],
+    double w = MediaQuery.sizeOf(context).width;
+    return SizedBox(
+      width: w,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _dayButton('Pazartesi'),
+                const SizedBox(width: 5),
+                _dayButton('Salı'),
+                const SizedBox(width: 5),
+                _dayButton('Çarşamba'),
+              ],
+            ),
           ),
         ),
       ),
@@ -798,19 +771,23 @@ class DayPickerSecond extends StatefulWidget {
 class DayPickerSecondState extends State<DayPickerSecond> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _dayButton('Perşembe'),
-              const SizedBox(width: 5),
-              _dayButton('Cuma'),
-              const SizedBox(width: 5),
-              _dayButton('Cumartesi'),
-            ],
+    double w = MediaQuery.sizeOf(context).width;
+    return SizedBox(
+      width: w,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _dayButton('Perşembe'),
+                const SizedBox(width: 5),
+                _dayButton('Cuma'),
+                const SizedBox(width: 5),
+                _dayButton('Cumartesi'),
+              ],
+            ),
           ),
         ),
       ),
