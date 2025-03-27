@@ -27,6 +27,7 @@ class SellerMainPageState extends State<SellerMainPage> {
   
   @override
   Widget build(BuildContext context) {
+    print(_currentIndex);
     return StreamBuilder<User?>(
       stream: _authStream,
       builder: (context,snapshot) {

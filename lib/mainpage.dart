@@ -7,9 +7,6 @@ import 'package:kiralik_kaleci/authpage.dart';
 import 'package:kiralik_kaleci/directmessages.dart';
 import 'package:kiralik_kaleci/homepage.dart';
 import 'package:kiralik_kaleci/profilepage.dart';
-import 'package:kiralik_kaleci/selleraddpage.dart';
-import 'package:kiralik_kaleci/sellerdirectmessages.dart';
-import 'package:kiralik_kaleci/sellerprofilepage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class MainPage extends StatefulWidget {

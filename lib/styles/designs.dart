@@ -47,7 +47,7 @@ Widget buildTextField(
   Function(String) validator, {
   bool obscureText = false,
 }) {
-  return Column(
+  return Column(                    
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       SizedBox(
