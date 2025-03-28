@@ -37,25 +37,32 @@ class _Direct2MessageState extends State<Direct2Message> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(sellerEmail ?? 'Loading...'),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back),
-        ),
+  return Scaffold(
+    resizeToAvoidBottomInset: true, 
+    appBar: AppBar(
+      title: Text(sellerEmail ?? 'Loading...'),
+      leading: IconButton(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.arrow_back),
       ),
-      body: Column(
+    ),
+    body: SafeArea(
+      child: Column(
         children: [
+          // Messages List
           Expanded(
             child: _buildMessageList(),
           ),
+
+          // Message Input Field
           _buildMessageInput(),
           const SizedBox(height: 20),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildMessageList() {
     return StreamBuilder<QuerySnapshot>(
@@ -124,13 +131,15 @@ class _Direct2MessageState extends State<Direct2Message> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                hintText: 'Mesaj yazın',
-                border: OutlineInputBorder(),
+            child: Focus(
+              child: TextField(
+                controller: _messageController,
+                decoration: const InputDecoration(
+                  hintText: 'Mesaj yazın',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: false,
               ),
-              obscureText: false,
             ),
           ),
           IconButton(

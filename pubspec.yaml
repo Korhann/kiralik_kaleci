@@ -59,6 +59,7 @@ dependencies:
   internet_connection_checker: ^3.0.1
   rename_app: ^1.6.2
   shimmer: ^3.0.0
+  flutter_keyboard_visibility: ^6.0.0
 
   
 dev_dependencies:

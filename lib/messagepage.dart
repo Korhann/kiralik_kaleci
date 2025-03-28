@@ -48,6 +48,7 @@ class _MessagePageState extends State<MessagePage> {
   Widget build(BuildContext context) {
     
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text('$sellerEmail'),
         leading: IconButton(
@@ -55,17 +56,24 @@ class _MessagePageState extends State<MessagePage> {
             Navigator.pop(context);
         }, icon: const Icon(Icons.arrow_back)),
       ),
-      body: Column(
-        children: [
-          // mesajlar
-          Expanded(
-            child: _buildMessageList(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          reverse: true,
+          child: Column(
+            children: [
+              // mesajlar
+              Expanded(
+                child: _buildMessageList(),
+              ),
+          
+              // kullanıcı input u
+              Padding(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: _buildMessageInput()
+              ),
+            ],
           ),
-
-          // kullanıcı input u
-          _buildMessageInput(),
-          const SizedBox(height: 20)
-        ],
+        ),
       )
     );
   }
@@ -80,7 +88,7 @@ class _MessagePageState extends State<MessagePage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Text("Yükleniyor");
         }
-
+    
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
@@ -88,7 +96,7 @@ class _MessagePageState extends State<MessagePage> {
             curve: Curves.easeOut,
           );
         });
-
+    
         return ListView(
           controller: _scrollController,
           children: snapshot.data!.docs.map((document) => _buildMessageItem(document)).toList(),
@@ -136,7 +144,7 @@ class _MessagePageState extends State<MessagePage> {
           ),
       
           // gönder butonu
-          IconButton(onPressed: sendMessage, icon: const Icon(Icons.arrow_upward))
+          IconButton(onPressed: sendMessage, icon: const Icon(Icons.arrow_upward)),
         ],
       ),
     );

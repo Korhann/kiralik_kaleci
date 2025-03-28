@@ -235,7 +235,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
       stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const LoadingWidget();
         }
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const Text('Veri bulunamadı');
