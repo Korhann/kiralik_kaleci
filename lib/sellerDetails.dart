@@ -384,7 +384,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             bool isPastDay = i < currentDayIndex;
             
             if (isPastDay) {
-              markPastDayAsTaken(userId: userId, day: day, title: title);
+              await markPastDayAsTaken(userId: userId, day: day, title: title);
             }
 
             // duruma göre renk belirliyor

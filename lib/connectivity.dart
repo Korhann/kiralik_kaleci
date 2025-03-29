@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class ConnectivityWrapper extends StatefulWidget {
@@ -37,13 +38,14 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
     return hasInternet
         ? widget.child
         : Scaffold(
-            backgroundColor: background,
+            backgroundColor: userorseller ? sellerbackground : background,
             body: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.asset(
                     'lib/icons/no-wifi.png',
+                    color: userorseller ? Colors.white : Colors.black,
                     height: 100,
                     width: 100,
                   ),
@@ -51,7 +53,7 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
                   Text(
                     'Bağlantı Yok',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: userorseller ? Colors.white : Colors.black,
                       fontWeight: FontWeight.w700,
                       fontSize: 20,
                     ),
@@ -61,6 +63,7 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
                     'Lütfen bağlantınızı kontrol edin ve tekrar deneyin',
                     textAlign: TextAlign.center,
                     style: TextStyle(
+                      color: userorseller ? Colors.white : Colors.black,
                       fontWeight: FontWeight.w300,
                     ),
                   ),

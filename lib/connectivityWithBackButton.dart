@@ -47,13 +47,14 @@ class _ConnectivityWithBackButtonState extends State<ConnectivityWithBackButton>
             icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black),
           ),
         ),
-            backgroundColor: background,
+            backgroundColor: userorseller ? sellerbackground : background,
             body: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.asset(
                     'lib/icons/no-wifi.png',
+                    color: userorseller ? Colors.white : Colors.black,
                     height: 100,
                     width: 100,
                   ),
@@ -61,7 +62,7 @@ class _ConnectivityWithBackButtonState extends State<ConnectivityWithBackButton>
                   Text(
                     'Bağlantı Yok',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: userorseller ? Colors.white : Colors.black,
                       fontWeight: FontWeight.w700,
                       fontSize: 20,
                     ),
@@ -71,6 +72,7 @@ class _ConnectivityWithBackButtonState extends State<ConnectivityWithBackButton>
                     'Lütfen bağlantınızı kontrol edin ve tekrar deneyin',
                     textAlign: TextAlign.center,
                     style: TextStyle(
+                      color: userorseller ? Colors.white : Colors.black,
                       fontWeight: FontWeight.w300,
                     ),
                   ),

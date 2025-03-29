@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/approvedfields.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
@@ -9,6 +10,7 @@ import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/policiespage.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -51,8 +53,9 @@ class _ProfilePageState extends State<ProfilePage> {
               Row(
                 children: [
                 Padding(
-                    padding: const EdgeInsets.only(left: 10.0),
-                    child: UserNameHeaderText()),
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: UserNameHeaderText()
+                ),
                 const Spacer(),
                 IconButton(
                   onPressed: () {
@@ -393,7 +396,12 @@ class SignUserOut extends StatelessWidget {
     );
   }
 }
-class BeSellerOrUser extends StatelessWidget {
+class BeSellerOrUser extends StatefulWidget {
+  @override
+  State<BeSellerOrUser> createState() => _BeSellerOrUserState();
+}
+
+class _BeSellerOrUserState extends State<BeSellerOrUser> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -423,7 +431,7 @@ class BeSellerOrUser extends StatelessWidget {
                         totalSwitches: 2,
                         labels: const ['Kullanıcı', 'Kaleci'],
                         radiusStyle: true,
-                        onToggle: (index) {
+                        onToggle: (index) async{
                           // case 0 aynı sayfada kalacak case 1 satıcı sayfasına geçecek
                           switch (index) {
                             // aynı sayfada kal
@@ -431,14 +439,26 @@ class BeSellerOrUser extends StatelessWidget {
                               return;
                             // satıcı sayfasına geç
                             case 1:
-                              // settings in rengini değiştirmek için(siyah yapıyor)
-                              userorseller = true;
-                              Navigator.push(
+                              try {
+                                if (await InternetConnection().hasInternetAccess) {
+                                userorseller = true;
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SellerMainPage()));
+                                    builder: (context) =>
+                                      const SellerMainPage()
+                                  )
+                                );
                               break;
+                                } else {
+                                  Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                                  setState(() {
+                                    index = 0;
+                                  });
+                                }
+                              } catch (e) {
+                                print('Error switching to seller $e');
+                              }
                           }
                         },
                       ),

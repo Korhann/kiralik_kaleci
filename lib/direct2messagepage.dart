@@ -55,7 +55,10 @@ class _Direct2MessageState extends State<Direct2Message> {
           ),
 
           // Message Input Field
-          _buildMessageInput(),
+          Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: _buildMessageInput()
+          ),
           const SizedBox(height: 20),
         ],
       ),

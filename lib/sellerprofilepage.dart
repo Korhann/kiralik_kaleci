@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/globals.dart';
@@ -10,6 +11,7 @@ import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/selleribanpage.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -445,9 +447,14 @@ class EmailText extends StatelessWidget {
   }
 }
 
-class BeSellerOrUser extends StatelessWidget {
+class BeSellerOrUser extends StatefulWidget {
   const BeSellerOrUser({super.key});
 
+  @override
+  State<BeSellerOrUser> createState() => _BeSellerOrUserState();
+}
+
+class _BeSellerOrUserState extends State<BeSellerOrUser> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -477,19 +484,25 @@ class BeSellerOrUser extends StatelessWidget {
                         totalSwitches: 2,
                         labels: const ['Kullanıcı', 'Kaleci'],
                         radiusStyle: true,
-                        onToggle: (index) {
+                        onToggle: (index) async{
                           // case 0 aynı sayfada kalacak case 1 satıcı sayfasına geçecek
                           switch (index) {
                             // aynı sayfada kal
                             case 0:
                               // settings in rengini değiştirmek için(beyaz yapıyor)
-                              userorseller = false;
-                              Navigator.push(
+                              if (await InternetConnection().hasInternetAccess) {
+                                userorseller = false;
+                                Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                    builder: (context) => const MainPage()),
+                                MaterialPageRoute(builder: (context) => const MainPage()),
                               );
                               break;
+                              } else {
+                                Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                                setState(() {
+                                    index = 1;
+                                  });
+                              }
                             // satıcı sayfasına geç
                             case 1:
                               return;
