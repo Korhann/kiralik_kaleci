@@ -302,10 +302,13 @@ class _FilterPageState extends State<FilterPage> {
       
                 const SizedBox(height: 20),
       
-                PriceRanger(
-                  minPriceController: _minPriceController,
-                  maxPriceController: _maxPriceController,
-                  onPriceChanged: updatePriceFilters
+                Padding(
+                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                  child: PriceRanger(
+                    minPriceController: _minPriceController,
+                    maxPriceController: _maxPriceController,
+                    onPriceChanged: updatePriceFilters
+                  ),
                 ),
       
                 const SizedBox(height: 50),

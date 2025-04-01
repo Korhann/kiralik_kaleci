@@ -57,7 +57,7 @@ class _PaymentPageState extends State<PaymentPage> {
             // birden fazla push olduğu için bunu kullandım
             Navigator.pushAndRemoveUntil<void>(
             context,
-            MaterialPageRoute<void>(builder: (BuildContext context) => const MainPage()),
+            MaterialPageRoute<void>(builder: (BuildContext context) => const MainPage(index: 0)),
             ModalRoute.withName('/'),
             );
         }, icon: const Icon(Icons.arrow_back, color: Colors.black)),

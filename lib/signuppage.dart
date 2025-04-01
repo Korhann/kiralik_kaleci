@@ -52,7 +52,7 @@ class _SignUpState extends State<SignUp> {
         Navigator.push(
             context,
             platformPageRoute(
-                builder: (_) => const MainPage(), context: (context)));
+                builder: (_) => const MainPage(index: 0), context: (context)));
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {

@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
       title: 'Kalecim',
       initialRoute: '/',
       routes: {
-        '/':(context) => const MainPage(),
+        '/':(context) => MainPage(index: 0),
       },
     );
   }

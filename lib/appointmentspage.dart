@@ -86,7 +86,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 Navigator.pushAndRemoveUntil<void>(
                 context,
                 MaterialPageRoute<void>(
-                  builder: (BuildContext context) => const SellerMainPage()),
+                  builder: (BuildContext context) => const SellerMainPage(index: 2)),
                 ModalRoute.withName('/'),
                 );
               }
@@ -294,7 +294,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           .doc(currentuser)
           .collection('appointmentseller')
           .doc(docId)
-          .update({'appointmentDetails.status': 'rejected'});
+          .update({'appointmentDetails.status': 'rejected', 'appointmentDetails.paymentStatus': 'denied'});
       DocumentSnapshot<Map<String, dynamic>> documentSnapshot = await _firestore
           .collection('Users')
           .doc(currentuser)
@@ -557,11 +557,16 @@ class AppointmentView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     iconDayHour(day: day, hour: hour),
+                    const SizedBox(height: 5),
                     Row(
                       children: [
                         const Icon(Icons.location_on),
                         const SizedBox(width: 5),
-                        Text(field),
+                        Expanded(
+                          child: Text(
+                            field,
+                          ),
+                        ),
                         const Spacer(),
                         if (!userorseller)
                           status == 'approved' && paymentStatus == 'waiting'

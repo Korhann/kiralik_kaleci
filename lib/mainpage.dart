@@ -10,7 +10,12 @@ import 'package:kiralik_kaleci/profilepage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({
+    super.key,
+    required this.index
+    });
+
+  final int index;
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -24,6 +29,7 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _authStream = FirebaseAuth.instance.authStateChanges();
+    _currentIndex = widget.index;
   }
 
 
@@ -44,6 +50,7 @@ Widget build(BuildContext context) {
             onItemSelected: (index) {
               setState(() {
                 _currentIndex = index;
+                //_currentIndex = index;
               });
             },
             items: [

@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/notification_model.dart';
+import 'package:kiralik_kaleci/searchpage.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -137,6 +139,7 @@ class _ApptRequestState extends State<ApptRequest> {
                 onPressed: () async{
                   if (await InternetConnection().hasInternetAccess) {
                     await sendRequest();
+                    await navigateToHomePage();
                   } else {
                     if (mounted) {
                       Showalert(context: context, text: 'Ooops...').showErrorAlert();
@@ -157,6 +160,14 @@ class _ApptRequestState extends State<ApptRequest> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> navigateToHomePage() async{
+    await Future.delayed(const Duration(seconds: 2));
+    await Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (context) => const MainPage(index: 0))
     );
   }
 

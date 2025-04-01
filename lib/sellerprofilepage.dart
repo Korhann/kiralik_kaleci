@@ -494,7 +494,7 @@ class _BeSellerOrUserState extends State<BeSellerOrUser> {
                                 userorseller = false;
                                 Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const MainPage()),
+                                MaterialPageRoute(builder: (context) => const MainPage(index: 2)),
                               );
                               break;
                               } else {

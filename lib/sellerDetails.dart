@@ -123,7 +123,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SellerMainPage())
+                    MaterialPageRoute(builder: (context) => const SellerMainPage(index: 2,))
                   );
                 },
                 style: GlobalStyles.buttonPrimary(),

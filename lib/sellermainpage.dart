@@ -8,7 +8,11 @@ import 'package:kiralik_kaleci/sellerprofilepage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class SellerMainPage extends StatefulWidget {
-  const SellerMainPage({super.key});
+  const SellerMainPage({
+    super.key,
+    required this.index
+  });
+  final int index;
 
   @override
   State<SellerMainPage> createState() => SellerMainPageState();
@@ -23,11 +27,11 @@ class SellerMainPageState extends State<SellerMainPage> {
   void initState() {
     super.initState();
     _authStream = FirebaseAuth.instance.authStateChanges();
+    _currentIndex = widget.index;
   }
   
   @override
   Widget build(BuildContext context) {
-    print(_currentIndex);
     return StreamBuilder<User?>(
       stream: _authStream,
       builder: (context,snapshot) {

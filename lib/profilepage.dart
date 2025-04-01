@@ -445,8 +445,7 @@ class _BeSellerOrUserState extends State<BeSellerOrUser> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                      const SellerMainPage()
+                                    builder: (context) => const SellerMainPage(index: 2,)
                                   )
                                 );
                               break;
