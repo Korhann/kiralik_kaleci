@@ -41,8 +41,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back,
-              color: userorseller ? Colors.white : Colors.black),
+          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
         ),
       ),
       backgroundColor: userorseller ? sellerbackground : background,

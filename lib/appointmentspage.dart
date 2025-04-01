@@ -89,6 +89,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   builder: (BuildContext context) => const SellerMainPage(index: 2)),
                 ModalRoute.withName('/'),
                 );
+              } else if (widget.whereFrom == 'fromSellerHomePage') {
+                Navigator.pushAndRemoveUntil<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) => const SellerMainPage(index: 0)),
+                ModalRoute.withName('/'),
+                );
               }
             } else {
               Navigator.of(context).pop();
@@ -307,8 +314,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         if (appointmentData != null &&
             appointmentData.containsKey('appointmentDetails')) {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
-          String buyerDocId =
-              appointmentData['appointmentDetails']['buyerDocId'];
+          String buyerDocId = appointmentData['appointmentDetails']['buyerDocId'];
 
           // alıcı için status update (renkleri göstermek için - turuncu,yeşil,kırmzı)
           await _firestore

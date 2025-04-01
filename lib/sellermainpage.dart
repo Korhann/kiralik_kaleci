@@ -2,6 +2,7 @@ import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kiralik_kaleci/authpage.dart';
+import 'package:kiralik_kaleci/sellerHomepage.dart';
 import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/sellerdirectmessages.dart';
 import 'package:kiralik_kaleci/sellerprofilepage.dart';
@@ -69,6 +70,6 @@ class SellerMainPageState extends State<SellerMainPage> {
     );
   }
   List<Widget> screens() {
-    return [const SellerAddPage(), const SellerDirectMessages(), const SellerProfilePage()];
+    return [const SellerHomePage(), const SellerDirectMessages(), const SellerProfilePage(), const SellerAddPage()];
   }
 }

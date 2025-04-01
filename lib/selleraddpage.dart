@@ -121,6 +121,12 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
           padding: const EdgeInsets.only(top: 30, bottom: 10),
           child: buildButton(),
         ),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back, color: Colors.white,)
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
