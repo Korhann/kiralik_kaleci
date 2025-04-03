@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
+import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
@@ -14,7 +15,16 @@ class SellerHomePage extends StatefulWidget {
 }
 
 class _SellerHomePageState extends State<SellerHomePage> {
+
   String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  Map<String,dynamic> sellerDetails = {};
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUserDetails();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +58,8 @@ class _SellerHomePageState extends State<SellerHomePage> {
                 const SizedBox(height: 10),
                 NoOfAppointments(onTap: () => _navigateToPage('appointments')),
                 const SizedBox(height: 10),
+                SellerQuickMenus(text: 'İlanlarım', ontap: () => _navigateToPage('posts'), icon: Icons.diamond),
+                const SizedBox(height: 10),
                 SellerQuickMenus(text: 'Kazançlarım Fiverr a bak', ontap: () => _navigateToPage('earnings'), icon: Icons.attach_money)
               ],
             ),
@@ -66,6 +78,8 @@ class _SellerHomePageState extends State<SellerHomePage> {
       case 'appointments':
         page = const AppointmentsPage(whereFrom: 'fromSellerHomePage',);
         break;
+      case 'posts':
+        page = SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUser);
       default:
         return; 
     }
@@ -74,6 +88,24 @@ class _SellerHomePageState extends State<SellerHomePage> {
       context,
       MaterialPageRoute(builder: (context) => page),
     );
+  }
+
+  Future<void> getUserDetails() async{
+    try{
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
+
+      if (documentSnapshot.exists) {
+        Map<String,dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+        if (data.isNotEmpty && data.containsKey('sellerDetails')) {
+          sellerDetails = data['sellerDetails'];
+        }
+      }
+    }catch (e) {
+      print('$e');
+    }
   }
 }
 

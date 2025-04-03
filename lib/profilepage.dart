@@ -12,6 +12,7 @@ import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/userorseller.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -33,10 +34,11 @@ class _ProfilePageState extends State<ProfilePage> {
   // authentication of the user
   final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
   String? cardNumber;
-
+  
   @override
   void initState() {
     super.initState();
+    saveUserType('user');
     //getSellerUid();
   }
 

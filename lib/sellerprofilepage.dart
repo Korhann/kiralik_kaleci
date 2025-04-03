@@ -13,6 +13,7 @@ import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/selleribanpage.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/userorseller.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 class SellerProfilePage extends StatefulWidget {
@@ -36,7 +37,8 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   @override
   void initState() {
     super.initState();
-    //getUserDetails();
+    getUserDetails();
+    saveUserType('seller');
   }
 
   @override

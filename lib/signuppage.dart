@@ -5,6 +5,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/loginpage.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/userorseller.dart';
 import 'styles/colors.dart';
 import 'mainpage.dart';
 
@@ -38,6 +39,7 @@ class _SignUpState extends State<SignUp> {
     String email = emailController.text;
     String password = passwordController.text;
 
+    saveUserType('user');
     try {
       if (samePassword()) {
         UserCredential userCredential =

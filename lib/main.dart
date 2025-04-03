@@ -6,10 +6,13 @@ import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/firebase_options.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/loginpage.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
+import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'appointmentspage.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
@@ -37,18 +40,26 @@ void main() async {
   OneSignal.Notifications.requestPermission(true);
 
   setupNotificationListener();
+  String? userType = await getUserType();
   
-  runApp(const MyApp());
+  runApp(MyApp(userType: userType));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  static final navigatorKey = GlobalKey<NavigatorState>();
+Future<String?> getUserType() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('userType'); // Retrieve user type
+}
 
+
+
+class MyApp extends StatelessWidget {
+  final String? userType;
+
+  const MyApp({super.key, required this.userType});
+  static final navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
-    
     return PlatformApp(
       // locale: DevicePreview.locale(context),
       // builder: DevicePreview.appBuilder,
@@ -59,9 +70,10 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       title: 'Kalecim',
       initialRoute: '/',
-      routes: {
-        '/':(context) => MainPage(index: 0),
-      },
+      home:  userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
+      // routes: {
+      //   '/':(context) => MainPage(index: 2),
+      // },
     );
   }
 }

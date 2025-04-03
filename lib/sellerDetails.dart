@@ -193,32 +193,41 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                               
                               const SizedBox(height: 5),
                               // kullanıcı buradan kaleci seçecek
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: 40,
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    shrinkWrap: true,
-                                    itemCount: widget.sellerDetails['fields'].length,
-                                    itemBuilder: (context,int index) {
-                                      String field = widget.sellerDetails['fields'][index];
-                                      bool isSelected = _selectedField == field;
-                                      return chooseCard(
-                                        field: field,
-                                        isSelected: isSelected,
-                                        onTap: () {
-                                          setState(() {
-                                          _selectedField = field;
-                                          });
-                                        },
-                                        userorseller: userorseller
-                                      );
-                                    },
-                                  ),
+                              // Padding(
+                              //   padding: const EdgeInsets.symmetric(horizontal: 10),
+                              //   child: SizedBox(
+                              //     width: double.infinity,
+                              //     height: 40,
+                              //     child: ListView.builder(
+                              //       scrollDirection: Axis.horizontal,
+                              //       shrinkWrap: true,
+                              //       itemCount: widget.sellerDetails['fields'].length,
+                              //       itemBuilder: (context,int index) {
+                              //         String field = widget.sellerDetails['fields'][index];
+                              //         bool isSelected = _selectedField == field;
+                              //         return chooseCard(
+                              //           field: field,
+                              //           isSelected: isSelected,
+                              //           onTap: () {
+                              //             setState(() {
+                              //             _selectedField = field;
+                              //             });
+                              //           },
+                              //           userorseller: userorseller
+                              //         );
+                              //       },
+                              //     ),
+                              //   ),
+                              // ),
+                              SellerFields(
+                                selectedField: _selectedField ?? widget.sellerDetails['fields'][0],
+                                sellerDetails: widget.sellerDetails,
+                                onFieldChanged: (newField) {
+                                  setState(() {
+                                    _selectedField = newField;
+                                  });
+                                }, 
                                 ),
-                              ),
                               const SizedBox(height: 10),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -426,8 +435,85 @@ Future<void> markPastDayAsTaken({required String userId,required String day,requ
     'sellerDetails.selectedHoursByDay.$day': updatedData
   });
 }
-
 }
+
+
+class SellerFields extends StatefulWidget {
+  final String selectedField;
+  final Map<String, dynamic> sellerDetails;
+  final ValueChanged<String> onFieldChanged;
+
+  const SellerFields({
+    super.key,
+    required this.selectedField,
+    required this.sellerDetails,
+    required this.onFieldChanged,
+  });
+
+  @override
+  State<SellerFields> createState() => _SellerFieldsState();
+}
+
+class _SellerFieldsState extends State<SellerFields> {
+  String _selectedField = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedField = widget.selectedField;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white, // Background color
+          borderRadius: BorderRadius.circular(10), // Rounded corners
+          border: Border.all(color: Colors.grey.shade300), // Subtle border
+          boxShadow: [
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 5,
+              spreadRadius: 2,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _selectedField,
+            isExpanded: true, // Ensures full width
+            icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
+            items: widget.sellerDetails['fields']
+                .map<DropdownMenuItem<String>>((value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  value.toString(),
+                  style: const TextStyle(fontSize: 16, color: Colors.black87),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _selectedField = value;
+                });
+                widget.onFieldChanged(value);
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
 
 class showImage extends StatefulWidget {
   final String imageUrl;

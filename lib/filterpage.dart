@@ -537,8 +537,7 @@ class CityDropdown extends StatelessWidget {
                             child: Text(city,
                                 style: GoogleFonts.inter(color: Colors.black)),
                           ),
-                        ))
-                    .toList(),
+                        )).toList(),
                 onChanged: onCitySelected,
                 hint: Padding(
                   padding: const EdgeInsets.all(5),

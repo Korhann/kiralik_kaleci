@@ -50,7 +50,6 @@ Widget build(BuildContext context) {
             onItemSelected: (index) {
               setState(() {
                 _currentIndex = index;
-                //_currentIndex = index;
               });
             },
             items: [

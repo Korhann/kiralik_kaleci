@@ -218,7 +218,7 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   cities: cities,
                   onCitySelected: (value) {
                     setState(() {
-                      onCitySelected(value!);
+                      onCitySelected('İstanbul');
                     });
                   },
                   multFields: multFields
@@ -717,7 +717,9 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
 
   // to populate with districts
   void onCitySelected(String selectedCity) {
+    // todo: Burada selectedCity istanbul olacak
     final city = cityData.firstWhere((city) => city['name'] == selectedCity);
+    print(city['name']);
     if (city != null) {
       final districtsData = city['districts'];
       if (districtsData != null) {

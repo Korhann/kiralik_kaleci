@@ -4,9 +4,11 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kiralik_kaleci/forgetpasswordpage.dart';
+import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/signuppage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/userorseller.dart';
 
 
 //TODO: ANİMASYON EKLENECEK !!!
@@ -45,6 +47,7 @@ class _LogInState extends State<LogIn> {
 
   // Changed the future with void!!
   Future signInUser() async {
+    saveUserType('user');
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text.trim(), password: passwordController.text.trim());
 
