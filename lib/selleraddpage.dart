@@ -75,10 +75,15 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
   @override
   void initState() {
     super.initState();
-    fetchCities();
-    FootballField.storeFields();
-    userorseller = true;
+    initData();
   }
+
+  Future<void> initData() async {
+  await fetchCities(); 
+  FootballField.storeFields();
+  userorseller = true;
+  onCitySelected('istanbul'); 
+}
 
   @override
   void dispose() {
@@ -188,45 +193,18 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   ),
                 ),
                 const SizedBox(height: 10),
+
                 NameField(
                   controller: sellerFullName,
-                  // onChanged: (value) {
-                  //   setState(() {
-                  //     sellerFullName.text = value;
-                  //   });
-                  // }
                 ),
-                const SizedBox(height: 40),
+
                 /*
                 Seçilen şehire göre ilçeler updateDistrictOptions() fonksiyonu ile popüle ediliyor
                 */
+                
+                const SizedBox(height: 40),
                 Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Şehir",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-
-                CityDropdown(
-                  selectedCity: selectedCity,
-                  cities: cities,
-                  onCitySelected: (value) {
-                    setState(() {
-                      onCitySelected('İstanbul');
-                    });
-                  },
-                  multFields: multFields
-                ),
-
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
+                  padding: const EdgeInsets.only(left: 10), 
                   child: Text(
                     "İlçe",
                     style: GoogleFonts.inter(
@@ -246,65 +224,6 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                   },
                   multFields: multFields
                 ),
-                // Padding(
-                //   padding: EdgeInsets.symmetric(horizontal: 10),
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       DropdownButtonFormField<String>(
-                //         padding: EdgeInsets.symmetric(horizontal: 10),
-                //         isExpanded: true,
-                //         value: selectedDistrict,
-                //         items: districts.map((district) => DropdownMenuItem<String>(
-                //             value: district,
-                //             child: Text(
-                //               district,
-                //               style: GoogleFonts.inter(
-                //                 color: Colors.black,
-                //               ),
-                //             ),
-                //         )).toList(),
-                      
-                //         onChanged: (value) {
-                //           setState(() {
-                //             selectedDistrict = value;
-                //             fetchFields(value.toString());
-                //             multFields?.clear();
-                //           });
-                //         },
-                //         hint: const Padding(
-                //           padding: EdgeInsets.symmetric(horizontal: 10),
-                //           child: Text('İlçe seçin'),
-                //         ),
-                //         decoration: InputDecoration(
-                //           contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                //           border: OutlineInputBorder(
-                //             borderRadius: BorderRadius.circular(10),
-                //             borderSide: BorderSide.none,
-                //           ),
-                //           filled: true,
-                //           fillColor: Colors.white,
-                //           errorStyle: const TextStyle(height: 0),
-                //         ),
-                //         validator: (value) {
-                //           if (value == null) {
-                //             return '';
-                //           }
-                //           return null;
-                //         },
-                //       ),
-                //       const SizedBox(height: 2),
-                //       if (selectedDistrict == null)
-                //         Padding(
-                //           padding: const EdgeInsets.only(top: 5, left: 10),
-                //           child: Text(
-                //             'Lütfen bir ilçe seçin',
-                //             style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
-                //           ),
-                //         ),
-                //     ],
-                //   ),
-                // ),
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
@@ -328,111 +247,11 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                     });
                   },
                 ),
-          //       Padding(
-          //         padding: const EdgeInsets.symmetric(horizontal: 20),
-          //           child: ClipRRect(
-          //             borderRadius: BorderRadius.circular(10),
-          //             child: Container(
-          //               height: 45,
-          //               width: 350,
-          //               color: Colors.white,
-          //               child: GestureDetector(
-          //                 onTap: () {
-          //                   showModalBottomSheet(
-          //                     context: context,
-          //                     builder: (context) {
-          //                     return StatefulBuilder(
-          //                       builder: (context, _setState) {
-          //                       return Padding(
-          //                         padding: const EdgeInsets.all(20.0),
-          //                         child: ListView(
-          //                           children: fields.map((e) {
-          //                           return CheckboxListTile(
-          //                             title: Text(e),
-          //                             value: multFields.contains(e),
-          //                             onChanged: (isSelected) {
-          //                               if (isSelected == true) {
-          //                                 multFields.add(e);
-          //                               } else {
-          //                                 multFields.remove(e);
-          //                               }
-          //                               _setState(() {});
-          //                               setState(() {}); 
-          //                             },
-          //                           );
-          //                       }).toList(),
-          //                     ),
-          //                   );
-          //                 },
-          //               );
-          //             },
-          //           );
-          //         },
-          //       ),
-          //     ),
-          //   ),
-          // ),
           
           const SizedBox(height: 10),
 
           showFields(multFields: multFields),
 
-          // SizedBox(
-          //   height: 60,
-          //   width: MediaQuery.of(context).size.width,
-          //   child: ListView.separated(
-          //   separatorBuilder: (context,index) => SizedBox(width: 10),
-          //   scrollDirection: Axis.horizontal,
-          //   padding: const EdgeInsets.all(8),
-          //   shrinkWrap: true,
-          //   itemCount: multFields.length,
-          //   itemBuilder: (BuildContext context, int index) {
-          //     List<String> fieldList = multFields.toList();
-          //     return Stack(
-          //       children: [
-          //         Container(
-          //         height: 40,
-          //         decoration: BoxDecoration(
-          //           color: Colors.white,
-          //           borderRadius: BorderRadius.circular(10),
-          //         ),
-          //         child: Padding(
-          //           padding: EdgeInsets.all(10),
-          //           child: Center(
-          //             child: Text(
-          //               fieldList[index]
-          //             )
-          //           )
-          //         ),
-          //       ),
-          //       Positioned(
-          //         right: 0,
-          //         top: 0,
-          //         child: GestureDetector(
-          //           onTap: () {
-          //             setState(() {
-          //               multFields.remove(fieldList[index]);
-          //             });
-          //           },
-          //           child: Container(
-          //             padding: const EdgeInsets.all(4),
-          //             decoration: const BoxDecoration(
-          //               shape: BoxShape.circle,
-          //               color: Colors.red
-          //             ),
-          //             child: const Icon(
-          //               Icons.close,
-          //               color: Colors.white,
-          //               size: 10,
-          //             ),
-          //           ),
-          //         ),
-          //       ),
-          //       ],
-          //     );
-          //   },
-          //   ),
-          // ),
             const SizedBox(height: 5),
                 // SAAT BİLGİLERİNİ GİR
                 Padding(
@@ -576,34 +395,7 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                 const SizedBox(height: 10),
 
                 priceField(controller: sellerPrice),
-                // TextFormField(
-                //   controller: sellerPrice,
-                //   keyboardType: TextInputType.number,
-                //   maxLines: null,
-                //   textInputAction: TextInputAction.done,
-                //   validator: (price) {
-                //     if (price == null || price.isEmpty) {
-                //       return  "Fiyat bilgisi girmelisiniz!";
-                //     } else {
-                //       return null;
-                //     }
-                //   },
-                //   style: GoogleFonts.inter(
-                //       color: Colors.white,
-                //       fontSize: 17,
-                //       fontWeight: FontWeight.w600),
-                //   decoration: InputDecoration(
-                //       border: InputBorder.none,
-                //       fillColor: sellergrey,
-                //       filled: true,
-                //       suffixText: 'TL',
-                //       suffixStyle: GoogleFonts.inter(
-                //         fontSize: 17,
-                //         fontWeight: FontWeight.w600,
-                //         color: Colors.white
-                //       )
-                //   ),
-                // ),
+                
                 const SizedBox(height: 40),
                 Center(
                   child: ElevatedButton(
@@ -642,12 +434,10 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
 
   Future<void> fetchFields(String selectedDistrict) async {
   var localDb = await Hive.openBox<FootballField>('football_fields');
-
+  
   try {
     // looking if the selectedDistrict is in the districts
-    var field = localDb.values.firstWhere(
-    (f) => f.city == selectedCity && f.district == selectedDistrict,
-  );
+    var field = localDb.values.firstWhere((f) => f.district == selectedDistrict);
   setState(() {
     // adds what is in that specific district
     fields = field.fieldName;
@@ -659,9 +449,11 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
       selectedField = null;
     });
     }
+    print('sahalar ${fields.length}');
   }
 
   Future<void> fetchCities() async {
+    //todo: Burada tüm şehirleri almak yerine İstanbulu alabilirsin
     var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
     if (response.statusCode == 200) {
       final List<dynamic> citiesData = jsonDecode(response.body)['data'];
@@ -718,8 +510,7 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
   // to populate with districts
   void onCitySelected(String selectedCity) {
     // todo: Burada selectedCity istanbul olacak
-    final city = cityData.firstWhere((city) => city['name'] == selectedCity);
-    print(city['name']);
+    final city = cityData.firstWhere((city) => city['name'].toString().toLowerCase() == selectedCity);
     if (city != null) {
       final districtsData = city['districts'];
       if (districtsData != null) {
