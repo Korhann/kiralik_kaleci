@@ -41,7 +41,7 @@ class _SellerSuccessPageState extends State<SellerSuccessPage> {
           Map<String, dynamic> sellerDetails = data['sellerDetails'];
           Duration duration = const Duration(seconds: 1);
           Timer(duration, () { 
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUserUid)));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUserUid, wherFrom: 'fromSuccess')));
           });
         }
       }

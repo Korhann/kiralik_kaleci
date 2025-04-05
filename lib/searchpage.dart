@@ -119,7 +119,7 @@ class _GetUserDataState extends State<GetUserData> {
       context,
       MaterialPageRoute(
         builder: (context) => SellerDetailsPage(
-            sellerDetails: sellerDetails, sellerUid: sellerUid),
+            sellerDetails: sellerDetails, sellerUid: sellerUid, wherFrom: '',),
       ),
     );
   }

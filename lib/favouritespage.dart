@@ -160,6 +160,7 @@ class showCardFavourite extends StatelessWidget {
                                 builder: (context) => SellerDetailsPage(
                                   sellerDetails: favourite,
                                   sellerUid: favourite['sellerUid'] ?? '',
+                                  wherFrom: '',
                                 ),
                               ),
                             );

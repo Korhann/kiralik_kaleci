@@ -39,7 +39,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     saveUserType('user');
-    //getSellerUid();
   }
 
   @override

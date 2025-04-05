@@ -22,10 +22,12 @@ class SellerDetailsPage extends StatefulWidget {
     super.key,
     required this.sellerDetails,
     required this.sellerUid,
+    required this.wherFrom
   });
 
   final Map<String, dynamic> sellerDetails;
   final String sellerUid;
+  final String wherFrom;
 
   @override
   State<SellerDetailsPage> createState() => _SellerDetailsPageState();
@@ -59,12 +61,16 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
 
   //Stream<QuerySnapshot<Map<String, dynamic>>>? userStream;
   late Future<void> _daysNameFuture;
+  bool _isVisible = true;
 
   @override
   void initState() {
     super.initState();
      _daysNameFuture = _getDaysName(widget.sellerUid);
     _checkIfFavorited();
+    if (widget.wherFrom == 'fromProfile') {
+      _isVisible = false;
+    }
   }
 
   Future<void> _checkIfFavorited() async {
@@ -161,187 +167,201 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black),
           ),
         ),
-          body: Stack(
-          children: [
-            Container(
-              color: userorseller ? sellerbackground : background,
-              child: Column(
-                children: [
-                  const SizedBox(height: 25),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        color: userorseller ? sellergrey: Colors.white,
-                        height: 400,
-                        width: MediaQuery.sizeOf(context).width,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid)
-                              ),
-                              const SizedBox(height: 20),
-                              
-                              showNameSurname(sellerDetails: widget.sellerDetails),
-                              
-                              const SizedBox(height: 7),
-                              
-                              showCityDistrict(sellerDetails: widget.sellerDetails),
-                              
-                              const SizedBox(height: 5),
-                              // kullanıcı buradan kaleci seçecek
-                              // Padding(
-                              //   padding: const EdgeInsets.symmetric(horizontal: 10),
-                              //   child: SizedBox(
-                              //     width: double.infinity,
-                              //     height: 40,
-                              //     child: ListView.builder(
-                              //       scrollDirection: Axis.horizontal,
-                              //       shrinkWrap: true,
-                              //       itemCount: widget.sellerDetails['fields'].length,
-                              //       itemBuilder: (context,int index) {
-                              //         String field = widget.sellerDetails['fields'][index];
-                              //         bool isSelected = _selectedField == field;
-                              //         return chooseCard(
-                              //           field: field,
-                              //           isSelected: isSelected,
-                              //           onTap: () {
-                              //             setState(() {
-                              //             _selectedField = field;
-                              //             });
-                              //           },
-                              //           userorseller: userorseller
-                              //         );
-                              //       },
-                              //     ),
-                              //   ),
-                              // ),
-                              SellerFields(
-                                selectedField: _selectedField ?? widget.sellerDetails['fields'][0],
-                                sellerDetails: widget.sellerDetails,
-                                onFieldChanged: (newField) {
-                                  setState(() {
-                                    _selectedField = newField;
-                                  });
-                                }, 
-                                ),
-                              const SizedBox(height: 10),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      "Saatler",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: userorseller ? Colors.white : Colors.black,
-                                      ),
+          body: SafeArea(
+            child: Stack(
+            children: [
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.sizeOf(context).height
+                  ),
+                  child: Container(
+                  color: userorseller ? sellerbackground : background,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 25),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            color: userorseller ? sellergrey: Colors.white,
+                            height: 400,
+                            width: MediaQuery.sizeOf(context).width,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid)
+                                  ),
+                                  const SizedBox(height: 20),
+                                  
+                                  showNameSurname(sellerDetails: widget.sellerDetails),
+                                  
+                                  const SizedBox(height: 7),
+                                  
+                                  showCityDistrict(sellerDetails: widget.sellerDetails),
+                                  
+                                  const SizedBox(height: 5),
+                                  // kullanıcı buradan kaleci seçecek
+                                  // Padding(
+                                  //   padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  //   child: SizedBox(
+                                  //     width: double.infinity,
+                                  //     height: 40,
+                                  //     child: ListView.builder(
+                                  //       scrollDirection: Axis.horizontal,
+                                  //       shrinkWrap: true,
+                                  //       itemCount: widget.sellerDetails['fields'].length,
+                                  //       itemBuilder: (context,int index) {
+                                  //         String field = widget.sellerDetails['fields'][index];
+                                  //         bool isSelected = _selectedField == field;
+                                  //         return chooseCard(
+                                  //           field: field,
+                                  //           isSelected: isSelected,
+                                  //           onTap: () {
+                                  //             setState(() {
+                                  //             _selectedField = field;
+                                  //             });
+                                  //           },
+                                  //           userorseller: userorseller
+                                  //         );
+                                  //       },
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                  SellerFields(
+                                    selectedField: _selectedField ?? widget.sellerDetails['fields'][0],
+                                    sellerDetails: widget.sellerDetails,
+                                    onFieldChanged: (newField) {
+                                      setState(() {
+                                        _selectedField = newField;
+                                      });
+                                    }, 
                                     ),
-                                    SingleChildScrollView(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          // Print days horizontally using the DayHourListView widget
-                                          DayHourListView(
-                                            days: days,
-                                            hoursByDay: hoursByDay,
-                                            hourColors: hourColors,
-                                            selectedDay: _selectedDay,
-                                            selectedHour: _selectedHour,
-                                            userorseller: userorseller,
-                                            onDaySelected: (selectedDay) {
-                                              setState(() {
-                                                _selectedDay = selectedDay;
-                                              });
-                                            },
-                                            onHourSelected: (selectedHour) {
-                                              setState(() {
-                                                _selectedHour = selectedHour;
-                                              });
-                                            },
-                                            onClearSelection: () {
-                                              setState(() {
-                                                _selectedDay = null;
-                                                _selectedHour = null;
-                                                hourColors.forEach((key, value) {
-                                                  if (value != Colors.grey.shade600 && value != Colors.green) {
-                                                    hourColors[key] = Colors.cyan;
-                                                  }
-                                                });
-                                              });
-                                            },
+                                  const SizedBox(height: 10),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          "Saatler",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            color: userorseller ? Colors.white : Colors.black,
+                                          ),
                                         ),
-                                        const SizedBox(height: 10),
+                                        SingleChildScrollView(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              // Print days horizontally using the DayHourListView widget
+                                              DayHourListView(
+                                                days: days,
+                                                hoursByDay: hoursByDay,
+                                                hourColors: hourColors,
+                                                selectedDay: _selectedDay,
+                                                selectedHour: _selectedHour,
+                                                userorseller: userorseller,
+                                                onDaySelected: (selectedDay) {
+                                                  setState(() {
+                                                    _selectedDay = selectedDay;
+                                                  });
+                                                },
+                                                onHourSelected: (selectedHour) {
+                                                  setState(() {
+                                                    _selectedHour = selectedHour;
+                                                  });
+                                                },
+                                                onClearSelection: () {
+                                                  setState(() {
+                                                    _selectedDay = null;
+                                                    _selectedHour = null;
+                                                    hourColors.forEach((key, value) {
+                                                      if (value != Colors.grey.shade600 && value != Colors.green) {
+                                                        hourColors[key] = Colors.cyan;
+                                                      }
+                                                    });
+                                                  });
+                                                },
+                                            ),
+                                            const SizedBox(height: 10),
+                                          ],
+                                        ),
+                                      ),
+                                        const SizedBox(height: 10,)
                                       ],
                                     ),
                                   ),
-                                    const SizedBox(height: 10,)
-                                  ],
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: showInfoAppointments()
-                  ),
-                  const SizedBox(height: 70),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_selectedDay == null || _selectedHour == null || _selectedField == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Saat, gün ve saha seçiniz'),
-                            backgroundColor: Colors.red,
-                          )
-                        );
-                      } else if (widget.sellerUid == currentUserUid) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Kullanıcı kendini seçemez'),
-                            backgroundColor: Colors.red,
-                          )
-                        );
-                      }
-                      else {
-                        Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ApptRequest(
-                            sellerUid: widget.sellerUid,
-                            selectedDay: _selectedDay!,
-                            selectedHour: _selectedHour!,
-                            selectedField: _selectedField!,
-                          )
-                        ),
-                      );
-                      }
-                    },
-                    style: GlobalStyles.buttonPrimary(),
-                    child: Text(
-                      "Ödeme (₺${widget.sellerDetails['sellerPrice']})",
-                      style: GoogleFonts.inter(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w600,
-                        color: userorseller ? Colors.white : Colors.black,
+                      const SizedBox(height: 15),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: showInfoAppointments()
                       ),
-                    ),
+                      const SizedBox(height: 60),
+                      //if (widget.wherFrom != 'fromProfile' || widget.wherFrom != 'fromSuccess') 
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_selectedDay == null || _selectedHour == null || _selectedField == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Saat, gün ve saha seçiniz'),
+                                backgroundColor: Colors.red,
+                              )
+                            );
+                          } else if (widget.sellerUid == currentUserUid) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Kullanıcı kendini seçemez'),
+                                backgroundColor: Colors.red,
+                              )
+                            );
+                          }
+                          else {
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ApptRequest(
+                                sellerUid: widget.sellerUid,
+                                selectedDay: _selectedDay!,
+                                selectedHour: _selectedHour!,
+                                selectedField: _selectedField!,
+                              )
+                            ),
+                          );
+                          }
+                        },
+                        style: GlobalStyles.buttonPrimary(),
+                        child: Text(
+                          "Ödeme (₺${widget.sellerDetails['sellerPrice']})",
+                          style: GoogleFonts.inter(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w600,
+                            color: userorseller ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                    ],
                   ),
-                  const SizedBox(height: 30),
-                ],
+                ),
+                ),
               ),
+              Positioned(
+                bottom: 120,
+                right: 20,
+                child: ChatButton(sellerUid: widget.sellerUid)
+              )
+            ],
             ),
-            ChatButton(sellerUid: widget.sellerUid)
-          ],
           )
         );
         }
@@ -903,50 +923,46 @@ class ChatButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Positioned(
-      bottom: 120,
-      right: 20,
-      child: GestureDetector(
-        onTap: () {
-          // Set shared state and navigate to the message page
-          sharedValues.onTapped = true;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) {
-                sharedValues.onTapped = false;
-                return MessagePage();  // Assuming MessagePage is already defined
-              },
-            ),
-          );
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            color: Colors.white,
-            width: 120,
-            height: 50,
-            child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.forward_to_inbox,
+    return GestureDetector(
+      onTap: () {
+        // Set shared state and navigate to the message page
+        sharedValues.onTapped = true;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              sharedValues.onTapped = false;
+              return MessagePage();  // Assuming MessagePage is already defined
+            },
+          ),
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          color: Colors.white,
+          width: 120,
+          height: 50,
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.forward_to_inbox,
+                  color: Colors.black,
+                  size: 24,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  "Sohbet",
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                     color: Colors.black,
-                    size: 24,
                   ),
-                  const SizedBox(width: 5),
-                  Text(
-                    "Sohbet",
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

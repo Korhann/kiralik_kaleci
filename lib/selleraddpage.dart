@@ -62,27 +62,31 @@ class _SellerAddPageState extends State<SellerAddPage> {
   String currentUser = FirebaseAuth.instance.currentUser!.uid;
   bool userisSeller = false;
 
-final GlobalKey<_AmenitiesState> mondayKey = GlobalKey();
-final GlobalKey<_AmenitiesState> tuesdayKey = GlobalKey();
-final GlobalKey<_AmenitiesState> wednesdayKey = GlobalKey();
-final GlobalKey<_AmenitiesState> thursdayKey = GlobalKey();
-final GlobalKey<_AmenitiesState> fridayKey = GlobalKey();
-final GlobalKey<_AmenitiesState> saturdayKey = GlobalKey();
-final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> mondayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> tuesdayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> wednesdayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> thursdayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> fridayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> saturdayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
 
-
+  late Future<bool> sellerCheckFuture;
 
   @override
   void initState() {
     super.initState();
     initData();
+    sellerPrice.addListener(() {
+      setState(() {}); 
+    });
+    sellerCheckFuture = checkIfUserIsAlreadySeller();
   }
 
   Future<void> initData() async {
   await fetchCities(); 
   FootballField.storeFields();
   userorseller = true;
-  onCitySelected('istanbul'); 
+  onCitySelected('İstanbul'); 
 }
 
   @override
@@ -395,6 +399,12 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
                 const SizedBox(height: 10),
 
                 priceField(controller: sellerPrice),
+                const SizedBox(height: 10),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: YourEarning(earnedPrice: sellerPrice),
+                ),
                 
                 const SizedBox(height: 40),
                 Center(
@@ -484,10 +494,10 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
 
   Widget buildButton() {
   return FutureBuilder<bool>(
-    future: checkIfUserIsAlreadySeller(),
+    future: sellerCheckFuture,
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return CircularProgressIndicator();
+        return Container();
       }
 
       if (snapshot.hasData) {
@@ -510,7 +520,7 @@ final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
   // to populate with districts
   void onCitySelected(String selectedCity) {
     // todo: Burada selectedCity istanbul olacak
-    final city = cityData.firstWhere((city) => city['name'].toString().toLowerCase() == selectedCity);
+    final city = cityData.firstWhere((city) => city['name'].toString() == selectedCity);
     if (city != null) {
       final districtsData = city['districts'];
       if (districtsData != null) {
@@ -1304,6 +1314,48 @@ class priceField extends StatelessWidget {
                   ),
                 );
   }
+}
+class YourEarning extends StatelessWidget {
+  final TextEditingController earnedPrice;
+
+  const YourEarning({
+    super.key,
+    required this.earnedPrice,
+  });
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Spacer(),
+        Text(
+          'Senin Kazancın',
+          style: GoogleFonts.roboto(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w300
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          '${calculateEarning()} ₺',
+          style: GoogleFonts.roboto(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16
+          ),
+        )
+      ],
+    );
+  }
+
+  int calculateEarning() {
+    int getValue = int.tryParse(earnedPrice.text) ?? 0;
+    int fivePercent = (getValue * 10 ~/ 100); 
+    return getValue - fivePercent;
+  }
+
 }
 
 
