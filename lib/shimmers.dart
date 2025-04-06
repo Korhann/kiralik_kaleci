@@ -126,79 +126,85 @@ class AppointmentsShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: 40),
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        itemCount: 4, // show 4 shimmer items
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Shimmer.fromColors(
-                baseColor: userorseller ? sellergrey : Colors.grey.shade300,
-                highlightColor: userorseller ? Colors.grey.shade700 : Colors.grey.shade100,
-                child: Container(
-                  color: userorseller ? sellerbackground :Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Name Surname Placeholder
-                        Container(
-                          height: 16,
-                          width: 150,
-                          color: userorseller ? sellergrey : Colors.white,
-                          margin: const EdgeInsets.only(bottom: 10),
-                        ),
-                        // Day + Hour Placeholder
-                        Container(
-                          height: 14,
-                          width: 100,
-                          color: userorseller ? sellergrey : Colors.white,
-                          margin: const EdgeInsets.only(bottom: 10),
-                        ),
-                        // Location row
-                        Row(
-                          children: [
-                            Container(
-                              height: 14,
-                              width: 14,
-                              color: userorseller ? sellergrey : Colors.white,
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              height: 14,
-                              width: 80,
-                              color: userorseller ? sellergrey :  Colors.white,
-                            ),
-                            const Spacer(),
-                            Container(
-                              height: 30,
-                              width: 60,
-                              color: userorseller ? sellergrey : Colors.white,
-                            )
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        // Approve/Reject buttons shimmer if needed
-                        Container(
-                          height: 35,
-                          width: double.infinity,
-                          color: userorseller ? sellergrey : Colors.white,
-                        ),
-                      ],
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: userorseller ? sellerbackground : Colors.white,
+      ),
+      backgroundColor: userorseller ? sellerbackground : background,
+      body: Padding(
+        padding: EdgeInsets.only(top: 40),
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          itemCount: 4, // show 4 shimmer items
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Shimmer.fromColors(
+                  baseColor: userorseller ? sellergrey : Colors.grey.shade300,
+                  highlightColor: userorseller ? Colors.grey.shade700 : Colors.grey.shade100,
+                  child: Container(
+                    color: userorseller ? sellerbackground :Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Name Surname Placeholder
+                          Container(
+                            height: 16,
+                            width: 150,
+                            color: userorseller ? sellergrey : Colors.white,
+                            margin: const EdgeInsets.only(bottom: 10),
+                          ),
+                          // Day + Hour Placeholder
+                          Container(
+                            height: 14,
+                            width: 100,
+                            color: userorseller ? sellergrey : Colors.white,
+                            margin: const EdgeInsets.only(bottom: 10),
+                          ),
+                          // Location row
+                          Row(
+                            children: [
+                              Container(
+                                height: 14,
+                                width: 14,
+                                color: userorseller ? sellergrey : Colors.white,
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                height: 14,
+                                width: 80,
+                                color: userorseller ? sellergrey :  Colors.white,
+                              ),
+                              const Spacer(),
+                              Container(
+                                height: 30,
+                                width: 60,
+                                color: userorseller ? sellergrey : Colors.white,
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          // Approve/Reject buttons shimmer if needed
+                          Container(
+                            height: 35,
+                            width: double.infinity,
+                            color: userorseller ? sellergrey : Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -260,34 +266,107 @@ class ApprovedFieldsShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 6, // You can adjust the placeholder count
-      itemBuilder: (context, index) {
-        return Card(
-          color: Colors.white,  // Keep it clean on a white background
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          child: Shimmer.fromColors(
-            baseColor: Colors.grey.shade300,
-            highlightColor: Colors.grey.shade100,
-            child: ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: background,
+      ),
+      backgroundColor: background,
+      body: ListView.builder(
+        itemCount: 6, // You can adjust the placeholder count
+        itemBuilder: (context, index) {
+          return Card(
+            color: Colors.white,  // Keep it clean on a white background
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                title: Container(
+                  height: 16,
+                  width: 150,
                   color: Colors.grey.shade300,
-                  shape: BoxShape.circle,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
                 ),
               ),
-              title: Container(
-                height: 16,
-                width: 150,
-                color: Colors.grey.shade300,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-              ),
             ),
+          );
+        },
+      ),
+    );
+  }
+}
+class SellerDetailsShimmer extends StatelessWidget {
+  const SellerDetailsShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: userorseller ? sellerbackground : background,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Shimmer.fromColors(
+          baseColor: Colors.grey.shade300,
+          highlightColor: Colors.grey.shade100,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(height: 200, width: double.infinity, color: Colors.white), // image placeholder
+              const SizedBox(height: 20),
+              Container(height: 20, width: 150, color: Colors.white), // name placeholder
+              const SizedBox(height: 10),
+              Container(height: 20, width: 100, color: Colors.white), // location placeholder
+              const SizedBox(height: 30),
+              Container(height: 40, width: double.infinity, color: Colors.white), // fields list placeholder
+              const SizedBox(height: 20),
+              Container(height: 200, width: double.infinity, color: Colors.white), // hours list placeholder
+            ],
           ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+}
+class SellerDetailsDarkShimmer extends StatelessWidget {
+  const SellerDetailsDarkShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: userorseller ? sellerbackground : background,
+      appBar: AppBar(
+        backgroundColor: sellerbackground,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Shimmer.fromColors(
+          baseColor: sellergrey,
+          highlightColor: Colors.grey.shade700,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(height: 200, width: double.infinity, color: sellergrey), // image placeholder
+              const SizedBox(height: 20),
+              Container(height: 20, width: 150, color: sellergrey), // name placeholder
+              const SizedBox(height: 10),
+              Container(height: 20, width: 100, color: sellergrey), // location placeholder
+              const SizedBox(height: 30),
+              Container(height: 40, width: double.infinity, color: sellergrey), // fields list placeholder
+              const SizedBox(height: 20),
+              Container(height: 200, width: double.infinity, color: sellergrey), // hours list placeholder
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

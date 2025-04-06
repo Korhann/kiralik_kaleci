@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:kiralik_kaleci/sellerDetails.dart';
+import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 

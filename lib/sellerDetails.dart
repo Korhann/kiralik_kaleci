@@ -3,16 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/globals.dart';
-import 'package:kiralik_kaleci/main.dart';
-import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
 import 'package:kiralik_kaleci/apptRequest.dart';
-import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:shimmer/shimmer.dart';
@@ -155,7 +152,12 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
         future: _daysNameFuture,
         builder: (context,snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return ShimmerClass();
+            switch (widget.wherFrom){
+              case 'fromSomewhere':
+                return SellerDetailsDarkShimmer();
+              default:
+                return SellerDetailsShimmer();
+            } 
           }
           return Scaffold(
           appBar: AppBar(
@@ -204,33 +206,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                   showCityDistrict(sellerDetails: widget.sellerDetails),
                                   
                                   const SizedBox(height: 5),
-                                  // kullanıcı buradan kaleci seçecek
-                                  // Padding(
-                                  //   padding: const EdgeInsets.symmetric(horizontal: 10),
-                                  //   child: SizedBox(
-                                  //     width: double.infinity,
-                                  //     height: 40,
-                                  //     child: ListView.builder(
-                                  //       scrollDirection: Axis.horizontal,
-                                  //       shrinkWrap: true,
-                                  //       itemCount: widget.sellerDetails['fields'].length,
-                                  //       itemBuilder: (context,int index) {
-                                  //         String field = widget.sellerDetails['fields'][index];
-                                  //         bool isSelected = _selectedField == field;
-                                  //         return chooseCard(
-                                  //           field: field,
-                                  //           isSelected: isSelected,
-                                  //           onTap: () {
-                                  //             setState(() {
-                                  //             _selectedField = field;
-                                  //             });
-                                  //           },
-                                  //           userorseller: userorseller
-                                  //         );
-                                  //       },
-                                  //     ),
-                                  //   ),
-                                  // ),
+                                  
                                   SellerFields(
                                     selectedField: _selectedField ?? widget.sellerDetails['fields'][0],
                                     sellerDetails: widget.sellerDetails,
@@ -964,46 +940,6 @@ class ChatButton extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ShimmerClass extends StatelessWidget {
-  const ShimmerClass({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: userorseller ? sellerbackground : background,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Shimmer.fromColors(
-          baseColor: Colors.grey.shade300,
-          highlightColor: Colors.grey.shade100,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(height: 200, width: double.infinity, color: Colors.white), // image placeholder
-              const SizedBox(height: 20),
-              Container(height: 20, width: 150, color: Colors.white), // name placeholder
-              const SizedBox(height: 10),
-              Container(height: 20, width: 100, color: Colors.white), // location placeholder
-              const SizedBox(height: 30),
-              Container(height: 40, width: double.infinity, color: Colors.white), // fields list placeholder
-              const SizedBox(height: 20),
-              Container(height: 200, width: double.infinity, color: Colors.white), // hours list placeholder
-            ],
           ),
         ),
       ),

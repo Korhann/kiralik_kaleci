@@ -117,8 +117,6 @@ class _FilterPageState extends State<FilterPage> {
 
   @override
   Widget build(BuildContext context) {
-    double w = MediaQuery.sizeOf(context).width;
-    double h = MediaQuery.sizeOf(context).height;
     return ConnectivityWithBackButton(
       child: FutureBuilder(
         future: _runMethods,

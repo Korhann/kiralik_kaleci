@@ -24,44 +24,53 @@ class SellerGridItem extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(sellerUid),
       child: Card(
-        elevation: 3,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.white),
-                errorWidget: (context, url, error) => Container(color: Colors.white),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    fullName,
-                    style: GoogleFonts.inter(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
+        color: Colors.white,
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        //shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        child: Padding(
+          padding: EdgeInsets.all(1),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    height: 160,
+                    width: MediaQuery.sizeOf(context).width,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: Colors.white),
+                    errorWidget: (context, url, error) => Container(color: Colors.white),
                   ),
-                  Text(
-                    "$city, $district",
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fullName,
+                      style: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                    Text(
+                      "$city, $district",
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

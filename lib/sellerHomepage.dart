@@ -76,10 +76,10 @@ class _SellerHomePageState extends State<SellerHomePage> {
         page = const SellerAddPage();
         break;
       case 'appointments':
-        page = const AppointmentsPage(whereFrom: 'fromSellerHomePage',);
+        page = const AppointmentsPage(whereFrom: 'fromSellerHomePage');
         break;
       case 'posts':
-        page = SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUser, wherFrom: '',);
+        page = SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUser, wherFrom: 'fromSomewhere');
       default:
         return; 
     }

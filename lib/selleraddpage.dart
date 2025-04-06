@@ -21,6 +21,7 @@ import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
+
 class SellerAddPage extends StatefulWidget {
   const SellerAddPage({super.key});
 
@@ -596,6 +597,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
         
         // saat seçme ui ını yenilemesi için pushreplacement
         Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SellerSuccessPage()));
+
       }
       return true;
     } catch (e) {

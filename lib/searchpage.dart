@@ -74,23 +74,29 @@ class _GetUserDataState extends State<GetUserData> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const SellerGridShimmer();
           }
-          var docs = snapshot.data!.docs
-              .where((doc) => doc.data().containsKey('sellerDetails'))
-              .toList();
+          var docs = snapshot.data!.docs.where((doc) => doc.data().containsKey('sellerDetails')).toList();
 
-          return Column(
-            children: [
-              _HeaderSection(
-                onFilterTap: _navigateToFilterPage,
-                onNotificationTap: _navigateToAppsPage,
-              ),
-              docs.isEmpty
-                  ? _EmptyState()
-                  : _SellerGrid(
-                      docs: docs,
-                      onCardTap: _handleCardTap,
-                      isLoading: isLoading),
-            ],
+          return MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            removeBottom: true,
+            removeLeft: true,
+            removeRight: true,
+            child: Column(
+              children: [
+                _HeaderSection(
+                  onFilterTap: _navigateToFilterPage,
+                  onNotificationTap: _navigateToAppsPage,
+                ),
+                docs.isEmpty
+                    ? _EmptyState()
+                    : _SellerGrid(
+                        docs: docs,
+                        onCardTap: _handleCardTap,
+                        isLoading: isLoading
+                      ),
+              ],
+            ),
           );
         },
       ),
@@ -312,34 +318,31 @@ class _SellerGrid extends StatelessWidget {
   final Function(BuildContext, Map<String, dynamic>, String) onCardTap;
   final bool isLoading;
 
-  const _SellerGrid(
-      {required this.docs, required this.onCardTap, required this.isLoading});
+  const _SellerGrid({required this.docs, required this.onCardTap, required this.isLoading});
 
   @override
   Widget build(BuildContext context) {
     return Flexible(
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: GridView.builder(
-          physics: const ScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.7,
-          ),
-          itemCount: docs.length,
-          itemBuilder: (context, index) {
-            var sellerDetails = docs[index]['sellerDetails'];
-            var sellerUid = docs[index].id;
-
-            return SellerGridItem(
-              sellerDetails: sellerDetails,
-              sellerUid: sellerUid,
-              onTap: (uid) => onCardTap(context, sellerDetails, uid),
-            );
-          },
+      child: GridView.builder(
+        padding: EdgeInsets.zero,
+        physics: const ScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 5,
+          mainAxisSpacing: 5,
+          childAspectRatio: 1.8 / 2.3,
         ),
+        itemCount: docs.length,
+        itemBuilder: (context, index) {
+          var sellerDetails = docs[index]['sellerDetails'];
+          var sellerUid = docs[index].id;
+      
+          return SellerGridItem(
+            sellerDetails: sellerDetails,
+            sellerUid: sellerUid,
+            onTap: (uid) => onCardTap(context, sellerDetails, uid),
+          );
+        },
       ),
     );
   }

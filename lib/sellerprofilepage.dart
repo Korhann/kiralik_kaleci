@@ -212,7 +212,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentuser, wherFrom: 'fromProfile'))
+                    MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentuser, wherFrom: 'fromSomewhere'))
                   );
                 },
                 child: OtherBars(
