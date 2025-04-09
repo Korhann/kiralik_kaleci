@@ -60,12 +60,22 @@ class _FilterPageState extends State<FilterPage> {
     days = widget.daysFilter;
     // çok zaman aldığı için runMethods ta çalıştırmıyorum
     FootballField.storeFields();
+    print(cityFilter);
+    print(districtFilter);
+    print(fieldFilter);
   }
 
   // if i dont run fetch cities first there is no element
   Future<void> runMethods() async {
+    await setPrefs();
     await fetchCities();
     await loadPrefs();
+    onCitySelected('İstanbul');
+  }
+
+  Future<void> setPrefs() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedCity', 'İstanbul');
   }
 
   void clearAllFilters() async {
@@ -127,32 +137,32 @@ class _FilterPageState extends State<FilterPage> {
         return Scaffold(
         resizeToAvoidBottomInset: true,
         backgroundColor: background,
-        appBar: AppBar(
-          backgroundColor: background,
-          leading: IconButton(
-              onPressed: () {
-                if (isCleared) {
-                  Navigator.pop(
-                    context, {
-                    'nameFilter': nameFilter,
-                    'cityFilter': cityFilter,
-                    'districtFilter': districtFilter,
-                    'fieldFilter': fieldFilter,
-                    'minFilter': minFilter,
-                    'maxFilter': maxFilter
-                  });
-                } else {
-                  Navigator.of(context).pop();
-                }
-              },
-              icon: const Icon(Icons.arrow_back, color: Colors.black)),
-        ),
+        // appBar: AppBar(
+        //   backgroundColor: background,
+        //   leading: IconButton(
+        //       onPressed: () {
+        //         if (isCleared) {
+        //           Navigator.pop(
+        //             context, {
+        //             'nameFilter': nameFilter,
+        //             'cityFilter': cityFilter,
+        //             'districtFilter': districtFilter,
+        //             'fieldFilter': fieldFilter,
+        //             'minFilter': minFilter,
+        //             'maxFilter': maxFilter
+        //           });
+        //         } else {
+        //           Navigator.of(context).pop();
+        //         }
+        //       },
+        //       icon: const Icon(Icons.arrow_back, color: Colors.black)),
+        // ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 10),
+                const SizedBox(height: 40),
                 Stack(
                   children: [
                     Align(
@@ -191,32 +201,33 @@ class _FilterPageState extends State<FilterPage> {
                     ),
                     const SizedBox(height: 8),
       
-                    CityDropdown(
-                      selectedCity: cityFilter,
-                      cities: cities,
-                      onCitySelected: (value) async {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('selectedCity', value!);
-                        setState(() {
-                          cityFilter = value;
-                          districtFilter = null;
-                          fieldFilter = null;
-                          districts.clear();
-                          fields.clear();
-                          onCitySelected(value);
-                        });
-                      },
-                      onClear: () async {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.remove('selectedCity');
-                        setState(() {
-                          cityFilter = null;
-                          districtFilter = null;
-                          fieldFilter = null;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 8),
+                    // CityDropdown(
+                    //   selectedCity: cityFilter,
+                    //   cities: cities,
+                    //   onCitySelected: (value) async {
+                    //     SharedPreferences prefs = await SharedPreferences.getInstance();
+                    //     await prefs.setString('selectedCity', value!);
+                    //     setState(() {
+                    //       cityFilter = value;
+                    //       districtFilter = null;
+                    //       fieldFilter = null;
+                    //       districts.clear();
+                    //       fields.clear();
+                    //       onCitySelected(value);
+                    //     });
+                    //   },
+                    //   onClear: () async {
+                    //     SharedPreferences prefs = await SharedPreferences.getInstance();
+                    //     await prefs.remove('selectedCity');
+                    //     setState(() {
+                    //       cityFilter = null;
+                    //       districtFilter = null;
+                    //       fieldFilter = null;
+                    //     });
+                    //   },
+                    // ),
+
+                    //const SizedBox(height: 8),
       
                     DistrictDropdown(
                       selectedDistrict: districtFilter,
@@ -233,6 +244,8 @@ class _FilterPageState extends State<FilterPage> {
                       onClear: () async {
                         SharedPreferences prefs = await SharedPreferences.getInstance();
                         await prefs.remove('selectedDistrict');
+                        SharedPreferences prefs2 = await SharedPreferences.getInstance();
+                        await prefs2.remove('selectedField');
                         setState(() {
                           districtFilter = null;
                           fieldFilter = null;
@@ -313,7 +326,8 @@ class _FilterPageState extends State<FilterPage> {
                 Center(
                   child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context, {
+                        Navigator.pop(
+                          context, {
                           'nameFilter': nameFilter,
                           'cityFilter': cityFilter,
                           'districtFilter': districtFilter,
@@ -344,12 +358,10 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Future<void> fetchCities() async {
-    var response =
-        await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
+    var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
     if (response.statusCode == 200) {
       final List<dynamic> citiesData = jsonDecode(response.body)['data'];
-      List<String> cityNames =
-          citiesData.map((city) => city['name'].toString()).toList();
+      List<String> cityNames = citiesData.map((city) => city['name'].toString()).toList();
       if (mounted) {
         setState(() {
           cities = cityNames;
@@ -364,18 +376,17 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Future<void> onCitySelected(String selectedCityFilter) async {
+    print(selectedCityFilter);
     final city = cityData.firstWhere((city) => city['name'] == selectedCityFilter);
     if (city != null) {
       final districtsData = city['districts'];
       if (districtsData != null) {
-        final List<String> districtNames = (districtsData as List<dynamic>)
-            .map((district) => district['name'].toString())
-            .toList();
+        final List<String> districtNames = (districtsData as List<dynamic>).map((district) => district['name'].toString())
+          .toList();
 
         setState(() {
           cityFilter = selectedCityFilter;
           districts = districtNames;
-          districtFilter = null; // Reset selected district
         });
       }
     }
@@ -399,6 +410,7 @@ class _FilterPageState extends State<FilterPage> {
       });
     } catch (e) {
       setState(() {
+        districtFilter = selectedDistrict;
         fields = [];
         fieldFilter = null;
       });
@@ -415,8 +427,7 @@ class _FilterPageState extends State<FilterPage> {
 
     if (savedCity != null) {
       // Load districts based on the saved city
-      await onCitySelected(
-          savedCity); // Ensure districts are loaded before continuing
+      await onCitySelected(savedCity);
     }
 
     setState(() {
@@ -430,6 +441,7 @@ class _FilterPageState extends State<FilterPage> {
     }
 
     setState(() {
+      districtFilter = savedDistrict;
       fieldFilter = savedField; // Set fieldFilter only after fields are fetched
     });
   }

@@ -1,3 +1,4 @@
+import 'package:banner_carousel/banner_carousel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -88,6 +89,73 @@ class _GetUserDataState extends State<GetUserData> {
                   onFilterTap: _navigateToFilterPage,
                   onNotificationTap: _navigateToAppsPage,
                 ),
+                Container(
+  color: background,
+  child: BannerCarousel(
+    height: 80,
+    animation: false,
+    viewportFraction: 0.6,
+    showIndicator: false,
+    customizedBanners: [
+      Container(
+        margin: EdgeInsets.only(right: 10),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.black,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          'Kaleci Kirala',
+          style: GoogleFonts.roboto(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      Container(
+        margin: EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+          color: Colors.deepPurple.shade50,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              spreadRadius: 0,
+              blurRadius: 4,
+              offset: Offset(0, 3),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          'Uygun Kalecileri Ara',
+          style: GoogleFonts.roboto(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.deepPurple,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+      Container(
+        margin: EdgeInsets.only(left: 10),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.green, width: 3),
+          borderRadius: BorderRadius.circular(50),
+          image: DecorationImage(
+            image: NetworkImage(
+              'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl-2.jpg',
+            ),
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
                 docs.isEmpty
                     ? _EmptyState()
                     : _SellerGrid(
@@ -136,7 +204,7 @@ class _GetUserDataState extends State<GetUserData> {
         nameFilter = filter['nameFilter'];
         cityFilter = filter['cityFilter'];
         districtFilter = filter['districtFilter'];
-        daysFilter = filter['daysFilter'];
+        daysFilter = filter['daysFilter'] ?? [''];
         fieldFilter = filter['fieldFilter'];
         minFilter = filter['minFilter'];
         maxFilter = filter['maxFilter'];
@@ -148,9 +216,9 @@ class _GetUserDataState extends State<GetUserData> {
   void applyFilter() {
     Query<Map<String, dynamic>> query = _firestore.collection('Users');
 
-    if (nameFilter?.isNotEmpty == true) {
-      query =
-          query.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
+    try {
+      if (nameFilter?.isNotEmpty == true) {
+      query = query.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
     }
     if (cityFilter?.isNotEmpty == true) {
       query = query.where('sellerDetails.city', isEqualTo: cityFilter);
@@ -162,20 +230,17 @@ class _GetUserDataState extends State<GetUserData> {
       query = query.where('sellerDetails.fields', arrayContains: fieldFilter);
     }
     if (daysFilter.isNotEmpty) {
-      query =
-          query.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
+      query = query.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
     }
     if (minFilter != null && maxFilter != null) {
-      query = query
-          .where('sellerDetails.sellerPrice',
-              isGreaterThanOrEqualTo: minFilter!)
-          .where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
+      query = query.where('sellerDetails.sellerPrice',isGreaterThanOrEqualTo: minFilter!).where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
     } else if (minFilter != null) {
-      query = query.where('sellerDetails.sellerPrice',
-          isGreaterThanOrEqualTo: minFilter!);
+      query = query.where('sellerDetails.sellerPrice',isGreaterThanOrEqualTo: minFilter!);
     } else if (maxFilter != null) {
-      query = query.where('sellerDetails.sellerPrice',
-          isLessThanOrEqualTo: maxFilter!);
+      query = query.where('sellerDetails.sellerPrice',isLessThanOrEqualTo: maxFilter!);
+    }
+    } catch (e) {
+      print('Error with the filtering $e');
     }
 
     setState(() {
