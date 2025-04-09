@@ -30,7 +30,7 @@ class _GetUserDataState extends State<GetUserData> {
   int? minFilter = 0, maxFilter = 0;
 
   bool isLoading = true;
-
+  
   @override
   void initState() {
     super.initState();
@@ -89,6 +89,7 @@ class _GetUserDataState extends State<GetUserData> {
                   onFilterTap: _navigateToFilterPage,
                   onNotificationTap: _navigateToAppsPage,
                 ),
+                // bu bölüm banner bölümü olacak
                 Container(
   color: background,
   child: BannerCarousel(

@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -275,13 +276,16 @@ class _ApptRequestState extends State<ApptRequest> {
   // }
 
   // burada eğer approved olursa eklenecek
-  Future<String> appointmentBuyer() async{
+  Future<String> appointmentBuyer(String verificationCode, String startTime, String endTime) async{
     Map<String,String> appointmentDetails = {
       'name': sellerFullName,
       'selleruid': widget.sellerUid,
       'day': widget.selectedDay,
       'hour': widget.selectedHour,
       'field': widget.selectedField,
+      'verificationCode': verificationCode,
+      'startTime': startTime,
+      'endTime': endTime,
       'status': 'pending',
       'paymentStatus' : 'waiting'
     };
@@ -297,7 +301,10 @@ class _ApptRequestState extends State<ApptRequest> {
 
   Future<void> appointmentSeller() async {
   String fullName;
-  
+  String verificationCode = generateCode();
+  String startTime = widget.selectedHour.split('-')[0];
+  String endTime = widget.selectedHour.split('-')[1];
+
   // Fetch user data once using `get()` to avoid the asynchronous issue
   final snapshot = await _firestore.collection('Users').doc(currentuser).get();
   if (snapshot.exists) {
@@ -307,7 +314,7 @@ class _ApptRequestState extends State<ApptRequest> {
     throw Exception("User data not found"); 
   }
 
-  String buyerDocId = await appointmentBuyer();
+  String buyerDocId = await appointmentBuyer(verificationCode, startTime, endTime);
 
   // Create the appointmentDetails map with the fetched data
   Map<String, String> appointmentDetails = {
@@ -317,6 +324,9 @@ class _ApptRequestState extends State<ApptRequest> {
     'day': widget.selectedDay,
     'hour': widget.selectedHour,
     'field':widget.selectedField,
+    'verificationCode': verificationCode,
+    'startTime':startTime,
+    'endTime': endTime,
     'status': 'pending',
   };
   
@@ -351,4 +361,8 @@ class _ApptRequestState extends State<ApptRequest> {
       }
     }
   }
+  String generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return List.generate(5, (index) => chars[Random().nextInt(chars.length)]).join();
+}
 }

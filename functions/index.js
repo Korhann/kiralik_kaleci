@@ -71,3 +71,20 @@ exports.resetAppointments = onSchedule(
     }
   }
 );
+exports.runVerificationFunction = onSchedule(
+
+  {schedule : 'every 30 minutes', timeZone: 'Europe/Istanbul'},
+  async ()=> {
+    
+    try {
+      const usersRef = admin.firestore().collection('Users');
+      const usersSnapshot = await usersRef.get();
+
+      for (const userDoc of usersSnapshot.docs) {
+        const userRef = userDoc.doc('');
+      }
+    } catch (e) {
+
+    }
+  }
+);
