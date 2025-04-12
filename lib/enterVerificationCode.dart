@@ -8,48 +8,51 @@ import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 
-class ChangeUserName extends StatefulWidget {
-  const ChangeUserName({super.key});
+class EnterVerificationCode extends StatefulWidget {
+  final String docId;
+  const EnterVerificationCode({
+    super.key,
+    required this.docId
+  });
 
   @override
-  State<ChangeUserName> createState() => _ChangeUserNameState();
+  State<EnterVerificationCode> createState() => _EnterVerificationCodeState();
 }
 
-class _ChangeUserNameState extends State<ChangeUserName> {
-  
-  final _key = GlobalKey<FormState>();
-  final _newUsername = TextEditingController();
-  final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
-  bool _showErrorUsername = false;
+class _EnterVerificationCodeState extends State<EnterVerificationCode> {
 
-  bool isUpdated = false;
+  final _key = GlobalKey<FormState>();
+  final codeVerifield = TextEditingController();
+  final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
+  bool _showErrorCode = false;
 
   @override
   void dispose() {
-    _newUsername.dispose();
+    codeVerifield.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() { 
+    super.initState();
+    checkCodes();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: userorseller ? sellerbackground : background,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: Icon(Icons.arrow_back,color: userorseller ? Colors.white : Colors.black),
-        ),
+        backgroundColor: sellerbackground,
+        foregroundColor: Colors.white,
       ),
-      backgroundColor: userorseller ? sellerbackground : background,
+      backgroundColor: sellerbackground,
       body: Form(
         key: _key,
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              newUserName(),
+              TitleOfPage(),
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
@@ -58,22 +61,20 @@ class _ChangeUserNameState extends State<ChangeUserName> {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
                     decoration: GlobalStyles.inputDecoration1(
-                        hintText: 'Ad Soyad', showError: _showErrorUsername),
+                        hintText: 'Ad Soyad', showError: _showErrorCode),
                     style: TextStyle(color: Colors.black, fontSize: 20),
-                    controller: _newUsername,
+                    controller: codeVerifield,
                     onChanged: (value) => clearErrors(),
                     validator: (value) {
                       final trimmedValue = value?.trim();
-                      if (trimmedValue == null ||
-                          trimmedValue.isEmpty ||
-                          trimmedValue.length < 6) {
+                      if (trimmedValue == null || trimmedValue.isEmpty) {
                         setState(() {
-                          _showErrorUsername = true;
+                          _showErrorCode = true;
                         });
                         return '';
                       } else {
                         setState(() {
-                          _showErrorUsername = false;
+                          _showErrorCode = false;
                         });
                         return null;
                       }
@@ -81,32 +82,25 @@ class _ChangeUserNameState extends State<ChangeUserName> {
                   ),
                 ),
               ),
-              if (_showErrorUsername && _newUsername.text.trim().isEmpty)
+              if (_showErrorCode && codeVerifield.text.trim().isEmpty)
                 errorMessage('Kullanıcı adı boş bırakılamaz'),
-              if (_showErrorUsername && _newUsername.text.trim().length < 6)
-                errorMessage('Kullanıcı adı 6 haneden uzun olmalı'),
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
                   onPressed: () async {
                     if (_key.currentState!.validate()) {
                       if (await InternetConnection().hasInternetAccess) {
-                        await changeUsername();
-                        if (isUpdated) {
-                          _newUsername.clear();
+                        await checkCodes();
+                          codeVerifield.clear();
                           if (mounted) {
-                            Showalert(context: context, text: 'İşlem Başarılı')
-                                .showSuccessAlert();
-                          }
+                            Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
                         }
                       } else {
                         if (mounted) {
-                          Showalert(context: context, text: 'Ooopps...')
-                              .showErrorAlert();
+                          Showalert(context: context, text: 'Ooopps...').showErrorAlert();
                         }
                       }
                     }
-                    isUpdated = false;
                   },
                   style: GlobalStyles.buttonPrimary(),
                   child: Text(
@@ -125,7 +119,30 @@ class _ChangeUserNameState extends State<ChangeUserName> {
       ),
     );
   }
+  Future<bool> checkCodes() async{
+    //todo: MANTIĞINI KONTROL ET YANLIŞ OLABİLİR
+    final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
 
+    final doc = await FirebaseFirestore.instance
+    .collection('Users')
+    .doc(currentuser)
+    .collection('appointmentseller')
+    .doc(widget.docId)
+    .get();
+    
+    if (doc.exists) {
+      final data = doc.data();
+      print(data);
+      final code = data!['appointmentDetails']['verificationCode'];
+      return true;
+    }
+    return false;
+  }
+  void clearErrors() {
+    setState(() {
+      _showErrorCode = false;
+    });
+  }
   Widget errorMessage(String message) {
     return Align(
       alignment: Alignment.centerLeft,
@@ -138,43 +155,18 @@ class _ChangeUserNameState extends State<ChangeUserName> {
       ),
     );
   }
-
-  void clearErrors() {
-    setState(() {
-      _showErrorUsername = false;
-    });
-  }
-
-  Future<void> changeUsername() async {
-    final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-    if (currentuser != null) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(currentuser)
-            .update({'fullName': _newUsername.text.trim()});
-        isUpdated = true;
-      } catch (e) {
-        print('Error updating username $e');
-      }
-    }
-  }
 }
 
-class newUserName extends StatelessWidget {
-  const newUserName({super.key});
+class TitleOfPage extends StatelessWidget {
+  const TitleOfPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20),
-      child: Text(
-        'Yeni Kullanıcı Adı',
-        style: GoogleFonts.roboto(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: userorseller ? Colors.white : Colors.black,
-        ),
+    return Text(
+      'Kodu Giriniz',
+      style: TextStyle(
+        fontSize: 24,
+        color: Colors.white
       ),
     );
   }

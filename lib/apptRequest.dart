@@ -166,10 +166,12 @@ class _ApptRequestState extends State<ApptRequest> {
 
   Future<void> navigateToHomePage() async{
     await Future.delayed(const Duration(seconds: 2));
-    await Navigator.push(
+    if (mounted) {
+      await Navigator.push(
       context, 
       MaterialPageRoute(builder: (context) => const MainPage(index: 0))
     );
+    }
   }
 
   Widget _selectedField() {

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
+import 'package:kiralik_kaleci/enterVerificationCode.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
@@ -155,6 +156,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final field = appointmentDetails['field'] ?? '';
                       final status = appointmentDetails['status'] ?? 'pending';
                       final paymentStatus = appointmentDetails['paymentStatus'] ?? 'waiting';
+                      final verificationCode = appointmentDetails['verificationCode'] ?? '';
                       final docId = docs?[index] ?? '';
 
                       // Determine card color based on status
@@ -184,6 +186,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         paymentStatus: paymentStatus,
                         sellerUid: appointmentDetails!['selleruid'] ?? '',
                         appointmentDetails: appointmentDetails,
+                        verificationCode : verificationCode,
                         docId: docId,
                         userorseller: userorseller,
                         onApprove: () async {
@@ -522,6 +525,7 @@ class AppointmentView extends StatelessWidget {
   final String paymentStatus;
   final String sellerUid;
   final Map<String, dynamic> appointmentDetails;
+  final String verificationCode;
   final String docId;
   final bool userorseller;
   final VoidCallback? onApprove;
@@ -539,6 +543,7 @@ class AppointmentView extends StatelessWidget {
     required this.paymentStatus,
     required this.sellerUid,
     required this.appointmentDetails,
+    required this.verificationCode,
     required this.docId,
     required this.userorseller,
     this.onApprove,
@@ -574,11 +579,7 @@ class AppointmentView extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        if (!userorseller)
-                          status == 'approved' && paymentStatus == 'waiting'
-                            ? paymentButton(appointmentDetails: appointmentDetails, docId: docId)
-                            : paymentStatus == 'taken' ? const Text('Dolu')
-                            : showTextBasedOnStatus(status: status)
+                        buildRightSideWidget(context: context ,userorseller: userorseller, status: status, paymentStatus: paymentStatus, verificationCode: verificationCode, docId: docId, appointmentDetails: appointmentDetails)
                       ],
                     ),
                   ],
@@ -592,7 +593,43 @@ class AppointmentView extends StatelessWidget {
       ),
     );
   }
+  Widget buildRightSideWidget({
+    required BuildContext context,
+    required bool userorseller,
+    required String status,
+    required String paymentStatus,
+    required String verificationCode,
+    required String docId,
+    required Map<String, dynamic> appointmentDetails,
+  }) {
+    
+  if (!userorseller) {
+    if (status == 'approved' && paymentStatus == 'waiting') {
+      return paymentButton(appointmentDetails: appointmentDetails, docId: docId);
+    } else if (status == 'approved' && paymentStatus == 'done') {
+      return Text(verificationCode);
+    } else if (paymentStatus == 'taken') {
+      return const Text('Dolu');
+    } else {
+      return showTextBasedOnStatus(status: status);
+    }
+  } else if (userorseller){
+    return ElevatedButton(
+      onPressed: () async{
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => EnterVerificationCode(docId: docId))
+        );
+      }, 
+      child: Text('Kodu gir')
+    );
+  } else {
+    return const SizedBox();
+  }
 }
+
+}
+
 class iconDayHour extends StatelessWidget {
   final String day;
   final String hour;
