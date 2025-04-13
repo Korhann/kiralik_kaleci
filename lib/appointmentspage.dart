@@ -157,6 +157,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final status = appointmentDetails['status'] ?? 'pending';
                       final paymentStatus = appointmentDetails['paymentStatus'] ?? 'waiting';
                       final verificationCode = appointmentDetails['verificationCode'] ?? '';
+                      final verificationState = appointmentDetails['verificationState'] ?? '';
                       final docId = docs?[index] ?? '';
 
                       // Determine card color based on status
@@ -187,6 +188,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         sellerUid: appointmentDetails!['selleruid'] ?? '',
                         appointmentDetails: appointmentDetails,
                         verificationCode : verificationCode,
+                        verificationState: verificationState,
                         docId: docId,
                         userorseller: userorseller,
                         onApprove: () async {
@@ -526,6 +528,7 @@ class AppointmentView extends StatelessWidget {
   final String sellerUid;
   final Map<String, dynamic> appointmentDetails;
   final String verificationCode;
+  final String verificationState;
   final String docId;
   final bool userorseller;
   final VoidCallback? onApprove;
@@ -544,6 +547,7 @@ class AppointmentView extends StatelessWidget {
     required this.sellerUid,
     required this.appointmentDetails,
     required this.verificationCode,
+    required this.verificationState,
     required this.docId,
     required this.userorseller,
     this.onApprove,
@@ -579,7 +583,7 @@ class AppointmentView extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        buildRightSideWidget(context: context ,userorseller: userorseller, status: status, paymentStatus: paymentStatus, verificationCode: verificationCode, docId: docId, appointmentDetails: appointmentDetails)
+                        buildRightSideWidget(context: context ,userorseller: userorseller, status: status, paymentStatus: paymentStatus, verificationCode: verificationCode, docId: docId, appointmentDetails: appointmentDetails, verificationState: verificationState)
                       ],
                     ),
                   ],
@@ -599,6 +603,7 @@ class AppointmentView extends StatelessWidget {
     required String status,
     required String paymentStatus,
     required String verificationCode,
+    required String verificationState,
     required String docId,
     required Map<String, dynamic> appointmentDetails,
   }) {
@@ -613,7 +618,7 @@ class AppointmentView extends StatelessWidget {
     } else {
       return showTextBasedOnStatus(status: status);
     }
-  } else if (userorseller){
+  } else if (userorseller && verificationState == 'notVerified' && status == 'approved'){
     return ElevatedButton(
       onPressed: () async{
         await Navigator.push(

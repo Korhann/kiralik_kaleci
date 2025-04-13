@@ -8,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/notification_model.dart';
-import 'package:kiralik_kaleci/searchpage.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -327,6 +326,7 @@ class _ApptRequestState extends State<ApptRequest> {
     'hour': widget.selectedHour,
     'field':widget.selectedField,
     'verificationCode': verificationCode,
+    'verificationState': 'notVerified',
     'startTime':startTime,
     'endTime': endTime,
     'status': 'pending',

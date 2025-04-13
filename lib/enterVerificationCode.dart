@@ -35,7 +35,6 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
   @override
   void initState() { 
     super.initState();
-    checkCodes();
   }
 
   @override
@@ -52,8 +51,9 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 30),
               TitleOfPage(),
-              const SizedBox(height: 5),
+              const SizedBox(height: 10),
               Container(
                 width: double.infinity,
                 color: userorseller ? sellerbackground : background,
@@ -61,7 +61,7 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
                     decoration: GlobalStyles.inputDecoration1(
-                        hintText: 'Ad Soyad', showError: _showErrorCode),
+                        hintText: 'Doğrulama Kodu', showError: _showErrorCode),
                     style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: codeVerifield,
                     onChanged: (value) => clearErrors(),
@@ -90,10 +90,14 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
                   onPressed: () async {
                     if (_key.currentState!.validate()) {
                       if (await InternetConnection().hasInternetAccess) {
-                        await checkCodes();
+                        if (await checkCodes()) {
                           codeVerifield.clear();
                           if (mounted) {
+                            await updateCodeStatus();
                             Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
+                          }
+                        }else if (mounted) {
+                          Showalert(context: context, text: 'Doğrulama Başarısız').showErrorAlert();
                         }
                       } else {
                         if (mounted) {
@@ -120,7 +124,6 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
     );
   }
   Future<bool> checkCodes() async{
-    //todo: MANTIĞINI KONTROL ET YANLIŞ OLABİLİR
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
 
     final doc = await FirebaseFirestore.instance
@@ -132,9 +135,10 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
     
     if (doc.exists) {
       final data = doc.data();
-      print(data);
       final code = data!['appointmentDetails']['verificationCode'];
-      return true;
+      if (codeVerifield.text.toUpperCase().trim() == code) {
+        return true;
+      }
     }
     return false;
   }
@@ -155,6 +159,19 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
       ),
     );
   }
+  Future<void> updateCodeStatus() async {
+    final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
+    try {
+      await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller')  
+        .doc(widget.docId)
+        .update({'appointmentDetails.verificationState': 'verified'});
+    } catch (e) {
+      print('Error $e');
+    }
+  }
 }
 
 class TitleOfPage extends StatelessWidget {
@@ -162,11 +179,14 @@ class TitleOfPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      'Kodu Giriniz',
-      style: TextStyle(
-        fontSize: 24,
-        color: Colors.white
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Text(
+        'Kodu Giriniz',
+        style: TextStyle(
+          fontSize: 24,
+          color: Colors.white
+        ),
       ),
     );
   }

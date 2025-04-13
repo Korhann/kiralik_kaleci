@@ -57,6 +57,10 @@ class _SellerAddPageState extends State<SellerAddPage> {
   Set<String> multFields = {};
   String? value1;
 
+  // this is the inital values of textfields for düzenle
+  late String initialName = '';
+  late int initialPrice = 0; 
+
   // for selecting the fields according to the districts
   List<String> fields = [];
 
@@ -84,6 +88,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
   }
 
   Future<void> initData() async {
+  await getInitialName();
+  await getInitialPrice();
   await fetchCities(); 
   FootballField.storeFields();
   userorseller = true;
@@ -665,6 +671,47 @@ class _SellerAddPageState extends State<SellerAddPage> {
     File photoFile = File(result!.path);
     return photoFile;
   }
+  Future<String> getInitialName() async{
+    try {
+      final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null) {
+          initialName = data['sellerDetails']['sellerFullName'];
+          sellerFullName.text = initialName;
+          print('the name is $initialName');
+          return initialName ?? '';
+        }
+      }
+    } catch (e) {
+      print('Error name $e');
+    }
+    return '';
+  }
+  Future<int> getInitialPrice() async{
+    try {
+      final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null) {
+          initialPrice = data['sellerDetails']['sellerPrice'];
+          sellerPrice.text = initialPrice.toString();
+          return initialPrice ?? 0;
+        }
+      }
+    } catch (e) {
+      print('Error name $e');
+    }
+    return 0;
+  }
 }
 /*
   BURDAN SONRAKİ TEXTLER KULLANICI İÇİN SAAT SEÇİCİ OLACAK
@@ -955,13 +1002,10 @@ class _PickImageGalleryState extends State<PickImageGallery> {
 }
 class NameField extends StatelessWidget {
   final TextEditingController controller;
-  // final ValueChanged<String> onChanged;
   const NameField({
     required this.controller,
-    // required this.onChanged,
     super.key
   });
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -986,7 +1030,7 @@ class NameField extends StatelessWidget {
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.all(10),
                       fillColor: sellergrey,
-                      filled: true
+                      filled: true,
                   ),
                 );
   }
@@ -1282,7 +1326,7 @@ class priceField extends StatelessWidget {
   final TextEditingController controller;
   const priceField({
     super.key,
-    required this.controller
+    required this.controller,
   });
 
   @override
