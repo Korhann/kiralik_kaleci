@@ -57,9 +57,16 @@ class _SellerAddPageState extends State<SellerAddPage> {
   Set<String> multFields = {};
   String? value1;
 
+  // this shows the inital and selected fields
+  Set<String> selectedFields = {};
+
   // this is the inital values of textfields for düzenle
   late String initialName = '';
   late int initialPrice = 0; 
+  // this three is for printing the initial district
+  late String initialDistrict = '';
+  String districtFromDb = '';
+  bool initialD = true;
 
   // for selecting the fields according to the districts
   List<String> fields = [];
@@ -90,6 +97,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
   Future<void> initData() async {
   await getInitialName();
   await getInitialPrice();
+  districtFromDb = await getInitialDistrict();
+  await getInitialFields();
   await fetchCities(); 
   FootballField.storeFields();
   userorseller = true;
@@ -227,6 +236,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 ),
                 const SizedBox(height: 15),
                 DistrictDropDown(
+                  districtFromDb : districtFromDb,
+                  isInitial: initialD,
                   selectedDistrict: selectedDistrict,
                   districts: districts,
                   onDistrictSelected: (value) {
@@ -250,18 +261,18 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 const SizedBox(height: 15),
 
                 FieldsDropDown(
-                  multFields: multFields,
+                  multFields: selectedFields,
                   fields: fields, 
                   onSelectionChanged: (updatedFields) {
                     setState(() {
-                      multFields = updatedFields;
+                      selectedFields = updatedFields;
                     });
                   },
                 ),
           
           const SizedBox(height: 10),
 
-          showFields(multFields: multFields),
+          showFields(multFields: selectedFields),
 
             const SizedBox(height: 5),
                 // SAAT BİLGİLERİNİ GİR
@@ -466,7 +477,6 @@ class _SellerAddPageState extends State<SellerAddPage> {
       selectedField = null;
     });
     }
-    print('sahalar ${fields.length}');
   }
 
   Future<void> fetchCities() async {
@@ -671,6 +681,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
     File photoFile = File(result!.path);
     return photoFile;
   }
+
   Future<String> getInitialName() async{
     try {
       final doc = await FirebaseFirestore.instance
@@ -683,8 +694,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
         if (data != null) {
           initialName = data['sellerDetails']['sellerFullName'];
           sellerFullName.text = initialName;
-          print('the name is $initialName');
-          return initialName ?? '';
+          return initialName;
         }
       }
     } catch (e) {
@@ -692,6 +702,48 @@ class _SellerAddPageState extends State<SellerAddPage> {
     }
     return '';
   }
+
+  Future<String> getInitialDistrict() async{
+    try {
+      final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null) {
+          initialDistrict = data['sellerDetails']['district'];
+          selectedDistrict = initialDistrict;
+          fetchFields(initialDistrict.trim());
+          return initialDistrict.trim();
+        }
+      }
+    } catch (e) {
+      print('Error name $e');
+    }
+    return '';
+  }
+
+  Future<void> getInitialFields() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null) {
+          selectedFields = Set.from(data['sellerDetails']['fields']);
+          setState(() {});
+        }
+      }
+    } catch (e) {
+      print('Error name $e');
+    }
+  }
+
   Future<int> getInitialPrice() async{
     try {
       final doc = await FirebaseFirestore.instance
@@ -704,7 +756,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
         if (data != null) {
           initialPrice = data['sellerDetails']['sellerPrice'];
           sellerPrice.text = initialPrice.toString();
-          return initialPrice ?? 0;
+          return initialPrice;
         }
       }
     } catch (e) {
@@ -1119,13 +1171,17 @@ class DistrictDropDown extends StatelessWidget {
   final List<String> districts;
   final ValueChanged<String?> onDistrictSelected;
   final Set<String> ?multFields;
+  bool isInitial;
+  final String districtFromDb;
 
-  const DistrictDropDown({
+  DistrictDropDown({
     super.key,
     required this.selectedDistrict,
     required this.districts,
     required this.onDistrictSelected,
-    required this.multFields
+    required this.multFields,
+    required this.isInitial,
+    required this.districtFromDb
   });
 
   @override
@@ -1138,7 +1194,8 @@ class DistrictDropDown extends StatelessWidget {
                       DropdownButtonFormField<String>(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         isExpanded: true,
-                        value: selectedDistrict,
+                        //todo: buraya fonksiyondaki veriyi gir
+                        value: isInitial ? districtFromDb : selectedDistrict,
                         items: districts.map((district) => DropdownMenuItem<String>(
                             value: district,
                             child: Text(
@@ -1151,6 +1208,7 @@ class DistrictDropDown extends StatelessWidget {
 
                         onChanged: (value) {
                           onDistrictSelected(value);
+                          isInitial = false;
                           multFields?.clear();
                         },
                         hint: const Padding(
@@ -1211,6 +1269,7 @@ class FieldsDropDown extends StatelessWidget {
           width: 350,
           color: Colors.white,
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () {
               showModalBottomSheet(
                 context: context,
@@ -1244,6 +1303,19 @@ class FieldsDropDown extends StatelessWidget {
                 },
               );
             },
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    Text(
+                      'Saha Seç',
+                      style: GoogleFonts.inter(color: Colors.black),
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.arrow_drop_down)
+                  ],
+                ),
+              ), 
           ),
         ),
       ),
@@ -1251,7 +1323,7 @@ class FieldsDropDown extends StatelessWidget {
   }
 }
 class showFields extends StatefulWidget {
-  final Set<String> multFields;
+  final Set<dynamic> multFields;
   const showFields({
     super.key,
     required this.multFields
@@ -1274,7 +1346,7 @@ class _showFieldsState extends State<showFields> {
             shrinkWrap: true,
             itemCount: widget.multFields.length,
             itemBuilder: (BuildContext context, int index) {
-              List<String> fieldList = widget.multFields.toList();
+              List fieldList = widget.multFields.toList();
               return Stack(
                 children: [
                   Container(
