@@ -29,9 +29,11 @@ class SellerAddPage extends StatefulWidget {
   State<SellerAddPage> createState() => _SellerAddPageState();
 }
 
-//TODO: Resim eklemek zorunlu olması lazım yoksa getuserinformation page hata veriyor index ten dolayı
+//TODO: DAY HOURS NASIL ÇALIŞTIĞINI ANLA
 
 class _SellerAddPageState extends State<SellerAddPage> {
+
+  bool isLoading = true;
   
   // Kullanıcı bilgileri
   TextEditingController sellerFullName = TextEditingController();
@@ -95,14 +97,24 @@ class _SellerAddPageState extends State<SellerAddPage> {
   }
 
   Future<void> initData() async {
+  await fetchCities(); 
+  onCitySelected('İstanbul');
   await getInitialName();
   await getInitialPrice();
   districtFromDb = await getInitialDistrict();
+  setState(() {
+    selectedDistrict = districtFromDb;
+  });
   await getInitialFields();
-  await fetchCities(); 
+  await getInitialDayHours();
+  //await fetchCities(); 
   FootballField.storeFields();
   userorseller = true;
-  onCitySelected('İstanbul'); 
+  //onCitySelected('İstanbul');
+  setState(() {
+  isLoading = false;
+  });
+
 }
 
   @override
@@ -136,6 +148,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       backgroundColor: sellerbackground,
       appBar: AppBar(
@@ -236,7 +251,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 ),
                 const SizedBox(height: 15),
                 DistrictDropDown(
-                  districtFromDb : districtFromDb,
+                  districtFromDb: districtFromDb,
                   isInitial: initialD,
                   selectedDistrict: selectedDistrict,
                   districts: districts,
@@ -287,115 +302,209 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 10),
+                FutureBuilder<Map<String,dynamic>>(
+                  future: getInitialDayHours(),
+                  builder: (context,snapshot) {
+                    if (!snapshot.hasData) {
+                      return CircularProgressIndicator();
+                    }
+                    final initialData = snapshot.data!;
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10),
                           Column(
                             children: [
-                              Text(
-                                "Pazartesi",
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white
+                              Text("Pazartesi", style: TextStyle(color: Colors.white),),
+                              Amenities(
+                                key: mondayKey,
+                                day: 'Pazartesi',
+                                initials: List<Map<String, dynamic>>.from(initialData['Pazartesi'] ?? []),
                                 ),
-                              ),
-                              Amenities(key: mondayKey ,day: 'Pazartesi',),
+
                             ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Salı",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            Amenities(key: tuesdayKey ,day: 'Salı')
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Çarşamba",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            Amenities(key: wednesdayKey ,day: 'Çarşamba')
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Perşembe",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            Amenities(key: thursdayKey ,day: 'Perşembe',)
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Cuma",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            Amenities(key: fridayKey ,day: 'Cuma')
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Cumartesi",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                             Amenities(key: saturdayKey ,day: 'Cumartesi')
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Pazar",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            Amenities(key: sundayKey ,day: 'Pazar')
-                          ],
-                        ),
-                        const SizedBox(width: 5),
-                      ],
-                    ),
-                  ),
-                ), 
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            children: [
+                              Text("Salı", style: TextStyle(color: Colors.white),),
+                              Amenities(
+                                key: tuesdayKey,
+                                day: 'Salı',
+                                initials: List<Map<String, dynamic>>.from(initialData['Salı'] ?? []),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            children: [
+                              Text("Çarşamba", style: TextStyle(color: Colors.white),),
+                              Amenities(
+                                key: wednesdayKey,
+                                day: 'Çarşamba',
+                                initials: List<Map<String, dynamic>>.from(initialData['Çarşamba'] ?? []),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            children: [
+                              Text("Perşembe", style: TextStyle(color: Colors.white),),
+                              Amenities(
+                                key: thursdayKey,
+                                day: 'Perşembe',
+                                initials: List<Map<String, dynamic>>.from(initialData['Perşembe'] ?? []),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            children: [
+                              Text("Cuma", style: TextStyle(color: Colors.white),),
+                              Amenities(
+                                key: fridayKey,
+                                day: 'Cuma',
+                                initials: List<Map<String, dynamic>>.from(initialData['Cuma'] ?? []),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            children: [
+                              Text("Cumartesi", style: TextStyle(color: Colors.white),),
+                              Amenities(
+                                key: saturdayKey,
+                                day: 'Cumartesi',
+                                initials: List<Map<String, dynamic>>.from(initialData['Cumartesi'] ?? []),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            children: [
+                              Text("Pazar", style: TextStyle(color: Colors.white),),
+                              Amenities(
+                                key: sundayKey,
+                                day: 'Pazar',
+                                initials: List<Map<String, dynamic>>.from(initialData['Pazar'] ?? []),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                ),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 5),
+                //   child: SingleChildScrollView(
+                //     scrollDirection: Axis.horizontal,
+                //     child: Row(
+                //       children: [
+                //         const SizedBox(width: 10),
+                //           Column(
+                //             children: [
+                //               Text(
+                //                 "Pazartesi",
+                //                 style: GoogleFonts.inter(
+                //                   fontSize: 16,
+                //                   fontWeight: FontWeight.w500,
+                //                   color: Colors.white
+                //                 ),
+                //               ),
+                //               Amenities(key: mondayKey ,day: 'Pazartesi',),
+                //             ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Salı",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: tuesdayKey ,day: 'Salı')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Çarşamba",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: wednesdayKey ,day: 'Çarşamba')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Perşembe",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: thursdayKey ,day: 'Perşembe',)
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Cuma",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: fridayKey ,day: 'Cuma')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Cumartesi",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //              Amenities(key: saturdayKey ,day: 'Cumartesi')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Pazar",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: sundayKey ,day: 'Pazar')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 5),
+                //       ],
+                //     ),
+                //   ),
+                // ), 
                 
                 const SizedBox(height: 20),
                 Padding(
@@ -554,7 +663,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
   Future<bool> _insertSellerDetails(BuildContext context) async {
   bool hasSelectedAnyHour = _AmenitiesState.selectedHoursByDay.values.any((list) => list.isNotEmpty);
-  if (_formKey.currentState!.validate() && hasSelectedAnyHour && multFields.isNotEmpty) {
+  if (_formKey.currentState!.validate() && hasSelectedAnyHour && selectedFields.isNotEmpty) {
 
     // Show loading dialog    
     showDialog(
@@ -592,8 +701,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
           "sellerFullName": sellerFullName.text,
           "sellerPrice": price,
           "city": selectedCity,
-          "district": selectedDistrict,
-          'fields': multFields,
+          "district": selectedDistrict ?? districtFromDb,
+          'fields': selectedFields,
           "imageUrls": imageUrls,
           'chosenDays': formattedData.keys.toList(),
           "selectedHoursByDay": formattedData,
@@ -715,6 +824,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
         if (data != null) {
           initialDistrict = data['sellerDetails']['district'];
           selectedDistrict = initialDistrict;
+          print('real deal $selectedDistrict');
           fetchFields(initialDistrict.trim());
           return initialDistrict.trim();
         }
@@ -743,6 +853,27 @@ class _SellerAddPageState extends State<SellerAddPage> {
       print('Error name $e');
     }
   }
+
+  Future<Map<String, dynamic>> getInitialDayHours() async {
+  try {
+    final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data();
+      if (data != null && data['sellerDetails'] != null) {
+        final hoursDays = data['sellerDetails']['selectedHoursByDay'];
+        return Map<String, dynamic>.from(hoursDays);
+      }
+    }
+  } catch (e) {
+    print('Error initial days hours $e');
+  }
+  return {}; // fallback if no data
+}
+
 
   Future<int> getInitialPrice() async{
     try {
@@ -785,7 +916,13 @@ class CheckContainerModel {
 class Amenities extends StatefulWidget {
   
   final String day;
-  const Amenities({super.key, required this.day});
+  final List<Map<String,dynamic>>? initials;
+
+  const Amenities({
+    super.key, 
+    required this.day,
+    this.initials
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -821,10 +958,27 @@ class _AmenitiesState extends State<Amenities> {
    @override
   void initState() {
     super.initState();
-    
     if (!selectedHoursByDay.containsKey(widget.day)) {
       selectedHoursByDay[widget.day] = [];
     }
+    if (widget.initials != null) {
+  final List<Map<String, dynamic>> initialList = List<Map<String, dynamic>>.from(widget.initials!);
+
+  for (var selected in initialList) {
+    final title = selected['title'];
+    for (var container in checkContainers) {
+      if (container.title == title) {
+        container.isCheck = true;
+
+        // ✅ Prevent duplicate additions
+        if (!selectedHoursByDay[widget.day]!.any((c) => c.title == container.title)) {
+          selectedHoursByDay[widget.day]!.add(container);
+        }
+      }
+    }
+  }
+}
+
   }
 
 
@@ -1184,6 +1338,7 @@ class DistrictDropDown extends StatelessWidget {
     required this.districtFromDb
   });
 
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -1192,55 +1347,55 @@ class DistrictDropDown extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       DropdownButtonFormField<String>(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        isExpanded: true,
-                        //todo: buraya fonksiyondaki veriyi gir
-                        value: isInitial ? districtFromDb : selectedDistrict,
-                        items: districts.map((district) => DropdownMenuItem<String>(
-                            value: district,
-                            child: Text(
-                              district,
-                              style: GoogleFonts.inter(
-                                color: Colors.black,
-                              ),
-                            ),
-                        )).toList(),
+  value: (selectedDistrict != null && districts.contains(selectedDistrict))
+      ? selectedDistrict
+      : (districtFromDb.isNotEmpty && districts.contains(districtFromDb))
+          ? districtFromDb
+          : null, // 👈 fallback to null if it's not in the list
+  items: districts.map((district) {
+    return DropdownMenuItem<String>(
+      value: district,
+      child: Text(
+        district,
+        style: GoogleFonts.inter(color: Colors.black),
+      ),
+    );
+  }).toList(),
+  onChanged: (value) {
+    onDistrictSelected(value);
+    isInitial = false;
+    multFields?.clear();
+  },
+  isExpanded: true,
+  hint: const Padding(
+    padding: EdgeInsets.symmetric(horizontal: 10),
+    child: Text('İlçe seçin'),
+  ),
+  decoration: InputDecoration(
+    contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide.none,
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    errorStyle: const TextStyle(height: 0),
+  ),
+  validator: (value) {
+    if (value == null) return '';
+    return null;
+  },
+),
 
-                        onChanged: (value) {
-                          onDistrictSelected(value);
-                          isInitial = false;
-                          multFields?.clear();
-                        },
-                        hint: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('İlçe seçin'),
-                        ),
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          errorStyle: const TextStyle(height: 0),
-                        ),
-                        validator: (value) {
-                          if (value == null) {
-                            return '';
-                          }
-                          return null;
-                        },
-                      ),
                       const SizedBox(height: 2),
-                      if (selectedDistrict == null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 5, left: 10),
-                          child: Text(
-                            'Lütfen bir ilçe seçin',
-                            style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
-                          ),
-                        ),
+                      // if (selectedDistrict == null || districtFromDb.isEmpty)
+                      //   Padding(
+                      //     padding: const EdgeInsets.only(top: 5, left: 10),
+                      //     child: Text(
+                      //       'Lütfen bir ilçe seçin',
+                      //       style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
+                      //     ),
+                      //   ),
                     ],
                   ),
                 );
