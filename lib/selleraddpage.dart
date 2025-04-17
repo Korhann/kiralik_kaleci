@@ -15,6 +15,7 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -38,6 +39,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
   // Kullanıcı bilgileri
   TextEditingController sellerFullName = TextEditingController();
   TextEditingController sellerPrice = TextEditingController();
+  TextEditingController sellerPriceAfterMidnight = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -65,6 +67,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
   // this is the inital values of textfields for düzenle
   late String initialName = '';
   late int initialPrice = 0; 
+  late int initialPriceMidnight = 0;
   // this three is for printing the initial district
   late String initialDistrict = '';
   String districtFromDb = '';
@@ -93,6 +96,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
     sellerPrice.addListener(() {
       setState(() {}); 
     });
+    sellerPriceAfterMidnight.addListener(() {
+      setState(() {});
+    });
     sellerCheckFuture = checkIfUserIsAlreadySeller();
   }
 
@@ -101,16 +107,15 @@ class _SellerAddPageState extends State<SellerAddPage> {
   onCitySelected('İstanbul');
   await getInitialName();
   await getInitialPrice();
+  await getInitialPriceMidnight();
   districtFromDb = await getInitialDistrict();
   setState(() {
     selectedDistrict = districtFromDb;
   });
   await getInitialFields();
   await getInitialDayHours();
-  //await fetchCities(); 
   FootballField.storeFields();
   userorseller = true;
-  //onCitySelected('İstanbul');
   setState(() {
   isLoading = false;
   });
@@ -149,7 +154,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SellerAddPageShimmer();
     }
     return Scaffold(
       backgroundColor: sellerbackground,
@@ -519,7 +524,6 @@ class _SellerAddPageState extends State<SellerAddPage> {
                           fontWeight: FontWeight.w600
                         ),
                       ),
-                      const SizedBox(width: 5),
                     ],
                   ),
                 ),
@@ -531,6 +535,34 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
                   child: YourEarning(earnedPrice: sellerPrice),
+                ),
+
+                const SizedBox(height: 20),
+
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Row(
+                    children: [
+                      Text(
+                        "Fiyat (00:00'dan sonra)",
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 5),
+
+                priceFieldAfterMidnight(controller: sellerPriceAfterMidnight),
+
+                const SizedBox(height: 10),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: YourEarning(earnedPrice: sellerPriceAfterMidnight),
                 ),
                 
                 const SizedBox(height: 40),
@@ -696,10 +728,12 @@ class _SellerAddPageState extends State<SellerAddPage> {
         });
 
         int? price = int.tryParse(sellerPrice.text);
+        int? priceAfterMidnight = int.tryParse(sellerPriceAfterMidnight.text);
 
         Map<String, dynamic> sellerDetails = {
           "sellerFullName": sellerFullName.text,
           "sellerPrice": price,
+          'sellerPriceMidnight': priceAfterMidnight,
           "city": selectedCity,
           "district": selectedDistrict ?? districtFromDb,
           'fields': selectedFields,
@@ -888,6 +922,26 @@ class _SellerAddPageState extends State<SellerAddPage> {
           initialPrice = data['sellerDetails']['sellerPrice'];
           sellerPrice.text = initialPrice.toString();
           return initialPrice;
+        }
+      }
+    } catch (e) {
+      print('Error name $e');
+    }
+    return 0;
+  }
+  Future<int> getInitialPriceMidnight() async{
+    try {
+      final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null) {
+          initialPriceMidnight = data['sellerDetails']['sellerPriceMidnight'];
+          sellerPriceAfterMidnight.text = initialPriceMidnight.toString();
+          return initialPriceMidnight;
         }
       }
     } catch (e) {
@@ -1588,6 +1642,45 @@ class priceField extends StatelessWidget {
                 );
   }
 }
+class priceFieldAfterMidnight extends StatelessWidget {
+  final TextEditingController controller;
+  const priceFieldAfterMidnight({
+    super.key,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  maxLines: null,
+                  textInputAction: TextInputAction.done,
+                  validator: (price) {
+                    if (price == null || price.isEmpty) {
+                      return  "Fiyat bilgisi girmelisiniz!";
+                    } else {
+                      return null;
+                    }
+                  },
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      fillColor: sellergrey,
+                      filled: true,
+                      suffixText: 'TL',
+                      suffixStyle: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white
+                      )
+                  ),
+                );
+  }
+}
 class YourEarning extends StatelessWidget {
   final TextEditingController earnedPrice;
 
@@ -1628,7 +1721,6 @@ class YourEarning extends StatelessWidget {
     int fivePercent = (getValue * 10 ~/ 100); 
     return getValue - fivePercent;
   }
-
 }
 
 

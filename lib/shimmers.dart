@@ -370,4 +370,129 @@ class SellerDetailsDarkShimmer extends StatelessWidget {
     );
   }
 }
+class SellerAddPageShimmer extends StatelessWidget {
+  const SellerAddPageShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: sellerbackground,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: sellerbackground,
+        centerTitle: true,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 30, bottom: 10),
+          child: Container(height: 45, width: 180, color: sellergrey),
+        ),
+        leading: IconButton(
+          onPressed: () {},
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+        ),
+      ),
+      body: SafeArea(
+        child: Shimmer.fromColors(
+          baseColor: sellergrey,
+          highlightColor: Colors.grey.shade700,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _shimmerLabel(width: 140),
+                const SizedBox(height: 10),
+                Container(height: 110, width: double.infinity, color: sellergrey),
+
+                const SizedBox(height: 30),
+                _shimmerLabel(width: 100),
+                const SizedBox(height: 10),
+                Container(height: 60, width: double.infinity, color: sellergrey),
+
+                const SizedBox(height: 40),
+                _shimmerLabel(width: 80),
+                const SizedBox(height: 15),
+                Container(height: 60, width: double.infinity, color: sellergrey),
+
+                const SizedBox(height: 20),
+                _shimmerLabel(width: 110),
+                const SizedBox(height: 15),
+                Container(height: 60, width: double.infinity, color: sellergrey),
+
+                const SizedBox(height: 10),
+                _shimmerList(height: 30),
+
+                const SizedBox(height: 30),
+                _shimmerLabel(width: 80),
+                const SizedBox(height: 20),
+                _shimmerDayHourRow(),
+
+                const SizedBox(height: 20),
+                _shimmerLabel(width: 60),
+                const SizedBox(height: 10),
+                Container(height: 60, width: double.infinity, color: sellergrey),
+
+                const SizedBox(height: 10),
+                Container(height: 40, width: double.infinity, color: sellergrey),
+
+                const SizedBox(height: 40),
+                Center(
+                  child: Container(
+                    height: 50,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      color: sellergrey,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _shimmerLabel({required double width}) {
+    return Container(height: 20, width: width, color: sellergrey);
+  }
+
+  Widget _shimmerList({required double height}) {
+    return SizedBox(
+      height: height,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: 4,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (_, __) => Container(
+          width: 90,
+          height: height,
+          decoration: BoxDecoration(
+            color: sellergrey,
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _shimmerDayHourRow() {
+    return SizedBox(
+      height: 120,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: 7,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (_, __) => Column(
+          children: [
+            Container(height: 20, width: 70, color: sellergrey),
+            const SizedBox(height: 8),
+            Container(height: 90, width: 70, color: sellergrey),
+          ],
+        ),
+      ),
+    );
+  }
+}
 

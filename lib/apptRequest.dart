@@ -18,13 +18,15 @@ class ApptRequest extends StatefulWidget {
   final String selectedDay;
   final String selectedHour;
   final String selectedField;
+  final int selectedPrice;
 
   const ApptRequest({
     super.key,
     required this.sellerUid,
     required this.selectedDay,
     required this.selectedHour,
-    required this.selectedField
+    required this.selectedField,
+    required this.selectedPrice
   });
 
   @override
@@ -206,32 +208,14 @@ class _ApptRequestState extends State<ApptRequest> {
 }
 
   Widget _price() {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: _firestore.collection('Users').doc(widget.sellerUid).snapshots(),
-      builder: (context,snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const Text('Veri bulunamadı');
-        }
-        var userData = snapshot.data!.data() as Map<String,dynamic>;
-        var sellerDetails = userData['sellerDetails'];
-        var sellerPrice = sellerDetails['sellerPrice'];
-
-        // appointment page için
-        sellerFullName = sellerDetails['sellerFullName'];
-
-        return Text(
-          sellerPrice != null ? '${sellerPrice.toString()}TL' : '',
+    return Text(
+          '${widget.selectedPrice}TL',
           style: GoogleFonts.inter(
             fontSize: 15,
             fontWeight: FontWeight.normal,
             color: Colors.black
           ),
         );
-      }
-    );
   }
 
   Future<void> markHourAsTaken(String day, String hourTitle) async {

@@ -284,46 +284,55 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                       ),
                       const SizedBox(height: 60),
                       //if (widget.wherFrom != 'fromProfile' || widget.wherFrom != 'fromSuccess') 
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_selectedDay == null || _selectedHour == null || _selectedField == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Saat, gün ve saha seçiniz'),
-                                backgroundColor: Colors.red,
-                              )
-                            );
-                          } else if (widget.sellerUid == currentUserUid) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Kullanıcı kendini seçemez'),
-                                backgroundColor: Colors.red,
-                              )
-                            );
-                          }
-                          else {
-                            Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ApptRequest(
-                                sellerUid: widget.sellerUid,
-                                selectedDay: _selectedDay!,
-                                selectedHour: _selectedHour!,
-                                selectedField: _selectedField!,
-                              )
-                            ),
-                          );
-                          }
-                        },
-                        style: GlobalStyles.buttonPrimary(),
-                        child: Text(
-                          "Ödeme (₺${widget.sellerDetails['sellerPrice']})",
-                          style: GoogleFonts.inter(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w600,
-                            color: userorseller ? Colors.white : Colors.black,
-                          ),
-                        ),
+                      // ElevatedButton(
+                      //   onPressed: () {
+                      //     print(_selectedHour);
+                      //     if (_selectedDay == null || _selectedHour == null || _selectedField == null) {
+                      //       ScaffoldMessenger.of(context).showSnackBar(
+                      //         const SnackBar(
+                      //           content: Text('Saat, gün ve saha seçiniz'),
+                      //           backgroundColor: Colors.red,
+                      //         )
+                      //       );
+                      //     } else if (widget.sellerUid == currentUserUid) {
+                      //       ScaffoldMessenger.of(context).showSnackBar(
+                      //         const SnackBar(
+                      //           content: Text('Kullanıcı kendini seçemez'),
+                      //           backgroundColor: Colors.red,
+                      //         )
+                      //       );
+                      //     }
+                      //     else {
+                      //       Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (context) => ApptRequest(
+                      //           sellerUid: widget.sellerUid,
+                      //           selectedDay: _selectedDay!,
+                      //           selectedHour: _selectedHour!,
+                      //           selectedField: _selectedField!,
+                      //         )
+                      //       ),
+                      //     );
+                      //     }
+                      //   },
+                      //   style: GlobalStyles.buttonPrimary(),
+                      //   child: Text(
+                      //     "Ödeme (₺${widget.sellerDetails['sellerPrice']})",
+                      //     style: GoogleFonts.inter(
+                      //       fontSize: 30,
+                      //       fontWeight: FontWeight.w600,
+                      //       color: userorseller ? Colors.white : Colors.black,
+                      //     ),
+                      //   ),
+                      // ),
+                      PaymentButton(
+                        selectedDay: _selectedDay,
+                        selectedHour: _selectedHour,
+                        selectedField: _selectedField,
+                        currentUserUid: currentUserUid,
+                        sellerUid: widget.sellerUid,
+                        sellerDetails: widget.sellerDetails
                       ),
                       const SizedBox(height: 30),
                     ],
@@ -946,6 +955,87 @@ class ChatButton extends StatelessWidget {
     );
   }
 }
+class PaymentButton extends StatelessWidget {
+
+  final String? selectedDay;
+  final String? selectedHour;
+  final String? selectedField;
+  final String? currentUserUid;
+  final String sellerUid;
+  final Map<String,dynamic> sellerDetails;
+
+  const PaymentButton({
+    super.key,
+    required this.selectedDay,
+    required this.selectedHour,
+    required this.selectedField,
+    required this.currentUserUid,
+    required this.sellerUid,
+    required this.sellerDetails
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+                        onPressed: () {
+                          if (selectedDay == null || selectedHour == null || selectedField == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Saat, gün ve saha seçiniz'),
+                                backgroundColor: Colors.red,
+                              )
+                            );
+                          } else if (sellerUid == currentUserUid) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Kullanıcı kendini seçemez'),
+                                backgroundColor: Colors.red,
+                              )
+                            );
+                          }
+                          else {
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ApptRequest(
+                                sellerUid: sellerUid,
+                                selectedDay: selectedDay!,
+                                selectedHour: selectedHour!,
+                                selectedField: selectedField!,
+                                selectedPrice: getPriceValue(),
+                              )
+                            ),
+                          );
+                          }
+                        },
+                        style: GlobalStyles.buttonPrimary(),
+                        child: Text(
+                          getPrice(),
+                          style: GoogleFonts.inter(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w600,
+                            color: userorseller ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      );
+  }
+  String getPrice() {
+    if (selectedHour == '00:00-01:00' || selectedHour == '01:00-02:00') {
+      return "Ödeme (₺${sellerDetails['sellerPriceMidnight']})";
+    } else {
+      return "Ödeme (₺${sellerDetails['sellerPrice']})";
+    }
+  }
+  int getPriceValue() {
+    if (selectedHour == '00:00-01:00' || selectedHour == '01:00-02:00') {
+      return sellerDetails['sellerPriceMidnight'] ?? 0;
+    } else {
+      return sellerDetails['sellerPrice'] ?? 0;
+    }
+  }
+}
+
+
 
 
 
