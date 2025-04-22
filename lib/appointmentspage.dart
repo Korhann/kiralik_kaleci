@@ -160,6 +160,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final verificationState = appointmentDetails['verificationState'] ?? '';
                       final isPastDay = appointmentDetails['isPastDay'] ?? '';
                       final docId = docs?[index] ?? '';
+                      // CheckDaysPast.isPast(day, docId);
 
                       // Determine card color based on status
                       Color cardColor = Colors.white;
@@ -176,6 +177,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       } else if (isPastDay == 'true') {
                         cardColor = Colors.grey;
                       }
+                      
 
                       return AppointmentView(
                         cardColor: cardColor,
@@ -214,31 +216,47 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   Future<void> _fetchAppointments() async {
-    QuerySnapshot snapshot;
+  QuerySnapshot snapshot;
 
-    if (userorseller == false) {
-      snapshot = await _firestore
-          .collection('Users')
-          .doc(currentuser)
-          .collection('appointmentbuyer')
-          .get();
-    } else {
-      snapshot = await _firestore
-          .collection('Users')
-          .doc(currentuser)
-          .collection('appointmentseller')
-          .get();
-    }
-    // Get document IDs for updating a specific user's appointment
-    if (mounted) {
-      setState(() {
-        docs = snapshot.docs.map((doc) => doc.id).toList();
-        appointments = snapshot.docs
+  snapshot = await _firestore.collection('Users')
+    .doc(currentuser)
+    .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
+    .get();
+
+  List<String> tempDocs = snapshot.docs.map((doc) => doc.id).toList();
+  List<Map<String, dynamic>> tempAppointments = snapshot.docs
+      .map((doc) => doc.data() as Map<String, dynamic>)
+      .toList();
+
+  await checkAllPastDays(tempAppointments, tempDocs);
+
+  // Step 2: Re-fetch to get updated values from Firestore
+  snapshot = await _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
+      .get();
+
+  if (mounted) {
+    setState(() {
+      docs = snapshot.docs.map((doc) => doc.id).toList();
+      appointments = snapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
-      });
-    }
+    });
   }
+}
+
+
+  Future<void> checkAllPastDays(List appointments, List<String>? docIds) async {
+  for (int i = 0; i < appointments.length; i++) {
+    final appointmentDetails = appointments[i]['appointmentDetails'];
+    final day = appointmentDetails['day'] ?? '';
+    final docId = docIds![i];
+    await CheckDaysPast.isPast(day, docId);
+  }
+}
+
 
   // Updates status to 'approved'
   Future<void> approveAppointment(String docId, int index) async {
@@ -642,7 +660,7 @@ class AppointmentView extends StatelessWidget {
 }
 
 class CheckDaysPast {
-  static Future<bool> isPast(String day, String docId) async{
+  static Future<void> isPast(String day, String docId) async{
     String currentuser = FirebaseAuth.instance.currentUser!.uid;
     List<String> orderedDays = [
       'Pazartesi',
@@ -662,16 +680,21 @@ class CheckDaysPast {
       throw ArgumentError('Invalid day name: $day');
     }
     if (inputDayIndex < currentDayIndex) {
-      await FirebaseFirestore.instance.collection('Users')
-      .doc(currentuser)
-      .collection('appointmentseller')
-      .doc(docId)
-      .update({
-        'appointmentDetails.isPastDay' : true
-      });
-    }
+      final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller')
+        .doc(docId);
 
-    return inputDayIndex < currentDayIndex;
+      final snapshot = await docRef.get();
+      final alreadyPast = snapshot['appointmentDetails']['isPastDay'] ?? false;
+
+      if (alreadyPast == 'false') {
+        await docRef.update({
+          'appointmentDetails.isPastDay': 'true',
+        });
+      }
+    }
   }
 }
 
