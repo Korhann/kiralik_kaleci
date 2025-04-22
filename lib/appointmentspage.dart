@@ -158,21 +158,22 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final paymentStatus = appointmentDetails['paymentStatus'] ?? 'waiting';
                       final verificationCode = appointmentDetails['verificationCode'] ?? '';
                       final verificationState = appointmentDetails['verificationState'] ?? '';
+                      final isPastDay = appointmentDetails['isPastDay'] ?? '';
                       final docId = docs?[index] ?? '';
 
                       // Determine card color based on status
                       Color cardColor = Colors.white;
                       if (status == 'approved' && paymentStatus == 'done') {
                         cardColor = Colors.green.shade500;
-                      } else if (status == 'approved' &&
-                          paymentStatus == 'waiting') {
+                      } else if (status == 'approved' && paymentStatus == 'waiting') {
                         cardColor = Colors.green.shade200;
                       } else if (status == 'rejected') {
                         cardColor = Colors.red.shade200;
-                      } else if (status == 'pending') {
+                      } else if (status == 'pending' && isPastDay == 'false') {
                         cardColor = Colors.orange.shade200;
-                      } else if (status == 'approved' &&
-                          paymentStatus == 'taken') {
+                      } else if (status == 'approved' && paymentStatus == 'taken') {
+                        cardColor = Colors.grey;
+                      } else if (isPastDay == 'true') {
                         cardColor = Colors.grey;
                       }
 
@@ -189,6 +190,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         appointmentDetails: appointmentDetails,
                         verificationCode : verificationCode,
                         verificationState: verificationState,
+                        isPastDay: isPastDay,
                         docId: docId,
                         userorseller: userorseller,
                         onApprove: () async {
@@ -529,6 +531,7 @@ class AppointmentView extends StatelessWidget {
   final Map<String, dynamic> appointmentDetails;
   final String verificationCode;
   final String verificationState;
+  final String isPastDay;
   final String docId;
   final bool userorseller;
   final VoidCallback? onApprove;
@@ -548,6 +551,7 @@ class AppointmentView extends StatelessWidget {
     required this.appointmentDetails,
     required this.verificationCode,
     required this.verificationState,
+    required this.isPastDay,
     required this.docId,
     required this.userorseller,
     this.onApprove,
@@ -583,13 +587,13 @@ class AppointmentView extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        buildRightSideWidget(context: context ,userorseller: userorseller, status: status, paymentStatus: paymentStatus, verificationCode: verificationCode, docId: docId, appointmentDetails: appointmentDetails, verificationState: verificationState)
+                        buildRightSideWidget(context: context ,userorseller: userorseller, status: status, paymentStatus: paymentStatus, verificationCode: verificationCode, docId: docId, appointmentDetails: appointmentDetails, verificationState: verificationState, isPastDay: isPastDay)
                       ],
                     ),
                   ],
                 ),
               ),
-              if (userorseller && status == 'pending')
+              if (userorseller && status == 'pending' && isPastDay == 'false')
                 sellerApproveOrReject(onApprove: onApprove, onReject: onReject)
             ],
           ),
@@ -604,6 +608,7 @@ class AppointmentView extends StatelessWidget {
     required String paymentStatus,
     required String verificationCode,
     required String verificationState,
+    required String isPastDay,
     required String docId,
     required Map<String, dynamic> appointmentDetails,
   }) {
@@ -618,7 +623,7 @@ class AppointmentView extends StatelessWidget {
     } else {
       return showTextBasedOnStatus(status: status);
     }
-  } else if (userorseller && verificationState == 'notVerified' && status == 'approved'){
+  } else if (userorseller && verificationState == 'notVerified' && status == 'approved' && isPastDay == 'false') {
     return ElevatedButton(
       onPressed: () async{
         await Navigator.push(
@@ -628,12 +633,48 @@ class AppointmentView extends StatelessWidget {
       }, 
       child: Text('Kodu gir')
     );
+  } else if (isPastDay == 'true') {
+    return Text('Geçmiş');
   } else {
     return const SizedBox();
   }
 }
-
 }
+
+class CheckDaysPast {
+  static Future<bool> isPast(String day, String docId) async{
+    String currentuser = FirebaseAuth.instance.currentUser!.uid;
+    List<String> orderedDays = [
+      'Pazartesi',
+      'Salı',
+      'Çarşamba',
+      'Perşembe',
+      'Cuma',
+      'Cumartesi',
+      'Pazar',
+    ];
+
+    final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+    final int currentDayIndex = now.weekday - 1; // Monday is 1
+    final int inputDayIndex = orderedDays.indexOf(day);
+
+    if (inputDayIndex == -1) {
+      throw ArgumentError('Invalid day name: $day');
+    }
+    if (inputDayIndex < currentDayIndex) {
+      await FirebaseFirestore.instance.collection('Users')
+      .doc(currentuser)
+      .collection('appointmentseller')
+      .doc(docId)
+      .update({
+        'appointmentDetails.isPastDay' : true
+      });
+    }
+
+    return inputDayIndex < currentDayIndex;
+  }
+}
+
 
 class iconDayHour extends StatelessWidget {
   final String day;
@@ -696,7 +737,7 @@ class paymentButton extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PaymentPage(
+            builder: (context) =>PaymentPage (
               sellerUid:appointmentDetails['selleruid'],
               buyerUid: currentUser,
               selectedDay:appointmentDetails['day'],

@@ -212,6 +212,7 @@ class _PaymentPageState extends State<PaymentPage> {
   );
 }
 
+  //TODO: eğer seçilen saat 12 den sonra ise sellerPrice yerine sellerPriceMidnight alınacak
   Widget _price() {
     return StreamBuilder<DocumentSnapshot>(
       stream: _firestore.collection('Users').doc(widget.sellerUid).snapshots(),
@@ -223,20 +224,37 @@ class _PaymentPageState extends State<PaymentPage> {
           return const Text('Veri bulunamadı');
         }
         var userData = snapshot.data!.data() as Map<String,dynamic>;
-        var sellerDetails = userData['sellerDetails'];
-        var sellerPrice = sellerDetails['sellerPrice'];
+        if (widget.selectedHour == '00:00-01:00' || widget.selectedHour == '01:00-02:00') {
+          var sellerDetails = userData['sellerDetails'];
+          var sellerPrice = sellerDetails['sellerPriceMidnight'];
 
-        // appointment page için
-        sellerFullName = sellerDetails['sellerFullName'];
+          // appointment page için
+          sellerFullName = sellerDetails['sellerFullName'];
 
-        return Text(
-          sellerPrice != null ? '${sellerPrice.toString()}TL' : '',
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            fontWeight: FontWeight.normal,
-            color: Colors.black
-          ),
-        );
+          return Text(
+            sellerPrice != null ? '${sellerPrice.toString()}TL' : '',
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.black
+            ),
+          );
+        } else {
+          var sellerDetails = userData['sellerDetails'];
+          var sellerPrice = sellerDetails['sellerPrice'];
+
+          // appointment page için
+          sellerFullName = sellerDetails['sellerFullName'];
+
+          return Text(
+            sellerPrice != null ? '${sellerPrice.toString()}TL' : '',
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.black
+            ),
+          );
+        }
       }
     );
   }

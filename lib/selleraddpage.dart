@@ -613,10 +613,12 @@ class _SellerAddPageState extends State<SellerAddPage> {
     selectedField = null;
   });
   } catch (e) {
-    setState(() {
+    if (mounted) {
+      setState(() {
       fields = [];
       selectedField = null;
     });
+    }
     }
   }
 

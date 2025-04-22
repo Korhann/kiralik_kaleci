@@ -262,7 +262,14 @@ class _ApptRequestState extends State<ApptRequest> {
 
   // burada eğer approved olursa eklenecek
   Future<String> appointmentBuyer(String verificationCode, String startTime, String endTime) async{
-    Map<String,String> appointmentDetails = {
+    try {
+      final snapshot = await _firestore.collection('Users').doc(widget.sellerUid).get();
+      if (snapshot.exists) {
+        final sellerData = snapshot.data();
+        sellerFullName = await sellerData!['fullName'];
+      }
+
+      Map<String,String> appointmentDetails = {
       'name': sellerFullName,
       'selleruid': widget.sellerUid,
       'day': widget.selectedDay,
@@ -282,6 +289,10 @@ class _ApptRequestState extends State<ApptRequest> {
       'appointmentDetails': appointmentDetails
     });
     return buyerDocRef.id;
+    } catch (e){
+      print('Error appointment buyer $e');
+      return '';
+    }
   }
 
   Future<void> appointmentSeller() async {
@@ -291,15 +302,16 @@ class _ApptRequestState extends State<ApptRequest> {
   String endTime = widget.selectedHour.split('-')[1];
 
   // Fetch user data once using `get()` to avoid the asynchronous issue
-  final snapshot = await _firestore.collection('Users').doc(currentuser).get();
-  if (snapshot.exists) {
-    final userdata = snapshot.data();
-    fullName = userdata!['fullName'] ?? '';
-  } else {
-    throw Exception("User data not found"); 
-  }
+  try {
+    final snapshot = await _firestore.collection('Users').doc(currentuser).get();
+    if (snapshot.exists) {
+      final userdata = snapshot.data();
+      fullName = await userdata!['fullName'];
+    } else {
+      throw Exception("User data not found"); 
+    }
 
-  String buyerDocId = await appointmentBuyer(verificationCode, startTime, endTime);
+    String buyerDocId = await appointmentBuyer(verificationCode, startTime, endTime);
 
   // Create the appointmentDetails map with the fetched data
   Map<String, String> appointmentDetails = {
@@ -313,24 +325,28 @@ class _ApptRequestState extends State<ApptRequest> {
     'verificationState': 'notVerified',
     'startTime':startTime,
     'endTime': endTime,
+    'isPastDay': 'false',
     'status': 'pending',
   };
   
-  // Add appointment details to Firestore to the seller account
-  DocumentReference sellerDocRef = await _firestore
+    // Add appointment details to Firestore to the seller account
+    DocumentReference sellerDocRef = await _firestore
       .collection('Users')
       .doc(widget.sellerUid)
       .collection('appointmentseller')
       .add({
-    'appointmentDetails': appointmentDetails,
-  });
+        'appointmentDetails': appointmentDetails,
+      });
   
-  await _firestore
-  .collection('Users')
-  .doc(currentuser)
-  .collection('appointmentbuyer')
-  .doc(buyerDocId)
-  .update({'appointmentDetails.sellerDocId' : sellerDocRef.id});
+    await _firestore
+    .collection('Users')
+    .doc(currentuser)
+    .collection('appointmentbuyer')
+    .doc(buyerDocId)
+    .update({'appointmentDetails.sellerDocId' : sellerDocRef.id});
+  } catch (e) {
+    print('Error seller appointment $e');
+  }
   } 
 
   Future<void> sendRequest() async{
@@ -342,6 +358,7 @@ class _ApptRequestState extends State<ApptRequest> {
         Showalert(context: context, text: 'Randevu talebi gönderilmiştir').showSuccessAlert();
       }
     } catch (e) {
+      print('Error sending notification $e');
       if (mounted){
         Showalert(context: context, text: 'Ooops...').showErrorAlert();
       }

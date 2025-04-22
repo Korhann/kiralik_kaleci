@@ -399,6 +399,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             
             if (isPastDay) {
               await markPastDayAsTaken(userId: userId, day: day, title: title);
+              setState(() {});
             }
 
             // duruma göre renk belirliyor
@@ -424,6 +425,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     }
   }
 }
+// TODO: Kontrol et geçmiş saatler ilk açılınca renk değiştiriyor mu diye
 Future<void> markPastDayAsTaken({required String userId,required String day,required String title}) async {
 
   final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
