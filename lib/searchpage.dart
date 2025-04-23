@@ -1,4 +1,5 @@
 import 'package:banner_carousel/banner_carousel.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -89,73 +90,16 @@ class _GetUserDataState extends State<GetUserData> {
                   onFilterTap: _navigateToFilterPage,
                   onNotificationTap: _navigateToAppsPage,
                 ),
-                // bu bölüm banner bölümü olacak
-                Container(
-  color: background,
-  child: BannerCarousel(
-    height: 80,
-    animation: false,
-    viewportFraction: 0.6,
-    showIndicator: false,
-    customizedBanners: [
-      Container(
-        margin: EdgeInsets.only(right: 10),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.black, width: 2),
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.black,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          'Kaleci Kirala',
-          style: GoogleFonts.roboto(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.symmetric(horizontal: 5),
-        decoration: BoxDecoration(
-          color: Colors.deepPurple.shade50,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              spreadRadius: 0,
-              blurRadius: 4,
-              offset: Offset(0, 3),
-            ),
-          ],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          'Uygun Kalecileri Ara',
-          style: GoogleFonts.roboto(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.deepPurple,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.only(left: 10),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.green, width: 3),
-          borderRadius: BorderRadius.circular(50),
-          image: DecorationImage(
-            image: NetworkImage(
-              'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl-2.jpg',
-            ),
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-    ],
-  ),
-),
+
+                // BANNER BÖLÜMÜ
+                //TODO: REMOVE THE AUTO PADDING HERE
+                SizedBox(
+                  width: double.infinity,
+                  height: 100,
+                  child: ImageSliderDemo()
+                ),
+
+                const SizedBox(height: 10),
 
                 docs.isEmpty
                     ? _EmptyState()
@@ -409,6 +353,31 @@ class _SellerGrid extends StatelessWidget {
             onTap: (uid) => onCardTap(context, sellerDetails, uid),
           );
         },
+      ),
+    );
+  }
+}
+class ImageSliderDemo extends StatelessWidget {
+  
+  final List<String> bannerImages = [
+    'lib/images/kalecimafis1.jpg',
+    'lib/images/kalecimafis2.jpg'
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: CarouselSlider(
+      options: CarouselOptions(
+        viewportFraction: 1.0,
+        enlargeCenterPage: false,
+        autoPlay: true,
+        height: 100,
+        disableCenter: true,
+      ),
+      items: bannerImages.map((item) => Center(
+        child:Image.asset(item, fit: BoxFit.cover, width: MediaQuery.sizeOf(context).width)
+        )).toList(),
       ),
     );
   }

@@ -170,7 +170,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         cardColor = Colors.green.shade200;
                       } else if (status == 'rejected') {
                         cardColor = Colors.red.shade200;
-                      } else if (status == 'pending' && isPastDay == 'false') {
+                      } else if (status == 'pending') {
                         cardColor = Colors.orange.shade200;
                       } else if (status == 'approved' && paymentStatus == 'taken') {
                         cardColor = Colors.grey;
@@ -674,6 +674,7 @@ class CheckDaysPast {
 
     final now = DateTime.now().toUtc().add(const Duration(hours: 3));
     final int currentDayIndex = now.weekday - 1; // Monday is 1
+    print('the current day is $currentDayIndex');
     final int inputDayIndex = orderedDays.indexOf(day);
 
     if (inputDayIndex == -1) {
