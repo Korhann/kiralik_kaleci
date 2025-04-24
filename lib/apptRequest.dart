@@ -278,6 +278,7 @@ class _ApptRequestState extends State<ApptRequest> {
       'verificationCode': verificationCode,
       'startTime': startTime,
       'endTime': endTime,
+      'isPastDay': 'false',
       'status': 'pending',
       'paymentStatus' : 'waiting'
     };

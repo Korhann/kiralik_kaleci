@@ -160,9 +160,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final verificationState = appointmentDetails['verificationState'] ?? '';
                       final isPastDay = appointmentDetails['isPastDay'] ?? '';
                       final docId = docs?[index] ?? '';
-                      // CheckDaysPast.isPast(day, docId);
 
-                      // Determine card color based on status
+                      // TODO: Alıcıda isPastDay verisi olmadığı için renkleri almıyor 
                       Color cardColor = Colors.white;
                       if (status == 'approved' && paymentStatus == 'done') {
                         cardColor = Colors.green.shade500;
@@ -170,13 +169,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         cardColor = Colors.green.shade200;
                       } else if (status == 'rejected') {
                         cardColor = Colors.red.shade200;
-                      } else if (status == 'pending') {
+                      } else if (status == 'pending' && paymentStatus == 'waiting' && isPastDay == 'false') {
                         cardColor = Colors.orange.shade200;
-                      } else if (status == 'approved' && paymentStatus == 'taken') {
+                      } else if (status == 'approved' && paymentStatus == 'taken' || isPastDay == 'true' || status == 'past') {
                         cardColor = Colors.grey;
-                      } else if (isPastDay == 'true') {
-                        cardColor = Colors.grey;
-                      }
+                      } 
                       
 
                       return AppointmentView(
@@ -202,7 +199,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           await rejectAppointment(docId, index);
                         },
                       );
-                      
                     },
                   ),
                   const SizedBox(height: 20)
@@ -216,22 +212,24 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   Future<void> _fetchAppointments() async {
-  QuerySnapshot snapshot;
+    QuerySnapshot snapshot;
 
-  snapshot = await _firestore.collection('Users')
+    snapshot = await _firestore.collection('Users')
     .doc(currentuser)
     .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
     .get();
 
-  List<String> tempDocs = snapshot.docs.map((doc) => doc.id).toList();
-  List<Map<String, dynamic>> tempAppointments = snapshot.docs
-      .map((doc) => doc.data() as Map<String, dynamic>)
-      .toList();
+    List<String> tempDocs = snapshot.docs.map((doc) => doc.id).toList();
+    List<Map<String, dynamic>> tempAppointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
 
-  await checkAllPastDays(tempAppointments, tempDocs);
-
+    if (userorseller) {
+      await checkAllPastDaysSeller(tempAppointments, tempDocs);
+    } else {
+      await checkAllPastDaysUser(tempAppointments, tempDocs);
+    }
+    
   // Step 2: Re-fetch to get updated values from Firestore
-  snapshot = await _firestore
+    snapshot = await _firestore
       .collection('Users')
       .doc(currentuser)
       .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
@@ -240,22 +238,29 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   if (mounted) {
     setState(() {
       docs = snapshot.docs.map((doc) => doc.id).toList();
-      appointments = snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
     });
   }
 }
 
 
-  Future<void> checkAllPastDays(List appointments, List<String>? docIds) async {
+  Future<void> checkAllPastDaysSeller(List appointments, List<String>? docIds) async {
   for (int i = 0; i < appointments.length; i++) {
     final appointmentDetails = appointments[i]['appointmentDetails'];
     final day = appointmentDetails['day'] ?? '';
     final docId = docIds![i];
-    await CheckDaysPast.isPast(day, docId);
+    await CheckDaysPastSeller.isPast(day, docId);
   }
 }
+  
+  Future<void> checkAllPastDaysUser(List appointments, List<String>? docIds) async {
+    for (int i = 0; i < appointments.length; i++) {
+    final appointmentDetails = appointments[i]['appointmentDetails'];
+    final day = appointmentDetails['day'] ?? '';
+    final docId = docIds![i];
+    await CheckDaysPastUser.isPast(day, docId);
+  }
+  }
 
 
   // Updates status to 'approved'
@@ -384,8 +389,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Alındı',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style: TextStyle(color: userorseller ? Colors.white : Colors.black),
             ),
             const SizedBox(width: 8),
             ClipRRect(
@@ -443,7 +447,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             ),
             const SizedBox(width: 5),
             Text(
-              'Dolu',
+              'Geçmiş',
               style:
                   TextStyle(color: userorseller ? Colors.white : Colors.black),
             ),
@@ -501,6 +505,21 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Beklemede',
+              style:
+                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+            ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 10,
+                width: 10,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'Geçmiş',
               style:
                   TextStyle(color: userorseller ? Colors.white : Colors.black),
             ),
@@ -605,7 +624,7 @@ class AppointmentView extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        buildRightSideWidget(context: context ,userorseller: userorseller, status: status, paymentStatus: paymentStatus, verificationCode: verificationCode, docId: docId, appointmentDetails: appointmentDetails, verificationState: verificationState, isPastDay: isPastDay)
+                        buildRightSideWidget(context: context ,userorseller: userorseller, status: status, paymentStatus: paymentStatus, verificationCode: verificationCode, docId: docId, appointmentDetails: appointmentDetails, verificationState: verificationState, isPastDay: isPastDay, hour: hour)
                       ],
                     ),
                   ],
@@ -629,6 +648,7 @@ class AppointmentView extends StatelessWidget {
     required String isPastDay,
     required String docId,
     required Map<String, dynamic> appointmentDetails,
+    required String hour
   }) {
     
   if (!userorseller) {
@@ -636,8 +656,8 @@ class AppointmentView extends StatelessWidget {
       return paymentButton(appointmentDetails: appointmentDetails, docId: docId);
     } else if (status == 'approved' && paymentStatus == 'done') {
       return Text(verificationCode);
-    } else if (paymentStatus == 'taken') {
-      return const Text('Dolu');
+    } else if (paymentStatus == 'taken' || isPastDay == 'true') {
+      return showTextBasedOnGreyCard(isPastDay: isPastDay, paymentStatus: paymentStatus);
     } else {
       return showTextBasedOnStatus(status: status);
     }
@@ -651,7 +671,7 @@ class AppointmentView extends StatelessWidget {
       }, 
       child: Text('Kodu gir')
     );
-  } else if (isPastDay == 'true') {
+  } else if (hour != '00:00-01:00' || hour != '01:00-02:00' && isPastDay == 'true') {
     return Text('Geçmiş');
   } else {
     return const SizedBox();
@@ -659,7 +679,7 @@ class AppointmentView extends StatelessWidget {
 }
 }
 
-class CheckDaysPast {
+class CheckDaysPastSeller {
   static Future<void> isPast(String day, String docId) async{
     String currentuser = FirebaseAuth.instance.currentUser!.uid;
     List<String> orderedDays = [
@@ -674,7 +694,6 @@ class CheckDaysPast {
 
     final now = DateTime.now().toUtc().add(const Duration(hours: 3));
     final int currentDayIndex = now.weekday - 1; // Monday is 1
-    print('the current day is $currentDayIndex');
     final int inputDayIndex = orderedDays.indexOf(day);
 
     if (inputDayIndex == -1) {
@@ -691,6 +710,45 @@ class CheckDaysPast {
       final alreadyPast = snapshot['appointmentDetails']['isPastDay'] ?? false;
 
       if (alreadyPast == 'false') {
+        await docRef.update({
+          'appointmentDetails.isPastDay': 'true',
+        });
+      }
+    }
+  }
+}
+// 'waiting' olan günlerin geçdiğini gösteriyor
+class CheckDaysPastUser {
+  static Future<void> isPast(String day, String docId) async{
+    String currentuser = FirebaseAuth.instance.currentUser!.uid;
+    List<String> orderedDays = [
+      'Pazartesi',
+      'Salı',
+      'Çarşamba',
+      'Perşembe',
+      'Cuma',
+      'Cumartesi',
+      'Pazar',
+    ];
+
+    final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+    final int currentDayIndex = now.weekday - 1; // Monday is 1
+    final int inputDayIndex = orderedDays.indexOf(day);
+
+    if (inputDayIndex == -1) {
+      throw ArgumentError('Invalid day name: $day');
+    }
+    if (inputDayIndex < currentDayIndex) {
+      final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentbuyer')
+        .doc(docId);
+
+      final snapshot = await docRef.get();
+      final status = snapshot['appointmentDetails']['isPastDay'] ?? false;
+
+      if (status == 'false') {
         await docRef.update({
           'appointmentDetails.isPastDay': 'true',
         });
@@ -789,7 +847,30 @@ class showTextBasedOnStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      status == 'pending' ? 'Beklemede' : status == 'rejected' ? 'Reddedildi' : '',
+      status == 'pending' ? 'Beklemede' : status == 'rejected' ? 'Reddedildi' : status == 'past' ? 'Geçmiş' : '',
+      style: GoogleFonts.poppins(
+        fontSize: 14,
+        color: Colors.black,
+      ),
+    );
+  }
+}
+
+class showTextBasedOnGreyCard extends StatelessWidget {
+  final String isPastDay;
+  final String paymentStatus;
+  const showTextBasedOnGreyCard({
+    super.key,
+    required this.isPastDay,
+    required this.paymentStatus
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+        isPastDay == 'true' && paymentStatus != 'taken' ? 'Geçmiş'
+      : isPastDay == 'false' && paymentStatus == 'taken' ? 'Dolu'
+      : '',
       style: GoogleFonts.poppins(
         fontSize: 14,
         color: Colors.black,
