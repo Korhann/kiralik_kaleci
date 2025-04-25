@@ -83,7 +83,7 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
                 ),
               ),
               if (_showErrorCode && codeVerifield.text.trim().isEmpty)
-                errorMessage('Kullanıcı adı boş bırakılamaz'),
+                errorMessage('Doğrulama kodu boş bırakılamaz'),
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(

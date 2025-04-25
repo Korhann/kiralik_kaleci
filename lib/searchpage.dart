@@ -244,7 +244,7 @@ class _HeaderSection extends StatelessWidget {
                 StreamBuilder<int>(
                   stream: getUnreadCount(), // Fetch unread notifications
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData || snapshot.data == 0)
+                    if (!snapshot.hasData || snapshot.data == 0) 
                       return SizedBox();
                     return Positioned(
                       right: 5, // Adjust position
@@ -366,19 +366,18 @@ class ImageSliderDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: CarouselSlider(
+    return CarouselSlider(
       options: CarouselOptions(
-        viewportFraction: 1.0,
+        viewportFraction: 1,
         enlargeCenterPage: false,
         autoPlay: true,
         height: 100,
         disableCenter: true,
+        padEnds: false
       ),
       items: bannerImages.map((item) => Center(
-        child:Image.asset(item, fit: BoxFit.cover, width: MediaQuery.sizeOf(context).width)
+        child:Image.asset(item, fit: BoxFit.cover, width: double.maxFinite)
         )).toList(),
-      ),
-    );
+      );
   }
 }

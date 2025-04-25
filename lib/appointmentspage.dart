@@ -171,7 +171,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         cardColor = Colors.red.shade200;
                       } else if (status == 'pending' && paymentStatus == 'waiting' && isPastDay == 'false') {
                         cardColor = Colors.orange.shade200;
-                      } else if (status == 'approved' && paymentStatus == 'taken' || isPastDay == 'true' || status == 'past') {
+                      } else if (status == 'approved' || (paymentStatus == 'taken' || isPastDay == 'true')) {
                         cardColor = Colors.grey;
                       } 
                       
@@ -650,17 +650,21 @@ class AppointmentView extends StatelessWidget {
     required Map<String, dynamic> appointmentDetails,
     required String hour
   }) {
-    
+    // kullanıcı için
   if (!userorseller) {
+    //todo: ilk if döngüsü gece maçları için iyi ama sonrası için değil(kullanıcı ertesi gün ödeme yapabilir yanlışlıkla)
     if (status == 'approved' && paymentStatus == 'waiting') {
       return paymentButton(appointmentDetails: appointmentDetails, docId: docId);
     } else if (status == 'approved' && paymentStatus == 'done') {
       return Text(verificationCode);
-    } else if (paymentStatus == 'taken' || isPastDay == 'true') {
+      // gece olduğu zaman kaleci kodu alabilsin diye gece saatlerini dışarda tutuyorum 
+    } else if (isPastDay == 'true' && (hour != '00:00-01:00' || hour != '01:00-02:00')) {
       return showTextBasedOnGreyCard(isPastDay: isPastDay, paymentStatus: paymentStatus);
+      //todo: seller da 12-1,1-2 yi geçmiş olarak saymıyor ama kullanıcıda sayıyor.
     } else {
       return showTextBasedOnStatus(status: status);
     }
+    // kaleci için
   } else if (userorseller && verificationState == 'notVerified' && status == 'approved' && isPastDay == 'false') {
     return ElevatedButton(
       onPressed: () async{
@@ -671,7 +675,7 @@ class AppointmentView extends StatelessWidget {
       }, 
       child: Text('Kodu gir')
     );
-  } else if (hour != '00:00-01:00' || hour != '01:00-02:00' && isPastDay == 'true') {
+  } else if ((hour == '00:00-01:00' || hour == '01:00-02:00') && isPastDay == 'true') {
     return Text('Geçmiş');
   } else {
     return const SizedBox();
@@ -746,9 +750,9 @@ class CheckDaysPastUser {
         .doc(docId);
 
       final snapshot = await docRef.get();
-      final status = snapshot['appointmentDetails']['isPastDay'] ?? false;
+      final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
 
-      if (status == 'false') {
+      if (isPastDay == 'false') {
         await docRef.update({
           'appointmentDetails.isPastDay': 'true',
         });
@@ -847,7 +851,7 @@ class showTextBasedOnStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      status == 'pending' ? 'Beklemede' : status == 'rejected' ? 'Reddedildi' : status == 'past' ? 'Geçmiş' : '',
+      status == 'pending' ? 'Beklemede' : status == 'rejected' ? 'Reddedildi' : '',
       style: GoogleFonts.poppins(
         fontSize: 14,
         color: Colors.black,
