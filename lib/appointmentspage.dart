@@ -147,6 +147,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: appointments.length,
                     itemBuilder: (context, index) {
+                      // hem kullanıcıda hem kalecide olmayan değerlere ortak değer atadım
                       final appointment = appointments[index];
                       final appointmentDetails = appointment['appointmentDetails'];
                       final name = appointmentDetails['fullName'] ?? appointmentDetails['name'];
@@ -155,25 +156,29 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       final hour = appointmentDetails['hour'] ?? '';
                       final field = appointmentDetails['field'] ?? '';
                       final status = appointmentDetails['status'] ?? 'pending';
-                      final paymentStatus = appointmentDetails['paymentStatus'] ?? 'waiting';
+                      final paymentStatus = appointmentDetails['paymentStatus'] ?? 'waiting' ;
                       final verificationCode = appointmentDetails['verificationCode'] ?? '';
                       final verificationState = appointmentDetails['verificationState'] ?? '';
-                      final isPastDay = appointmentDetails['isPastDay'] ?? '';
+                      final isPastDay = appointmentDetails['isPastDay'] ?? 'false';
+                      final sellerUid = appointmentDetails['selleruid'] ?? '';
                       final docId = docs?[index] ?? '';
 
-                      // TODO: Alıcıda isPastDay verisi olmadığı için renkleri almıyor 
                       Color cardColor = Colors.white;
+
+                      //todo: Kart renklerini kullanıcı ve satıcı için ayırabilirsin
                       if (status == 'approved' && paymentStatus == 'done') {
                         cardColor = Colors.green.shade500;
-                      } else if (status == 'approved' && paymentStatus == 'waiting') {
+                      } else if (status == 'approved' && paymentStatus == 'waiting' && isPastDay == 'false') {
                         cardColor = Colors.green.shade200;
                       } else if (status == 'rejected') {
                         cardColor = Colors.red.shade200;
-                      } else if (status == 'pending' && paymentStatus == 'waiting' && isPastDay == 'false') {
+                      } else if (status == 'pending' && paymentStatus == 'waiting') {
                         cardColor = Colors.orange.shade200;
-                      } else if (status == 'approved' || (paymentStatus == 'taken' || isPastDay == 'true')) {
+                      } else if (paymentStatus == 'taken' || isPastDay == 'true') {
                         cardColor = Colors.grey;
                       } 
+
+                      //todo: Satıcı hesabına payment status buldum. Nereden geldiğine bak verinin
                       
 
                       return AppointmentView(
@@ -185,7 +190,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         field: field,
                         status: status,
                         paymentStatus: paymentStatus,
-                        sellerUid: appointmentDetails!['selleruid'] ?? '',
+                        sellerUid: sellerUid,
                         appointmentDetails: appointmentDetails,
                         verificationCode : verificationCode,
                         verificationState: verificationState,
@@ -222,9 +227,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     List<String> tempDocs = snapshot.docs.map((doc) => doc.id).toList();
     List<Map<String, dynamic>> tempAppointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
 
-    if (userorseller) {
-      await checkAllPastDaysSeller(tempAppointments, tempDocs);
-    } else {
+    // if (userorseller) {
+    //   await checkAllPastDaysSeller(tempAppointments, tempDocs);
+    // } else {
+    //   await checkAllPastDaysUser(tempAppointments, tempDocs);
+    
+    // sadece alıcının butonu kapatılacak
+    if (!userorseller) {
       await checkAllPastDaysUser(tempAppointments, tempDocs);
     }
     
@@ -244,14 +253,14 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 }
 
 
-  Future<void> checkAllPastDaysSeller(List appointments, List<String>? docIds) async {
-  for (int i = 0; i < appointments.length; i++) {
-    final appointmentDetails = appointments[i]['appointmentDetails'];
-    final day = appointmentDetails['day'] ?? '';
-    final docId = docIds![i];
-    await CheckDaysPastSeller.isPast(day, docId);
-  }
-}
+//   Future<void> checkAllPastDaysSeller(List appointments, List<String>? docIds) async {
+//   for (int i = 0; i < appointments.length; i++) {
+//     final appointmentDetails = appointments[i]['appointmentDetails'];
+//     final day = appointmentDetails['day'] ?? '';
+//     final docId = docIds![i];
+//     await CheckDaysPastSeller.isPast(day, docId);
+//   }
+// }
   
   Future<void> checkAllPastDaysUser(List appointments, List<String>? docIds) async {
     for (int i = 0; i < appointments.length; i++) {
@@ -630,7 +639,7 @@ class AppointmentView extends StatelessWidget {
                   ],
                 ),
               ),
-              if (userorseller && status == 'pending' && isPastDay == 'false')
+              if (userorseller && status == 'pending')
                 sellerApproveOrReject(onApprove: onApprove, onReject: onReject)
             ],
           ),
@@ -652,20 +661,18 @@ class AppointmentView extends StatelessWidget {
   }) {
     // kullanıcı için
   if (!userorseller) {
-    //todo: ilk if döngüsü gece maçları için iyi ama sonrası için değil(kullanıcı ertesi gün ödeme yapabilir yanlışlıkla)
-    if (status == 'approved' && paymentStatus == 'waiting') {
+    //todo: Kullanıcı pazartesi oynadığı maç için salı günü ödeme yapamasın(veya başlangıc saatinden sonra yapamsın)
+    if (status == 'approved' && paymentStatus == 'waiting' && isPastDay == 'false') {
       return paymentButton(appointmentDetails: appointmentDetails, docId: docId);
     } else if (status == 'approved' && paymentStatus == 'done') {
       return Text(verificationCode);
-      // gece olduğu zaman kaleci kodu alabilsin diye gece saatlerini dışarda tutuyorum 
-    } else if (isPastDay == 'true' && (hour != '00:00-01:00' || hour != '01:00-02:00')) {
+    } else if (isPastDay == 'true' || paymentStatus == 'taken') {
       return showTextBasedOnGreyCard(isPastDay: isPastDay, paymentStatus: paymentStatus);
-      //todo: seller da 12-1,1-2 yi geçmiş olarak saymıyor ama kullanıcıda sayıyor.
     } else {
       return showTextBasedOnStatus(status: status);
     }
     // kaleci için
-  } else if (userorseller && verificationState == 'notVerified' && status == 'approved' && isPastDay == 'false') {
+  } else if (userorseller && verificationState == 'notVerified' && status == 'approved') {
     return ElevatedButton(
       onPressed: () async{
         await Navigator.push(
@@ -675,52 +682,53 @@ class AppointmentView extends StatelessWidget {
       }, 
       child: Text('Kodu gir')
     );
-  } else if ((hour == '00:00-01:00' || hour == '01:00-02:00') && isPastDay == 'true') {
-    return Text('Geçmiş');
-  } else {
+    // todo: buraya kaleci için textleri yap ve kodu girdikten sonra hemen onaylandı olarak gözüksün
+  } else if (status == 'rejected') {
+    return Text('Reddedildi');
+  }else {
     return const SizedBox();
   }
 }
 }
+// class CheckDaysPastSeller {
+//   static Future<void> isPast(String day, String docId) async{
+//     String currentuser = FirebaseAuth.instance.currentUser!.uid;
+//     List<String> orderedDays = [
+//       'Pazartesi',
+//       'Salı',
+//       'Çarşamba',
+//       'Perşembe',
+//       'Cuma',
+//       'Cumartesi',
+//       'Pazar',
+//     ];
 
-class CheckDaysPastSeller {
-  static Future<void> isPast(String day, String docId) async{
-    String currentuser = FirebaseAuth.instance.currentUser!.uid;
-    List<String> orderedDays = [
-      'Pazartesi',
-      'Salı',
-      'Çarşamba',
-      'Perşembe',
-      'Cuma',
-      'Cumartesi',
-      'Pazar',
-    ];
+//     final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+//     final int currentDayIndex = now.weekday - 1; // Monday is 1
+//     final int inputDayIndex = orderedDays.indexOf(day);
 
-    final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-    final int currentDayIndex = now.weekday - 1; // Monday is 1
-    final int inputDayIndex = orderedDays.indexOf(day);
+//     if (inputDayIndex == -1) {
+//       throw ArgumentError('Invalid day name: $day');
+//     }
+//     if (inputDayIndex < currentDayIndex) {
+//       final docRef = FirebaseFirestore.instance
+//         .collection('Users')
+//         .doc(currentuser)
+//         .collection('appointmentseller')
+//         .doc(docId);
 
-    if (inputDayIndex == -1) {
-      throw ArgumentError('Invalid day name: $day');
-    }
-    if (inputDayIndex < currentDayIndex) {
-      final docRef = FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentuser)
-        .collection('appointmentseller')
-        .doc(docId);
+//       final snapshot = await docRef.get();
+//       final alreadyPast = snapshot['appointmentDetails']['isPastDay'] ?? false;
 
-      final snapshot = await docRef.get();
-      final alreadyPast = snapshot['appointmentDetails']['isPastDay'] ?? false;
+//       if (alreadyPast == 'false') {
+//         await docRef.update({
+//           'appointmentDetails.isPastDay': 'true',
+//         });
+//       }
+//     }
+//   }
+// }
 
-      if (alreadyPast == 'false') {
-        await docRef.update({
-          'appointmentDetails.isPastDay': 'true',
-        });
-      }
-    }
-  }
-}
 // 'waiting' olan günlerin geçdiğini gösteriyor
 class CheckDaysPastUser {
   static Future<void> isPast(String day, String docId) async{
@@ -751,8 +759,9 @@ class CheckDaysPastUser {
 
       final snapshot = await docRef.get();
       final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
+      final apptStatus = snapshot['appointmentDetails']['paymentStatus'];
 
-      if (isPastDay == 'false') {
+      if (isPastDay == 'false' && apptStatus == 'waiting') {
         await docRef.update({
           'appointmentDetails.isPastDay': 'true',
         });
@@ -874,7 +883,7 @@ class showTextBasedOnGreyCard extends StatelessWidget {
     return Text(
         isPastDay == 'true' && paymentStatus != 'taken' ? 'Geçmiş'
       : isPastDay == 'false' && paymentStatus == 'taken' ? 'Dolu'
-      : '',
+      : 'Dolu',
       style: GoogleFonts.poppins(
         fontSize: 14,
         color: Colors.black,

@@ -142,9 +142,10 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
-                // ilk başta saat alındı mı diye kontrol etmeliyim
+                // todo: ilk başta saat alındı mı diye kontrol etmeliyim
                 onPressed: () async{
                   bool? hourTaken = await checkIfHourTaken();
+                  print('hour taken is $hourTaken');
                   if (hourTaken == false) {
                     bool isSuccess = await _processPayment();
                     await sendNotificationToSeller();
@@ -160,6 +161,7 @@ class _PaymentPageState extends State<PaymentPage> {
                       SnackBar(
                         duration: Duration(seconds: 5),
                         content: Text('Seçtiğiniz saat başkası tarafından alınmıştır'),
+                        backgroundColor: Colors.red,
                       )
                     );
                   }

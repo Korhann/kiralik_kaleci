@@ -326,7 +326,6 @@ class _ApptRequestState extends State<ApptRequest> {
     'verificationState': 'notVerified',
     'startTime':startTime,
     'endTime': endTime,
-    'isPastDay': 'false',
     'status': 'pending',
   };
   
