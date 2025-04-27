@@ -145,7 +145,6 @@ class _PaymentPageState extends State<PaymentPage> {
                 // todo: ilk başta saat alındı mı diye kontrol etmeliyim
                 onPressed: () async{
                   bool? hourTaken = await checkIfHourTaken();
-                  print('hour taken is $hourTaken');
                   if (hourTaken == false) {
                     bool isSuccess = await _processPayment();
                     await sendNotificationToSeller();
@@ -323,9 +322,7 @@ class _PaymentPageState extends State<PaymentPage> {
           Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
           if (selectedHoursByDay.containsKey(widget.selectedDay)) {
             List<dynamic> hoursList = selectedHoursByDay[widget.selectedDay];
-            var mathcingHour = hoursList.firstWhere(
-              (hour) => hour['title'] == widget.selectedHour
-            );
+            var mathcingHour = hoursList.firstWhere((hour) => hour['title'] == widget.selectedHour);
             if (mathcingHour != null) {
               return mathcingHour['istaken'] ?? false;
             }

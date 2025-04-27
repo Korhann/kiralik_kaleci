@@ -59,50 +59,56 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   @override
   void initState() {
     super.initState();
-   fetchAppts =  _fetchAppointments();
+   //fetchAppts =  _fetchAppointments();
   }
 
   @override
   Widget build(BuildContext context) {
     return ConnectivityWithBackButton(
-      child: FutureBuilder(
-        future: fetchAppts,
+      child: StreamBuilder<QuerySnapshot>(
+        stream: appointmentStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Padding(
               padding: EdgeInsets.only(top: 40),
-              child: AppointmentsShimmer()
+              child: AppointmentsShimmer(),
             );
           }
-          return Scaffold(
-          appBar: AppBar(
+
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      apptsEmpty();
+    }
+    // streambuilder in result u
+    final docs = snapshot.data!.docs;
+    
+    return Scaffold(
+      appBar: AppBar(
         backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
           onPressed: () {
-            // geri ye basınca yanlış yerden çıkış yaptığı için kullandım
             if (userorseller) {
               if (widget.whereFrom == 'fromProfile') {
                 Navigator.of(context).pop();
               } else if (widget.whereFrom == 'fromNoti') {
                 Navigator.pushAndRemoveUntil<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) => const SellerMainPage(index: 2)),
-                ModalRoute.withName('/'),
+                  context,
+                  MaterialPageRoute<void>(
+                      builder: (BuildContext context) => const SellerMainPage(index: 2)),
+                  ModalRoute.withName('/'),
                 );
               } else if (widget.whereFrom == 'fromSellerHomePage') {
                 Navigator.pushAndRemoveUntil<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) => const SellerMainPage(index: 0)),
-                ModalRoute.withName('/'),
+                  context,
+                  MaterialPageRoute<void>(
+                      builder: (BuildContext context) => const SellerMainPage(index: 0)),
+                  ModalRoute.withName('/'),
                 );
               }
             } else {
               Navigator.of(context).pop();
             }
           },
-          icon: Icon(Icons.arrow_back,color: userorseller ? Colors.white : Colors.black),
+          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
         ),
       ),
       backgroundColor: userorseller ? sellerbackground : background,
@@ -124,143 +130,138 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               buyerStatusInfo()
             else
               sellerStatusInfo(),
-            appointments.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Randevunuz bulunmamaktadır',
-                          style: GoogleFonts.poppins(
-                            fontSize: 26,
-                            color: userorseller ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: appointments.length,
-                    itemBuilder: (context, index) {
-                      // hem kullanıcıda hem kalecide olmayan değerlere ortak değer atadım
-                      final appointment = appointments[index];
-                      final appointmentDetails = appointment['appointmentDetails'];
-                      final name = appointmentDetails['fullName'] ?? appointmentDetails['name'];
-                      final surname = appointmentDetails['surname'] ?? '';
-                      final day = appointmentDetails['day'] ?? '';
-                      final hour = appointmentDetails['hour'] ?? '';
-                      final field = appointmentDetails['field'] ?? '';
-                      final status = appointmentDetails['status'] ?? 'pending';
-                      final paymentStatus = appointmentDetails['paymentStatus'] ?? 'waiting' ;
-                      final verificationCode = appointmentDetails['verificationCode'] ?? '';
-                      final verificationState = appointmentDetails['verificationState'] ?? '';
-                      final isPastDay = appointmentDetails['isPastDay'] ?? 'false';
-                      final sellerUid = appointmentDetails['selleruid'] ?? '';
-                      final docId = docs?[index] ?? '';
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: docs.length,
+              itemBuilder: (context, index) {
+                final appointmentDetails = docs[index].data() as Map<String, dynamic>;
+                final name = appointmentDetails['appointmentDetails']['fullName'] ?? appointmentDetails['appointmentDetails']['name'];
+                final surname = appointmentDetails['appointmentDetails']['surname'] ?? '';
+                final day = appointmentDetails['appointmentDetails']['day'] ?? '';
+                final hour = appointmentDetails['appointmentDetails']['hour'] ?? '';
+                final field = appointmentDetails['appointmentDetails']['field'] ?? '';
+                final status = appointmentDetails['appointmentDetails']['status'] ?? 'pending';
+                final paymentStatus = appointmentDetails['appointmentDetails']['paymentStatus'] ?? 'waiting';
+                final verificationCode = appointmentDetails['appointmentDetails']['verificationCode'] ?? '';
+                final verificationState = appointmentDetails['appointmentDetails']['verificationState'] ?? '';
+                final isPastDay = appointmentDetails['appointmentDetails']['isPastDay'] ?? 'false';
+                final sellerUid = appointmentDetails['appointmentDetails']['selleruid'] ?? '';
+                final docId = docs[index].id;
 
-                      Color cardColor = Colors.white;
+                _checkIfDayIsPast(day, docId, appointmentDetails);
 
-                      //todo: Kart renklerini kullanıcı ve satıcı için ayırabilirsin
-                      if (status == 'approved' && paymentStatus == 'done') {
-                        cardColor = Colors.green.shade500;
-                      } else if (status == 'approved' && paymentStatus == 'waiting' && isPastDay == 'false') {
-                        cardColor = Colors.green.shade200;
-                      } else if (status == 'rejected') {
-                        cardColor = Colors.red.shade200;
-                      } else if (status == 'pending' && paymentStatus == 'waiting') {
-                        cardColor = Colors.orange.shade200;
-                      } else if (paymentStatus == 'taken' || isPastDay == 'true') {
-                        cardColor = Colors.grey;
-                      } 
+                Color cardColor = Colors.white;
 
-                      //todo: Satıcı hesabına payment status buldum. Nereden geldiğine bak verinin
-                      
+                if (status == 'approved' && paymentStatus == 'done') {
+                  cardColor = Colors.green.shade500;
+                } else if (status == 'approved' && paymentStatus == 'waiting' && isPastDay == 'false') {
+                  cardColor = Colors.green.shade200;
+                } else if (status == 'rejected') {
+                  cardColor = Colors.red.shade200;
+                } else if (status == 'pending' && paymentStatus == 'waiting' && isPastDay == 'false') {
+                  cardColor = Colors.orange.shade200;
+                } else if (!userorseller && (paymentStatus == 'taken' || isPastDay == 'true')) {
+                  cardColor = Colors.grey;
+                } else if (userorseller && (isPastDay == 'true' || status != 'approved')) {
+                  cardColor = Colors.grey;
+                }
 
-                      return AppointmentView(
-                        cardColor: cardColor,
-                        name: name,
-                        surname: surname,
-                        day: day,
-                        hour: hour,
-                        field: field,
-                        status: status,
-                        paymentStatus: paymentStatus,
-                        sellerUid: sellerUid,
-                        appointmentDetails: appointmentDetails,
-                        verificationCode : verificationCode,
-                        verificationState: verificationState,
-                        isPastDay: isPastDay,
-                        docId: docId,
-                        userorseller: userorseller,
-                        onApprove: () async {
-                          await approveAppointment(docId, index);
-                        },
-                        onReject: () async {
-                          await rejectAppointment(docId, index);
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20)
+                return AppointmentView(
+                  cardColor: cardColor,
+                  name: name,
+                  surname: surname,
+                  day: day,
+                  hour: hour,
+                  field: field,
+                  status: status,
+                  paymentStatus: paymentStatus,
+                  sellerUid: sellerUid,
+                  appointmentDetails: appointmentDetails['appointmentDetails'],
+                  verificationCode: verificationCode,
+                  verificationState: verificationState,
+                  isPastDay: isPastDay,
+                  docId: docId,
+                  userorseller: userorseller,
+                  onApprove: () async {
+                    await approveAppointment(docId, index);
+                  },
+                  onReject: () async {
+                    await rejectAppointment(docId, index);
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
-        } 
-      ),
+  },
+)
+
     );
   }
 
-  Future<void> _fetchAppointments() async {
-    QuerySnapshot snapshot;
-
-    snapshot = await _firestore.collection('Users')
+  Stream<QuerySnapshot> appointmentStream() {
+  return _firestore
+    .collection('Users')
     .doc(currentuser)
     .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
-    .get();
+    .snapshots();
+}
 
-    List<String> tempDocs = snapshot.docs.map((doc) => doc.id).toList();
-    List<Map<String, dynamic>> tempAppointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
-
-    // if (userorseller) {
-    //   await checkAllPastDaysSeller(tempAppointments, tempDocs);
-    // } else {
-    //   await checkAllPastDaysUser(tempAppointments, tempDocs);
-    
-    // sadece alıcının butonu kapatılacak
-    if (!userorseller) {
-      await checkAllPastDaysUser(tempAppointments, tempDocs);
-    }
-    
-  // Step 2: Re-fetch to get updated values from Firestore
-    snapshot = await _firestore
-      .collection('Users')
-      .doc(currentuser)
-      .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
-      .get();
-
-  if (mounted) {
-    setState(() {
-      docs = snapshot.docs.map((doc) => doc.id).toList();
-      appointments = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
-    });
+  void _checkIfDayIsPast(String day, String docId, Map<String, dynamic> appointmentDetails) async {
+  if (userorseller) {
+    await CheckDaysPastSeller.isPast(day, docId);
+  } else {
+    await CheckDaysPastUser.isPast(day, docId);
   }
 }
 
+//   Future<void> _fetchAppointments() async {
+//   QuerySnapshot snapshot = await _firestore
+//     .collection('Users')
+//     .doc(currentuser)
+//     .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
+//     .get();
 
-//   Future<void> checkAllPastDaysSeller(List appointments, List<String>? docIds) async {
-//   for (int i = 0; i < appointments.length; i++) {
-//     final appointmentDetails = appointments[i]['appointmentDetails'];
-//     final day = appointmentDetails['day'] ?? '';
-//     final docId = docIds![i];
-//     await CheckDaysPastSeller.isPast(day, docId);
+//   List<String> tempDocs = snapshot.docs.map((doc) => doc.id).toList();
+//   List<Map<String, dynamic>> tempAppointments = snapshot.docs
+//       .map((doc) => doc.data() as Map<String, dynamic>)
+//       .toList();
+
+//   if (!userorseller) {
+//     await checkAllPastDaysUser(tempAppointments, tempDocs);
+//   } else {
+//     await checkAllPastDaysSeller(tempAppointments, tempDocs);
+//   }
+
+//   if (mounted) {
+//     setState(() {
+//       docs = tempDocs;
+//       appointments = tempAppointments;
+//     });
 //   }
 // }
+  
+  Stream<QuerySnapshot> getAppointmentsStream() {
+  return FirebaseFirestore.instance
+    .collection('Users')
+    .doc(currentuser)
+    .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
+    .snapshots();
+}
+
+
+  Future<void> checkAllPastDaysSeller(List appointments, List<String>? docIds) async {
+  for (int i = 0; i < appointments.length; i++) {
+    final appointmentDetails = appointments[i]['appointmentDetails'];
+    final day = appointmentDetails['day'] ?? '';
+    final docId = docIds![i];
+    await CheckDaysPastSeller.isPast(day, docId);
+  }
+}
   
   Future<void> checkAllPastDaysUser(List appointments, List<String>? docIds) async {
     for (int i = 0; i < appointments.length; i++) {
@@ -538,7 +539,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
   }
 }
-
+//todo: Bu yazıyı değiştir pazar 00:00 'da karanlık ekran ve yazı olarak gözüküyo(not: pazar gecesi 2 de halısaha oluyor kaleci ödemeyi nasıl alacak yenileniyorsa)
 class apptsEmpty extends StatelessWidget {
   const apptsEmpty({super.key});
 
@@ -639,7 +640,7 @@ class AppointmentView extends StatelessWidget {
                   ],
                 ),
               ),
-              if (userorseller && status == 'pending')
+              if (userorseller && status == 'pending' && isPastDay == 'false')
                 sellerApproveOrReject(onApprove: onApprove, onReject: onReject)
             ],
           ),
@@ -659,6 +660,7 @@ class AppointmentView extends StatelessWidget {
     required Map<String, dynamic> appointmentDetails,
     required String hour
   }) {
+    final style = GoogleFonts.poppins(fontSize: 14, color: Colors.black);
     // kullanıcı için
   if (!userorseller) {
     //todo: Kullanıcı pazartesi oynadığı maç için salı günü ödeme yapamasın(veya başlangıc saatinden sonra yapamsın)
@@ -672,7 +674,7 @@ class AppointmentView extends StatelessWidget {
       return showTextBasedOnStatus(status: status);
     }
     // kaleci için
-  } else if (userorseller && verificationState == 'notVerified' && status == 'approved') {
+  } else if (userorseller && verificationState == 'notVerified' && status == 'approved' && isPastDay == 'false') {
     return ElevatedButton(
       onPressed: () async{
         await Navigator.push(
@@ -684,50 +686,68 @@ class AppointmentView extends StatelessWidget {
     );
     // todo: buraya kaleci için textleri yap ve kodu girdikten sonra hemen onaylandı olarak gözüksün
   } else if (status == 'rejected') {
-    return Text('Reddedildi');
-  }else {
+    return Text('Reddedildi', style: style);
+  } else if (status == 'approved' && verificationState == 'verified') {
+    return Text('Onaylandı', style: style);
+  } else if (isPastDay == 'true') {
+    return Text('Geçmiş', style: style);
+  }
+  else {
     return const SizedBox();
   }
 }
 }
-// class CheckDaysPastSeller {
-//   static Future<void> isPast(String day, String docId) async{
-//     String currentuser = FirebaseAuth.instance.currentUser!.uid;
-//     List<String> orderedDays = [
-//       'Pazartesi',
-//       'Salı',
-//       'Çarşamba',
-//       'Perşembe',
-//       'Cuma',
-//       'Cumartesi',
-//       'Pazar',
-//     ];
+class CheckDaysPastSeller {
+  static Future<void> isPast(String day, String docId) async{
+    String currentuser = FirebaseAuth.instance.currentUser!.uid;
+    List<String> orderedDays = [
+      'Pazartesi',
+      'Salı',
+      'Çarşamba',
+      'Perşembe',
+      'Cuma',
+      'Cumartesi',
+      'Pazar',
+    ];
 
-//     final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-//     final int currentDayIndex = now.weekday - 1; // Monday is 1
-//     final int inputDayIndex = orderedDays.indexOf(day);
+    final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+    final int currentDayIndex = now.weekday - 1; // Monday is 1
+    final int inputDayIndex = orderedDays.indexOf(day);
 
-//     if (inputDayIndex == -1) {
-//       throw ArgumentError('Invalid day name: $day');
-//     }
-//     if (inputDayIndex < currentDayIndex) {
-//       final docRef = FirebaseFirestore.instance
-//         .collection('Users')
-//         .doc(currentuser)
-//         .collection('appointmentseller')
-//         .doc(docId);
+    if (inputDayIndex == -1) {
+      throw ArgumentError('Invalid day name: $day');
+    }
+    if (inputDayIndex < currentDayIndex) {
+      final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller')
+        .doc(docId);
 
-//       final snapshot = await docRef.get();
-//       final alreadyPast = snapshot['appointmentDetails']['isPastDay'] ?? false;
+      final snapshot = await docRef.get();
+      final buyerUid = snapshot['appointmentDetails']['buyerUid'];
+      final buyerDocId = snapshot['appointmentDetails']['buyerDocId'];
 
-//       if (alreadyPast == 'false') {
-//         await docRef.update({
-//           'appointmentDetails.isPastDay': 'true',
-//         });
-//       }
-//     }
-//   }
-// }
+      final docRef2 = FirebaseFirestore.instance
+      .collection('Users')
+      .doc(buyerUid)
+      .collection('appointmentbuyer')
+      .doc(buyerDocId);
+
+      final snapshot2 = await docRef2.get();
+
+      final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
+      final buyerPaymentStatus = snapshot2['appointmentDetails']['paymentStatus'];
+
+      // this only works if the status of the appointment is waiting
+      if (isPastDay == 'false' && buyerPaymentStatus == 'waiting') {
+        await docRef.update({
+          'appointmentDetails.isPastDay': 'true',
+        });
+      }
+    }
+  }
+}
 
 // 'waiting' olan günlerin geçdiğini gösteriyor
 class CheckDaysPastUser {
@@ -759,9 +779,9 @@ class CheckDaysPastUser {
 
       final snapshot = await docRef.get();
       final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
-      final apptStatus = snapshot['appointmentDetails']['paymentStatus'];
+      final payStatus = snapshot['appointmentDetails']['paymentStatus'];
 
-      if (isPastDay == 'false' && apptStatus == 'waiting') {
+      if (isPastDay == 'false' && payStatus == 'waiting') {
         await docRef.update({
           'appointmentDetails.isPastDay': 'true',
         });
