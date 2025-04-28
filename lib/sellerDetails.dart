@@ -495,8 +495,7 @@ class _SellerFieldsState extends State<SellerFields> {
             value: _selectedField,
             isExpanded: true, // Ensures full width
             icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
-            items: widget.sellerDetails['fields']
-                .map<DropdownMenuItem<String>>((value) {
+            items: widget.sellerDetails['fields'].map<DropdownMenuItem<String>>((value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(

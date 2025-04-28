@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
@@ -42,7 +43,6 @@ class _PaymentPageState extends State<PaymentPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    checkIfHourTaken();
   }
 
   @override
@@ -142,10 +142,11 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
-                // todo: ilk başta saat alındı mı diye kontrol etmeliyim
                 onPressed: () async{
+                  await checkIfDayPast();
                   bool? hourTaken = await checkIfHourTaken();
-                  if (hourTaken == false) {
+                  bool isPast = await checkIfHourPast();
+                  if (hourTaken == false && isPast == false) {
                     bool isSuccess = await _processPayment();
                     await sendNotificationToSeller();
                     if (isSuccess) {
@@ -155,14 +156,35 @@ class _PaymentPageState extends State<PaymentPage> {
                       Showalert(context: context, text: 'Ooopps...').showErrorAlert();
                     }
                   } else {
-                    await markAppointmentTaken();
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    if (hourTaken && isPast == false) {
+                      await markAppointmentTaken();
+                      ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         duration: Duration(seconds: 5),
                         content: Text('Seçtiğiniz saat başkası tarafından alınmıştır'),
                         backgroundColor: Colors.red,
                       )
                     );
+                    } else if (isPast && hourTaken == false) {
+                      await markIsPastDay();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        duration: Duration(seconds: 5),
+                        content: Text('Seçtiğiniz saat geçmiştir'),
+                        backgroundColor: Colors.red,
+                      )
+                    );
+                    } else {
+                      await markAppointmentTaken();
+                      await markIsPastDay();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        duration: Duration(seconds: 5),
+                        content: Text('Seçtiğiniz saat başkası tarafından alınmış veya geçmiştir'),
+                        backgroundColor: Colors.red,
+                      )
+                    );
+                    }
                   }
                 }, 
               style: GlobalStyles.buttonPrimary(),
@@ -213,8 +235,6 @@ class _PaymentPageState extends State<PaymentPage> {
   );
 }
 
-  //TODO: bildirimden buraya gelirse isPastDay verisine bakmıyor ödemeden önce kontrol et
-  //(mesela ödemeyi ptesi kabul etmişse kaleci ve bildirime basıp çarşamba günü salı günki halısahaya ödeme yapmaya çalışırsa)
   Widget _price() {
     return StreamBuilder<DocumentSnapshot>(
       stream: _firestore.collection('Users').doc(widget.sellerUid).snapshots(),
@@ -284,7 +304,23 @@ class _PaymentPageState extends State<PaymentPage> {
     }
   }
 
-  
+  Future<void> checkIfDayPast() async{
+    try {
+      DocumentReference<Map<String, dynamic>> documentReference = _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentbuyer')
+      .doc(widget.docId);
+
+      final snapshot = await documentReference.get();
+      final day = snapshot['appointmentDetails']['day'] ?? '';
+      final startTime = snapshot['appointmentDetails']['startTime'];
+      await CheckDaysPastUser.isPast(day, widget.docId!,startTime);
+    } catch (e) {
+      print('Error checking hour $e');
+    }
+  }
+
   Future<void> _markHourTaken() async {
     DocumentReference docref = _firestore.collection('Users').doc(widget.sellerUid);
 
@@ -306,6 +342,27 @@ class _PaymentPageState extends State<PaymentPage> {
     } catch (e) {
       print('Error $e');
     }
+  }
+
+  Future<bool> checkIfHourPast() async {
+    try {
+      DocumentReference<Map<String, dynamic>> documentReference = _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentbuyer')
+      .doc(widget.docId);
+
+      final snapshot = await documentReference.get();
+      final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
+      if (isPastDay == 'true') {
+        return true;
+      } else if (isPastDay == 'false') {
+        return false;
+      }
+    } catch (e) {
+      print('Error checking hour $e');
+    }
+    return false;
   }
 
   Future<bool> checkIfHourTaken() async {
@@ -336,6 +393,7 @@ class _PaymentPageState extends State<PaymentPage> {
     }
     return false;
   }
+
   Future<void> markAppointmentTaken() async {
     try {
       await _firestore
@@ -348,6 +406,20 @@ class _PaymentPageState extends State<PaymentPage> {
       });
     }catch (e) {
       print('Appointment could not mark as taken');
+    }
+  }
+  Future<void> markIsPastDay() async{
+    try {
+      await _firestore
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentbuyer')
+      .doc(widget.docId)
+      .update({
+        'appointmentDetails.isPastDay' : 'true'
+      });
+    } catch (e) {
+      print('is past day could not be marked $e');
     }
   }
   Future<void> sendNotificationToSeller() async {

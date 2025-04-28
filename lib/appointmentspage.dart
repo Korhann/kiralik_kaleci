@@ -216,35 +216,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   if (userorseller) {
     await CheckDaysPastSeller.isPast(day, docId, startTime);
   } else {
-    await CheckDaysPastUser.isPast(day, docId);
+    await CheckDaysPastUser.isPast(day, docId, startTime);
   }
 }
-
-//   Future<void> _fetchAppointments() async {
-//   QuerySnapshot snapshot = await _firestore
-//     .collection('Users')
-//     .doc(currentuser)
-//     .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
-//     .get();
-
-//   List<String> tempDocs = snapshot.docs.map((doc) => doc.id).toList();
-//   List<Map<String, dynamic>> tempAppointments = snapshot.docs
-//       .map((doc) => doc.data() as Map<String, dynamic>)
-//       .toList();
-
-//   if (!userorseller) {
-//     await checkAllPastDaysUser(tempAppointments, tempDocs);
-//   } else {
-//     await checkAllPastDaysSeller(tempAppointments, tempDocs);
-//   }
-
-//   if (mounted) {
-//     setState(() {
-//       docs = tempDocs;
-//       appointments = tempAppointments;
-//     });
-//   }
-// }
   
   Stream<QuerySnapshot> getAppointmentsStream() {
   return FirebaseFirestore.instance
@@ -253,27 +227,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     .collection(userorseller ? 'appointmentseller' : 'appointmentbuyer')
     .snapshots();
 }
-
-
-//   Future<void> checkAllPastDaysSeller(List appointments, List<String>? docIds) async {
-//   for (int i = 0; i < appointments.length; i++) {
-//     final appointmentDetails = appointments[i]['appointmentDetails'];
-//     final day = appointmentDetails['day'] ?? '';
-//     final startTime = appointmentDetails['startTime'];
-//     final docId = docIds![i];
-//     await CheckDaysPastSeller.isPast(day, docId);
-//   }
-// }
-  
-//   Future<void> checkAllPastDaysUser(List appointments, List<String>? docIds) async {
-//     for (int i = 0; i < appointments.length; i++) {
-//     final appointmentDetails = appointments[i]['appointmentDetails'];
-//     final day = appointmentDetails['day'] ?? '';
-//     final docId = docIds![i];
-//     await CheckDaysPastUser.isPast(day, docId);
-//     }
-//   }
-
 
   // Updates status to 'approved'
   Future<void> approveAppointment(String docId, int index) async {
@@ -700,6 +653,72 @@ class AppointmentView extends StatelessWidget {
 }
 }
 class CheckDaysPastSeller {
+  static Future<void> isPast(String day, String docId, String startTime) async {
+    String currentuser = FirebaseAuth.instance.currentUser!.uid;
+    List<String> orderedDays = [
+      'Pazartesi',
+      'Salı',
+      'Çarşamba',
+      'Perşembe',
+      'Cuma',
+      'Cumartesi',
+      'Pazar',
+    ];
+
+    final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+    final int currentDayIndex = now.weekday - 1; // Monday = 0
+    final int inputDayIndex = orderedDays.indexOf(day);
+
+    if (inputDayIndex == -1) {
+      throw ArgumentError('Invalid day name: $day');
+    }
+
+    bool shouldMarkAsPast = false;
+
+    // burada gün zaten geçmiş oluyor
+    if (inputDayIndex < currentDayIndex) {
+      shouldMarkAsPast = true;
+      // burada aynı gün sadece saatlere bakıp geçmiş mi diye anlıyor
+    } else if (inputDayIndex == currentDayIndex) {
+      final isPastHour = isStartTimePast(now, startTime);
+      if (isPastHour) {
+        shouldMarkAsPast = true;
+      }
+    }
+
+    if (shouldMarkAsPast) {
+      final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller')
+        .doc(docId);
+
+      final snapshot = await docRef.get();
+      final buyerUid = snapshot['appointmentDetails']['buyerUid'];
+      final buyerDocId = snapshot['appointmentDetails']['buyerDocId'];
+
+      final docRef2 = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(buyerUid)
+          .collection('appointmentbuyer')
+          .doc(buyerDocId);
+
+      final snapshot2 = await docRef2.get();
+
+      final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
+      final buyerPaymentStatus = snapshot2['appointmentDetails']['paymentStatus'];
+
+      if (isPastDay == 'false' && buyerPaymentStatus == 'waiting') {
+        await docRef.update({
+          'appointmentDetails.isPastDay': 'true',
+        });
+      }
+    }
+  }
+}
+
+// 'waiting' olan günlerin geçdiğini gösteriyor
+class CheckDaysPastUser {
   static Future<void> isPast(String day, String docId, String startTime) async{
     String currentuser = FirebaseAuth.instance.currentUser!.uid;
     List<String> orderedDays = [
@@ -715,74 +734,22 @@ class CheckDaysPastSeller {
     final now = DateTime.now().toUtc().add(const Duration(hours: 3));
     final int currentDayIndex = now.weekday - 1; // Monday is 1
     final int inputDayIndex = orderedDays.indexOf(day);
-    getHourDifference(now, startTime);
 
     if (inputDayIndex == -1) {
       throw ArgumentError('Invalid day name: $day');
     }
-    if (inputDayIndex < currentDayIndex || inputDayIndex == currentDayIndex) {
-      final docRef = FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentuser)
-        .collection('appointmentseller')
-        .doc(docId);
 
-      final snapshot = await docRef.get();
-      final buyerUid = snapshot['appointmentDetails']['buyerUid'];
-      final buyerDocId = snapshot['appointmentDetails']['buyerDocId'];
+    bool shouldMarkAsPast = false;
 
-      final docRef2 = FirebaseFirestore.instance
-      .collection('Users')
-      .doc(buyerUid)
-      .collection('appointmentbuyer')
-      .doc(buyerDocId);
-
-      final snapshot2 = await docRef2.get();
-
-      final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
-      final buyerPaymentStatus = snapshot2['appointmentDetails']['paymentStatus'];
-
-      // this only works if the status of the appointment is waiting
-      if (isPastDay == 'false' && buyerPaymentStatus == 'waiting') {
-        await docRef.update({
-          'appointmentDetails.isPastDay': 'true',
-        });
+    if (inputDayIndex < currentDayIndex) {
+      shouldMarkAsPast = true;
+    } else if (inputDayIndex == currentDayIndex) {
+      final isPastHour = isStartTimePast(now, startTime);
+      if (isPastHour) {
+        shouldMarkAsPast = true;
       }
     }
-  }
-}
-
-//todo: Buraya saat farkını alacak bir method yap
-void getHourDifference(DateTime now, String startTime) {
-  final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-  print('Now is $now');
-  print('start time is $startTime');
-  final formattedNow = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-  print('formatted is $formattedNow');
-}
-
-// 'waiting' olan günlerin geçdiğini gösteriyor
-class CheckDaysPastUser {
-  static Future<void> isPast(String day, String docId) async{
-    String currentuser = FirebaseAuth.instance.currentUser!.uid;
-    List<String> orderedDays = [
-      'Pazartesi',
-      'Salı',
-      'Çarşamba',
-      'Perşembe',
-      'Cuma',
-      'Cumartesi',
-      'Pazar',
-    ];
-
-    final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-    final int currentDayIndex = now.weekday - 1; // Monday is 1
-    final int inputDayIndex = orderedDays.indexOf(day);
-
-    if (inputDayIndex == -1) {
-      throw ArgumentError('Invalid day name: $day');
-    }
-    if (inputDayIndex < currentDayIndex) {
+    if (shouldMarkAsPast) {
       final docRef = FirebaseFirestore.instance
         .collection('Users')
         .doc(currentuser)
@@ -800,6 +767,20 @@ class CheckDaysPastUser {
       }
     }
   }
+}
+
+bool isStartTimePast(DateTime now, String startTime) {
+  final nowInMinutes = now.hour * 60 + now.minute;
+
+  final parts = startTime.split(':');
+  final startHour = int.parse(parts[0]);
+  final startMinute = int.parse(parts[1]);
+  final startInMinutes = startHour * 60 + startMinute;
+
+  print('Current time in minutes: $nowInMinutes');
+  print('Appointment start time in minutes: $startInMinutes');
+
+  return nowInMinutes >= startInMinutes;
 }
 
 class iconDayHour extends StatelessWidget {
