@@ -147,9 +147,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 final verificationState = appointmentDetails['appointmentDetails']['verificationState'] ?? '';
                 final isPastDay = appointmentDetails['appointmentDetails']['isPastDay'] ?? 'false';
                 final sellerUid = appointmentDetails['appointmentDetails']['selleruid'] ?? '';
+                final startTime = appointmentDetails['appointmentDetails']['startTime'];
                 final docId = docs[index].id;
 
-                _checkIfDayIsPast(day, docId, appointmentDetails);
+                _checkIfDayIsPast(day, docId, appointmentDetails, startTime);
 
                 Color cardColor = Colors.white;
 
@@ -211,9 +212,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     .snapshots();
 }
 
-  void _checkIfDayIsPast(String day, String docId, Map<String, dynamic> appointmentDetails) async {
+  void _checkIfDayIsPast(String day, String docId, Map<String, dynamic> appointmentDetails, String startTime) async {
   if (userorseller) {
-    await CheckDaysPastSeller.isPast(day, docId);
+    await CheckDaysPastSeller.isPast(day, docId, startTime);
   } else {
     await CheckDaysPastUser.isPast(day, docId);
   }
@@ -254,23 +255,24 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 }
 
 
-  Future<void> checkAllPastDaysSeller(List appointments, List<String>? docIds) async {
-  for (int i = 0; i < appointments.length; i++) {
-    final appointmentDetails = appointments[i]['appointmentDetails'];
-    final day = appointmentDetails['day'] ?? '';
-    final docId = docIds![i];
-    await CheckDaysPastSeller.isPast(day, docId);
-  }
-}
+//   Future<void> checkAllPastDaysSeller(List appointments, List<String>? docIds) async {
+//   for (int i = 0; i < appointments.length; i++) {
+//     final appointmentDetails = appointments[i]['appointmentDetails'];
+//     final day = appointmentDetails['day'] ?? '';
+//     final startTime = appointmentDetails['startTime'];
+//     final docId = docIds![i];
+//     await CheckDaysPastSeller.isPast(day, docId);
+//   }
+// }
   
-  Future<void> checkAllPastDaysUser(List appointments, List<String>? docIds) async {
-    for (int i = 0; i < appointments.length; i++) {
-    final appointmentDetails = appointments[i]['appointmentDetails'];
-    final day = appointmentDetails['day'] ?? '';
-    final docId = docIds![i];
-    await CheckDaysPastUser.isPast(day, docId);
-  }
-  }
+//   Future<void> checkAllPastDaysUser(List appointments, List<String>? docIds) async {
+//     for (int i = 0; i < appointments.length; i++) {
+//     final appointmentDetails = appointments[i]['appointmentDetails'];
+//     final day = appointmentDetails['day'] ?? '';
+//     final docId = docIds![i];
+//     await CheckDaysPastUser.isPast(day, docId);
+//     }
+//   }
 
 
   // Updates status to 'approved'
@@ -698,7 +700,7 @@ class AppointmentView extends StatelessWidget {
 }
 }
 class CheckDaysPastSeller {
-  static Future<void> isPast(String day, String docId) async{
+  static Future<void> isPast(String day, String docId, String startTime) async{
     String currentuser = FirebaseAuth.instance.currentUser!.uid;
     List<String> orderedDays = [
       'Pazartesi',
@@ -713,11 +715,12 @@ class CheckDaysPastSeller {
     final now = DateTime.now().toUtc().add(const Duration(hours: 3));
     final int currentDayIndex = now.weekday - 1; // Monday is 1
     final int inputDayIndex = orderedDays.indexOf(day);
+    getHourDifference(now, startTime);
 
     if (inputDayIndex == -1) {
       throw ArgumentError('Invalid day name: $day');
     }
-    if (inputDayIndex < currentDayIndex) {
+    if (inputDayIndex < currentDayIndex || inputDayIndex == currentDayIndex) {
       final docRef = FirebaseFirestore.instance
         .collection('Users')
         .doc(currentuser)
@@ -747,6 +750,15 @@ class CheckDaysPastSeller {
       }
     }
   }
+}
+
+//todo: Buraya saat farkını alacak bir method yap
+void getHourDifference(DateTime now, String startTime) {
+  final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+  print('Now is $now');
+  print('start time is $startTime');
+  final formattedNow = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+  print('formatted is $formattedNow');
 }
 
 // 'waiting' olan günlerin geçdiğini gösteriyor
@@ -789,7 +801,6 @@ class CheckDaysPastUser {
     }
   }
 }
-
 
 class iconDayHour extends StatelessWidget {
   final String day;

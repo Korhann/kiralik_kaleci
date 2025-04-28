@@ -7,7 +7,7 @@ admin.initializeApp();
 setGlobalOptions({ region: 'europe-west2' });
 
 exports.resetAppointments = onSchedule(
-  { schedule: 'every Monday 00:00', timeZone: 'Europe/Istanbul' },
+  { schedule: 'every Monday 17:00', timeZone: 'Europe/Istanbul' },
   async () => {
     try {
       const usersRef = admin.firestore().collection('Users');

@@ -213,7 +213,8 @@ class _PaymentPageState extends State<PaymentPage> {
   );
 }
 
-  //TODO: eğer seçilen saat 12 den sonra ise sellerPrice yerine sellerPriceMidnight alınacak
+  //TODO: bildirimden buraya gelirse isPastDay verisine bakmıyor ödemeden önce kontrol et
+  //(mesela ödemeyi ptesi kabul etmişse kaleci ve bildirime basıp çarşamba günü salı günki halısahaya ödeme yapmaya çalışırsa)
   Widget _price() {
     return StreamBuilder<DocumentSnapshot>(
       stream: _firestore.collection('Users').doc(widget.sellerUid).snapshots(),
