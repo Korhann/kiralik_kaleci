@@ -232,6 +232,7 @@ class NoOfAppointments extends StatelessWidget {
         .doc(currentUser)
         .collection('appointmentseller')
         .where('appointmentDetails.status', isEqualTo: 'pending')
+        .where('appointmentDetails.isSeen', isEqualTo: false)
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
   }

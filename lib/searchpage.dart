@@ -242,10 +242,11 @@ class _HeaderSection extends StatelessWidget {
                   child: Icon(Icons.notifications, size: 24, color: Colors.black),
                 ),
                 StreamBuilder<int>(
-                  stream: getUnreadCount(), // Fetch unread notifications
+                  stream: getUnreadCount(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData || snapshot.data == 0) 
+                    if (!snapshot.hasData || snapshot.data == 0) {
                       return SizedBox();
+                    }
                     return Positioned(
                       right: 5, // Adjust position
                       top: -3,
@@ -290,9 +291,11 @@ class _HeaderSection extends StatelessWidget {
       .doc(currentUser)
       .collection('appointmentbuyer')
       .where('appointmentDetails.status', whereIn: ['approved', 'rejected'])
-      .where('appointmentDetails.paymentStatus', isEqualTo: 'waiting')  
+      .where('appointmentDetails.paymentStatus', isEqualTo: 'waiting')
+      .where('appointmentDetails.isSeen', isEqualTo: false) 
       .snapshots()
       .map((snapshot) => snapshot.docs.length);
+      
   }  
 }
 

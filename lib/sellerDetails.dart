@@ -57,17 +57,13 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   bool isEmpty = false;
 
   //Stream<QuerySnapshot<Map<String, dynamic>>>? userStream;
-  late Future<void> _daysNameFuture;
-  bool _isVisible = true;
+  late Stream<void> _daysNameFuture;
 
   @override
   void initState() {
     super.initState();
-     _daysNameFuture = _getDaysName(widget.sellerUid);
+    _daysNameFuture = _getDaysName(widget.sellerUid);
     _checkIfFavorited();
-    if (widget.wherFrom == 'fromProfile') {
-      _isVisible = false;
-    }
   }
 
   Future<void> _checkIfFavorited() async {
@@ -147,9 +143,10 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     }
 
     var imageUrl = widget.sellerDetails['imageUrls'][0];
+
     return ConnectivityWithBackButton(
-      child: FutureBuilder(
-        future: _daysNameFuture,
+      child: StreamBuilder<void>(
+        stream: _daysNameFuture,
         builder: (context,snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             switch (widget.wherFrom){
@@ -233,36 +230,104 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              // Print days horizontally using the DayHourListView widget
-                                              DayHourListView(
-                                                days: days,
-                                                hoursByDay: hoursByDay,
-                                                hourColors: hourColors,
-                                                selectedDay: _selectedDay,
-                                                selectedHour: _selectedHour,
-                                                userorseller: userorseller,
-                                                onDaySelected: (selectedDay) {
-                                                  setState(() {
-                                                    _selectedDay = selectedDay;
-                                                  });
+                                              // todo: getDaysName de aynı kod çalışıyor, bunu orada çalıştırabilirsin
+                                              StreamBuilder<DocumentSnapshot>(
+                                                stream: FirebaseFirestore.instance
+                                                  .collection('Users')
+                                                  .doc(widget.sellerUid)
+                                                  .snapshots(),
+                                                builder: (context, snapshot) {
+                                                  if (!snapshot.hasData || snapshot.data == null) {
+                                                    return const Center(child: CircularProgressIndicator());
+                                                  }
+                                                  
+                                                  final userData = snapshot.data!.data() as Map<String, dynamic>;
+                                                  final selectedHoursByDay = userData['sellerDetails']?['selectedHoursByDay'] as Map<String, dynamic>?;
+                                                  if (selectedHoursByDay == null) {
+                                                    return const Text('Saat bilgisi bulunamadı');
+                                                  }
+                                                  
+                                                  days.clear();
+                                                  hoursByDay.clear();
+                                                  hourColors.clear();
+                                                  
+                                                  final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+                                                  final int currentDayIndex = now.weekday - 1;
+                                                  
+                                                  for (int i = 0; i < orderedDays.length; i++) {
+                                                    final day = orderedDays[i];
+                                                    if (!selectedHoursByDay.containsKey(day)) continue;
+                                                      List<dynamic> hourList = selectedHoursByDay[day];
+                                                      
+                                                      if (hourList.isEmpty) continue;
+                                                        days.add(day);
+                                                        List<String> hourTitles = [];
+                                                        for (var hour in hourList) {
+                                                          final hourMap = hour as Map<String, dynamic>;
+                                                          final String title = hourMap['title'];
+                                                          final bool istaken = hourMap['istaken'];
+                                                          final String? takenby = hourMap['takenby'];
+                                                          final String startTime = title.split('-')[0];
+                                                          final String dayHourKey = '$day $title';
+                                                          
+                                                          bool isPastDay = i < currentDayIndex;
+                                                          bool sameDay = i == currentDayIndex;
+                                                          bool isPastHour = sameDay && isStartTimePast(now, startTime);
+                                                          print('----------');
+                                                          print(currentDayIndex);
+                                                          print(i);
+                                                          print(dayHourKey);
+                                                          print(sameDay);
+                                                          print('---------');
+                                                          
+                                                          
+                                                          if (istaken || isPastDay || isPastHour) {
+                                                            if (takenby == currentUserUid) {
+                                                              hourColors[dayHourKey] = Colors.green;
+                                                            } else {
+                                                              hourColors[dayHourKey] = Colors.grey.shade600;
+                                                            }
+                                                          } else {
+                                                            hourColors[dayHourKey] = Colors.cyan;
+                                                          }
+                                                          
+                                                          hourTitles.add(title);
+                                                        }
+                                                        
+                                                      hoursByDay[day] = hourTitles;
+                                                    }
+                                                    
+                                                  return DayHourListView(
+                                                    days: days,
+                                                    hoursByDay: hoursByDay,
+                                                    hourColors: hourColors,
+                                                    selectedDay: _selectedDay,
+                                                    selectedHour: _selectedHour,
+                                                    userorseller: userorseller,
+                                                    onDaySelected: (selectedDay) {
+                                                      setState(() {
+                                                        _selectedDay = selectedDay;
+                                                      });
+                                                    },
+                                                    onHourSelected: (selectedHour) {
+                                                      setState(() {
+                                                        _selectedHour = selectedHour;
+                                                      });
+                                                    },
+                                                    onClearSelection: () {
+                                                      setState(() {
+                                                        _selectedDay = null;
+                                                        _selectedHour = null;
+                                                        hourColors.forEach((key, value) {
+                                                          if (value != Colors.grey.shade600 && value != Colors.green) {
+                                                            hourColors[key] = Colors.cyan;
+                                                          }
+                                                        });
+                                                      });
+                                                    },
+                                                  );
                                                 },
-                                                onHourSelected: (selectedHour) {
-                                                  setState(() {
-                                                    _selectedHour = selectedHour;
-                                                  });
-                                                },
-                                                onClearSelection: () {
-                                                  setState(() {
-                                                    _selectedDay = null;
-                                                    _selectedHour = null;
-                                                    hourColors.forEach((key, value) {
-                                                      if (value != Colors.grey.shade600 && value != Colors.green) {
-                                                        hourColors[key] = Colors.cyan;
-                                                      }
-                                                    });
-                                                  });
-                                                },
-                                            ),
+                                              ),
                                             const SizedBox(height: 10),
                                           ],
                                         ),
@@ -283,49 +348,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                         child: showInfoAppointments()
                       ),
                       const SizedBox(height: 60),
-                      //if (widget.wherFrom != 'fromProfile' || widget.wherFrom != 'fromSuccess') 
-                      // ElevatedButton(
-                      //   onPressed: () {
-                      //     print(_selectedHour);
-                      //     if (_selectedDay == null || _selectedHour == null || _selectedField == null) {
-                      //       ScaffoldMessenger.of(context).showSnackBar(
-                      //         const SnackBar(
-                      //           content: Text('Saat, gün ve saha seçiniz'),
-                      //           backgroundColor: Colors.red,
-                      //         )
-                      //       );
-                      //     } else if (widget.sellerUid == currentUserUid) {
-                      //       ScaffoldMessenger.of(context).showSnackBar(
-                      //         const SnackBar(
-                      //           content: Text('Kullanıcı kendini seçemez'),
-                      //           backgroundColor: Colors.red,
-                      //         )
-                      //       );
-                      //     }
-                      //     else {
-                      //       Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(
-                      //         builder: (context) => ApptRequest(
-                      //           sellerUid: widget.sellerUid,
-                      //           selectedDay: _selectedDay!,
-                      //           selectedHour: _selectedHour!,
-                      //           selectedField: _selectedField!,
-                      //         )
-                      //       ),
-                      //     );
-                      //     }
-                      //   },
-                      //   style: GlobalStyles.buttonPrimary(),
-                      //   child: Text(
-                      //     "Ödeme (₺${widget.sellerDetails['sellerPrice']})",
-                      //     style: GoogleFonts.inter(
-                      //       fontSize: 30,
-                      //       fontWeight: FontWeight.w600,
-                      //       color: userorseller ? Colors.white : Colors.black,
-                      //     ),
-                      //   ),
-                      // ),
                       PaymentButton(
                         selectedDay: _selectedDay,
                         selectedHour: _selectedHour,
@@ -353,8 +375,8 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
       ),
     );
   }
-
-  Future<void> _getDaysName(String userId) async {
+  //todo: Burayada saate göre geçme mantığını uygula
+  Stream<void> _getDaysName(String userId) async* {
   DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(userId).get();
 
   if (snapshot.exists) {
@@ -392,14 +414,23 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             String title = hourMap['title'];
             bool istaken = hourMap['istaken'];
             String? takenby = hourMap['takenby'];
+            String startTime = title.split('-')[0].toString();
 
             // Determine the color based on istaken and whether the day is past
             String dayHourKey = '$day $title';
             bool isPastDay = i < currentDayIndex;
-            
+            bool sameDay = i == currentDayIndex;
+
             if (isPastDay) {
+              // kesinlikle geçmiş olarak işaretle
               await markPastDayAsTaken(userId: userId, day: day, title: title);
               setState(() {});
+            } else if (sameDay) {
+              // saate göre geçme methodu yap
+              final isPastHour = isStartTimePast(now, startTime);
+              if (isPastHour) {
+                await markSingleHourAsTaken(userId: userId, day: day, title: title);
+              }
             }
 
             // duruma göre renk belirliyor
@@ -444,6 +475,39 @@ Future<void> markPastDayAsTaken({required String userId,required String day,requ
 }
 }
 
+Future<void> markSingleHourAsTaken({required String userId, required String day, required String title}) async {
+  final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+  List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
+
+  List<dynamic> updatedData = data.map((hour) {
+    if (hour['title'] == title) {
+      return {
+        'title': hour['title'],
+        'istaken': true,
+        'takenby': 'empty',
+      };
+    }
+    return hour;
+  }).toList();
+
+  await FirebaseFirestore.instance.collection('Users').doc(userId).update({
+    'sellerDetails.selectedHoursByDay.$day': updatedData,
+  });
+}
+
+bool isStartTimePast(DateTime now, String startTime) {
+  final nowInMinutes = now.hour * 60 + now.minute;
+
+  final parts = startTime.split(':');
+  final startHour = int.parse(parts[0]);
+  final startMinute = int.parse(parts[1]);
+  final startInMinutes = startHour * 60 + startMinute;
+
+  print('time now is $nowInMinutes');
+  print('start time is $startInMinutes');
+
+  return nowInMinutes >= startInMinutes;
+}
 
 class SellerFields extends StatefulWidget {
   final String selectedField;
@@ -756,9 +820,8 @@ class DayHourListView extends StatelessWidget {
                       children: hours.map((hour) {
                         // Generate unique key for each hour
                         String dayHourKey = '$day $hour';
-                        bool isSelected = hourColors[dayHourKey] == Colors.grey;
+                        bool isSelected = selectedDay == day && selectedHour == hour;
                         bool isDisabled = hourColors[dayHourKey] == Colors.grey.shade600 || hourColors[dayHourKey] == Colors.grey || hourColors[dayHourKey] == Colors.green;
-
                         return GestureDetector(
                           // Only allow interaction if not disabled
                           onTap: !isDisabled
@@ -782,7 +845,7 @@ class DayHourListView extends StatelessWidget {
                                 child: Container(
                                   margin: const EdgeInsets.symmetric(vertical: 3.0),
                                   padding: const EdgeInsets.all(5),
-                                  color: hourColors[dayHourKey] ?? Colors.cyan,
+                                  color: isSelected ? Colors.grey : hourColors[dayHourKey] ?? Colors.cyan,
                                   child: Text(
                                     hour,
                                     style: GoogleFonts.inter(

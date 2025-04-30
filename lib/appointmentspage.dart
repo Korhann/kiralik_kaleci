@@ -59,7 +59,48 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   @override
   void initState() {
     super.initState();
-   //fetchAppts =  _fetchAppointments();
+    runMethods();
+  }
+  void runMethods () {
+    if (widget.whereFrom == 'homePage') {
+      markSeenAsTrueUser();
+    } else if (widget.whereFrom == 'fromSellerHomePage') {
+      markSeenAsTrueSeller();
+   }
+  }
+
+  Future<void> markSeenAsTrueUser() async{
+    try {
+      QuerySnapshot<Map<String,dynamic>> querySnapshot = await FirebaseFirestore.instance
+    .collection('Users')
+    .doc(currentuser)
+    .collection('appointmentbuyer')
+    .where('appointmentDetails.isSeen', isEqualTo: false)
+    .get();
+
+    for (final doc in querySnapshot.docs) {
+      doc.reference.update({'appointmentDetails.isSeen':true});
+    }
+    } catch (e) {
+      print('Error seen buyer $e');
+    }
+  }
+
+  Future<void> markSeenAsTrueSeller() async{
+    try {
+      QuerySnapshot<Map<String,dynamic>> querySnapshot = await FirebaseFirestore.instance
+    .collection('Users')
+    .doc(currentuser)
+    .collection('appointmentseller')
+    .where('appointmentDetails.isSeen', isEqualTo: false)
+    .get();
+
+    for (final doc in querySnapshot.docs) {
+      doc.reference.update({'appointmentDetails.isSeen':true});
+    }
+    } catch (e) {
+      print('Error seen seller');
+    }
   }
 
   @override
@@ -770,6 +811,7 @@ class CheckDaysPastUser {
 }
 
 bool isStartTimePast(DateTime now, String startTime) {
+  print('start time is $startTime');
   final nowInMinutes = now.hour * 60 + now.minute;
 
   final parts = startTime.split(':');

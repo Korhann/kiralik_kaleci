@@ -269,7 +269,7 @@ class _ApptRequestState extends State<ApptRequest> {
         sellerFullName = await sellerData!['fullName'];
       }
 
-      Map<String,String> appointmentDetails = {
+      Map<String,dynamic> appointmentDetails = {
       'name': sellerFullName,
       'selleruid': widget.sellerUid,
       'day': widget.selectedDay,
@@ -280,7 +280,8 @@ class _ApptRequestState extends State<ApptRequest> {
       'endTime': endTime,
       'isPastDay': 'false',
       'status': 'pending',
-      'paymentStatus' : 'waiting'
+      'paymentStatus' : 'waiting',
+      'isSeen' : false
     };
 
     DocumentReference buyerDocRef = await _firestore.collection('Users')
@@ -315,7 +316,7 @@ class _ApptRequestState extends State<ApptRequest> {
     String buyerDocId = await appointmentBuyer(verificationCode, startTime, endTime);
 
   // Create the appointmentDetails map with the fetched data
-  Map<String, String> appointmentDetails = {
+  Map<String, dynamic> appointmentDetails = {
     'fullName': fullName,
     'buyerUid': currentuser,
     'buyerDocId' : buyerDocId,
@@ -328,6 +329,7 @@ class _ApptRequestState extends State<ApptRequest> {
     'endTime': endTime,
     'isPastDay': 'false',
     'status': 'pending',
+    'isSeen' : false
   };
   
     // Add appointment details to Firestore to the seller account
