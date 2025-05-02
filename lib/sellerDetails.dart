@@ -231,6 +231,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               // todo: getDaysName de aynı kod çalışıyor, bunu orada çalıştırabilirsin
+                                              //todo: Gece saatleri sıkıntılı çalışıyor
                                               StreamBuilder<DocumentSnapshot>(
                                                 stream: FirebaseFirestore.instance
                                                   .collection('Users')
@@ -424,7 +425,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             if (isPastDay) {
               // kesinlikle geçmiş olarak işaretle
               await markPastDayAsTaken(userId: userId, day: day, title: title);
-              setState(() {});
+              // setState(() {});
             } else if (sameDay) {
               // saate göre geçme methodu yap
               final isPastHour = isStartTimePast(now, startTime);

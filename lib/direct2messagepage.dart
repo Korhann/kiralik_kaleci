@@ -99,7 +99,7 @@ class _Direct2MessageState extends State<Direct2Message> {
   Widget _buildMessageItem(DocumentSnapshot documentSnapshot) {
     // bunun document i yanlış olduğu için göstermiyor
     Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-    
+    print('data is $data');
 
     var alignment = (data['uid'] == _firebaseAuth.currentUser!.uid)
         ? Alignment.centerRight
