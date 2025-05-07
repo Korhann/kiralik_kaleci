@@ -1,4 +1,5 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kiralik_kaleci/authpage.dart';
@@ -7,6 +8,7 @@ import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/sellerdirectmessages.dart';
 import 'package:kiralik_kaleci/sellerprofilepage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SellerMainPage extends StatefulWidget {
   const SellerMainPage({
@@ -23,12 +25,15 @@ class SellerMainPageState extends State<SellerMainPage> {
 
   late Stream<User?> _authStream;
   int _currentIndex = 0;
+  int _unreadMessages = 0;
+  String currentUser = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
     super.initState();
     _authStream = FirebaseAuth.instance.authStateChanges();
     _currentIndex = widget.index;
+    listenToUnreadCount();
   }
   
   @override
@@ -37,6 +42,7 @@ class SellerMainPageState extends State<SellerMainPage> {
       stream: _authStream,
       builder: (context,snapshot) {
         if (snapshot.hasData) {
+        
         return Scaffold(
         body: screens()[_currentIndex],
         bottomNavigationBar: BottomNavyBar(
@@ -53,7 +59,32 @@ class SellerMainPageState extends State<SellerMainPage> {
               title: const Text('Ana Sayfa'),
             ),
             BottomNavyBarItem(
-              icon: const Icon(Icons.mail,color: Colors.white),
+              icon: Stack(
+                children: [
+                  const Icon(Icons.mail,color: Colors.white),
+                  if (_unreadMessages > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
+                        child: Text(
+                          '$_unreadMessages',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                ],
+              ),
               title: const Text('Mesajlar'),
             ),
             BottomNavyBarItem(
@@ -72,4 +103,41 @@ class SellerMainPageState extends State<SellerMainPage> {
   List<Widget> screens() {
     return [const SellerHomePage(), const SellerDirectMessages(), const SellerProfilePage(), const SellerAddPage()];
   }
+
+  void listenToUnreadCount() async {
+  final prefs = await SharedPreferences.getInstance();
+  List<String>? sharedIds = prefs.getStringList('ids');
+  if (sharedIds == null) return;
+
+  Map<String, int> unreadPerChat = {};
+
+  for (var st in sharedIds) {
+    List<String> ids = [currentUser, st];
+    ids.sort();
+    String chatRoomId = ids.join('_');
+
+    FirebaseFirestore.instance
+        .collection('chat_rooms')
+        .doc(chatRoomId)
+        .collection('messages')
+        .doc('meta')
+        .snapshots()
+        .listen((metaDoc) {
+      final data = metaDoc.data();
+      if (data == null) return;
+
+      int unread = data['senderId'] == currentUser ? data['to_msg'] ?? 0 : data['from_msg'] ?? 0;
+      unreadPerChat[chatRoomId] = unread;
+
+      // Recalculate total
+      int totalUnread = unreadPerChat.values.fold(0, (a, b) => a + b);
+
+      setState(() {
+        _unreadMessages = totalUnread;
+      });
+    });
+  }
+}
+
+
 }

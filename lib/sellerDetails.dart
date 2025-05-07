@@ -230,8 +230,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              // todo: getDaysName de aynı kod çalışıyor, bunu orada çalıştırabilirsin
-                                              //todo: Gece saatleri sıkıntılı çalışıyor
+                                              //todo: Gece saatleri sıkıntılı çalışıyor ve _getDaysName de de aynı kod çalışıyor, hangisi boş anla
                                               StreamBuilder<DocumentSnapshot>(
                                                 stream: FirebaseFirestore.instance
                                                   .collection('Users')
@@ -270,17 +269,12 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                           final String? takenby = hourMap['takenby'];
                                                           final String startTime = title.split('-')[0];
                                                           final String dayHourKey = '$day $title';
+                                                          List<String> titles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
+                                                          bool contains = titles.contains(title);
                                                           
                                                           bool isPastDay = i < currentDayIndex;
                                                           bool sameDay = i == currentDayIndex;
-                                                          bool isPastHour = sameDay && isStartTimePast(now, startTime);
-                                                          print('----------');
-                                                          print(currentDayIndex);
-                                                          print(i);
-                                                          print(dayHourKey);
-                                                          print(sameDay);
-                                                          print('---------');
-                                                          
+                                                          bool isPastHour = sameDay && isStartTimePast(now, startTime) && !contains;
                                                           
                                                           if (istaken || isPastDay || isPastHour) {
                                                             if (takenby == currentUserUid) {
@@ -377,7 +371,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     );
   }
   //todo: Burayada saate göre geçme mantığını uygula
-  Stream<void> _getDaysName(String userId) async* {
+  Stream<void> _getDaysName(String userId) async*{
   DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(userId).get();
 
   if (snapshot.exists) {
@@ -418,15 +412,17 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             String startTime = title.split('-')[0].toString();
 
             // Determine the color based on istaken and whether the day is past
+            List<String> titles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
+            bool contains = titles.contains(title);
             String dayHourKey = '$day $title';
             bool isPastDay = i < currentDayIndex;
             bool sameDay = i == currentDayIndex;
 
+
             if (isPastDay) {
               // kesinlikle geçmiş olarak işaretle
               await markPastDayAsTaken(userId: userId, day: day, title: title);
-              // setState(() {});
-            } else if (sameDay) {
+            } else if (sameDay && !contains) {
               // saate göre geçme methodu yap
               final isPastHour = isStartTimePast(now, startTime);
               if (isPastHour) {
@@ -503,9 +499,8 @@ bool isStartTimePast(DateTime now, String startTime) {
   final startHour = int.parse(parts[0]);
   final startMinute = int.parse(parts[1]);
   final startInMinutes = startHour * 60 + startMinute;
-
-  print('time now is $nowInMinutes');
-  print('start time is $startInMinutes');
+  print('now is $nowInMinutes');
+  print('start is $startInMinutes');
 
   return nowInMinutes >= startInMinutes;
 }

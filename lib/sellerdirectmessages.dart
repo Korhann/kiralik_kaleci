@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/direct2messagepage.dart';
+import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SellerDirectMessages extends StatefulWidget {
   const SellerDirectMessages({super.key});
@@ -26,6 +28,7 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
   }
 
   Stream<List<Map<String, dynamic>>> fetchConversations() {
+
   Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
       .collectionGroup('messages')
       .where('senderId', isEqualTo: currentUser)
@@ -39,7 +42,7 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
   return Rx.combineLatest2(
     sentStream,
     receivedStream,
-    (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) async {  
+    (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) async { 
       Set<String> participantIds = {};
 
       for (var doc in sentSnap.docs) {
@@ -59,6 +62,7 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
         String receiverName = await _getReceiverName(participantId);
         String? imageUrl = await _getReceiverImage(participantId);
         int unreadCount = await getUnreadCount(participantId);
+        await addParticipantToPrefs(participantId);
 
         tempConversations.add({
           'receiverId': participantId,
@@ -72,6 +76,17 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
     },
   ).asyncMap((futureList) => futureList);
 }
+
+  Future<void> addParticipantToPrefs(String participantId) async {
+  final prefs = await SharedPreferences.getInstance();
+  List<String> ids = prefs.getStringList('ids') ?? [];
+
+  if (!ids.contains(participantId)) {
+    ids.add(participantId);
+    await prefs.setStringList('ids', ids);
+  }
+}
+
 
   Future<String> _getLastMessage(String receiverId) async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
@@ -106,6 +121,7 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
   }
 
   Future<int> getUnreadCount(String participantId) async {
+  final prefs = await SharedPreferences.getInstance();
   List<String> ids = [currentUser, participantId];
   ids.sort();
   String chatRoomId = ids.join('_');
@@ -122,11 +138,16 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
   Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
 
   if (data['senderId'] == currentUser) {
+    //await prefs.setInt('unread_messages', data['to_msg']);
+    //print(prefs.getInt('unread_messages'));
     return data['to_msg'] ?? 0;
   } else {
+    // await prefs.setInt('unread_messages', data['from_msg']);
+    // print(prefs.getInt('unread_messages'));
     return data['from_msg'] ?? 0;
   }
 } 
+
   
   Future<void> resetUnredMessages(String participantId) async{
     List<String> ids = [currentUser, participantId];

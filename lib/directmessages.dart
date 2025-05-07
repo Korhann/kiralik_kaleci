@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'direct2messagepage.dart';
 
 class DirectMessages extends StatefulWidget {
@@ -60,6 +61,7 @@ class _DirectMessagesState extends State<DirectMessages> {
         String receiverName = await _getReceiverName(participantId);
         String? imageUrl = await _getReceiverImage(participantId);
         int unreadCount = await getUnreadCount(participantId);
+        await addParticipantIdToPrefs(participantId);
 
         tempConversations.add({
           'receiverId': participantId,
@@ -73,6 +75,17 @@ class _DirectMessagesState extends State<DirectMessages> {
     },
   ).asyncMap((futureList) => futureList);
 }
+
+Future<void> addParticipantIdToPrefs(String participantId) async {
+  final prefs = await SharedPreferences.getInstance();
+  List<String> ids = prefs.getStringList('ids') ?? [];
+
+  if (!ids.contains(participantId)) {
+    ids.add(participantId);
+    await prefs.setStringList('ids', ids);
+  }
+}
+
 
   Future<int> getUnreadCount(String participantId) async {
   List<String> ids = [currentUser, participantId];
