@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/chat_services.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
@@ -19,6 +20,7 @@ class DirectMessages extends StatefulWidget {
 class _DirectMessagesState extends State<DirectMessages> {
 
   String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  late Stream<int> unreadCount;
 
   @override
   void initState() {
@@ -52,22 +54,74 @@ class _DirectMessagesState extends State<DirectMessages> {
 
       List<Map<String, dynamic>> tempConversations = [];
 
-      for (String participantId in participantIds) {
+
+      for (String participantId in participantIds) {        
         String lastMessage = await _getLastMessage(participantId);
         String receiverName = await _getReceiverName(participantId);
         String? imageUrl = await _getReceiverImage(participantId);
+        int unreadCount = await getUnreadCount(participantId);
 
         tempConversations.add({
           'receiverId': participantId,
           'receiverName': receiverName,
           'lastMessage': lastMessage,
           'imageUrl': imageUrl,
+          'unread': unreadCount
         });
       }
       return tempConversations;
     },
   ).asyncMap((futureList) => futureList);
 }
+
+  Future<int> getUnreadCount(String participantId) async {
+  List<String> ids = [currentUser, participantId];
+  ids.sort();
+  String chatRoomId = ids.join('_');
+
+  DocumentSnapshot metaDoc = await FirebaseFirestore.instance
+    .collection('chat_rooms')
+    .doc(chatRoomId)
+    .collection('messages')
+    .doc('meta')
+    .get();
+
+  if (!metaDoc.exists) return 0;
+
+  Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
+
+  if (data['senderId'] == currentUser) {
+    return data['to_msg'] ?? 0;
+  } else {
+    return data['from_msg'] ?? 0;
+  }
+  }
+
+  Future<void> resetUnredMessages(String participantId) async{
+    List<String> ids = [currentUser, participantId];
+    ids.sort();
+    String chatRoomId = ids.join('_');
+
+    DocumentSnapshot metaDoc = await FirebaseFirestore.instance
+    .collection('chat_rooms')
+    .doc(chatRoomId)
+    .collection('messages')
+    .doc('meta')
+    .get();
+    
+    Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
+    
+    if (data['senderId'] == currentUser) {
+      metaDoc.reference.update({
+        'to_msg': 0
+      });
+    } else {
+      metaDoc.reference.update({
+        'from_msg': 0
+      });
+    }
+  }
+
 
 
   Future<String> _getLastMessage(String receiverId) async {
@@ -102,38 +156,39 @@ class _DirectMessagesState extends State<DirectMessages> {
     return null;
   }
 
-//   Future<void> _resetUnreadMessages(String receiverId) async {
-//     try {
-//       String docPath;
 
-//       // Determine the document path
-//       if (currentUser.compareTo(receiverId) < 0) {
-//         docPath = '${currentUser}_$receiverId';
-//       } else {
-//         docPath = '${receiverId}_$currentUser';
-//       }
+  // Future<void> _resetUnreadMessages(String receiverId) async {
+  //   try {
+  //     String docPath;
 
-//       DocumentReference messageDocRef = FirebaseFirestore.instance
-//           .collection('chat_rooms')
-//           .doc(docPath)
-//           .collection('messages')
-//           .doc('messageDoc');
+  //     // Determine the document path
+  //     if (currentUser.compareTo(receiverId) < 0) {
+  //       docPath = '${currentUser}_$receiverId';
+  //     } else {
+  //       docPath = '${receiverId}_$currentUser';
+  //     }
 
-//       DocumentSnapshot messageDocSnapshot = await messageDocRef.get();
+  //     DocumentReference messageDocRef = FirebaseFirestore.instance
+  //         .collection('chat_rooms')
+  //         .doc(docPath)
+  //         .collection('messages')
+  //         .doc('messageDoc');
 
-//       if (messageDocSnapshot.exists && messageDocSnapshot.data() != null) {
-//         Map<String, dynamic> data = messageDocSnapshot.data() as Map<String, dynamic>;
+  //     DocumentSnapshot messageDocSnapshot = await messageDocRef.get();
 
-//         if (data['receiverId'] == currentUser) {
-//           await messageDocRef.update({'from_msg': 0});
-//         } else if (data['senderId'] == currentUser) {
-//           await messageDocRef.update({'to_msg': 0});
-//         }
-//       }
-//     } catch (e) {
-//       print("Error resetting unread messages: $e");
-//     }
-//   }
+  //     if (messageDocSnapshot.exists && messageDocSnapshot.data() != null) {
+  //       Map<String, dynamic> data = messageDocSnapshot.data() as Map<String, dynamic>;
+
+  //       if (data['receiverId'] == currentUser) {
+  //         await messageDocRef.update({'from_msg': 0});
+  //       } else if (data['senderId'] == currentUser) {
+  //         await messageDocRef.update({'to_msg': 0});
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error resetting unread messages: $e");
+  //   }
+  // }
 
     //todo: Bunu kullanmana gerek yok zaten sayfa değiştirince yenileniyor
 //   Future<String> _getUpdatedName(String userId) async {
@@ -163,7 +218,6 @@ Widget build(BuildContext context) {
         }
 
         var conversations = snapshot.data!;
-        print('conversation $conversations');
 
         return Scaffold(
           appBar: AppBar(
@@ -185,21 +239,33 @@ Widget build(BuildContext context) {
               var conversation = conversations[index];
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: conversation['imageUrl'] != null
-                      ? NetworkImage(conversation['imageUrl'])
-                      : null,
-                  child: conversation['imageUrl'] == null
-                      ? const Icon(Icons.person)
-                      : null,
+                  backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
+                  child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
                 ),
                 title: Text(conversation['receiverName']),
-                subtitle: Text(conversation['lastMessage']),
-                onTap: () {
+                subtitle: Row(
+                  children: [
+                    Text(conversation['lastMessage']),
+                    const Spacer(),
+                    if (conversation['unread'] > 0) 
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${conversation['unread']}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      )
+                  ]
+                ),
+                onTap: () async{
+                  await resetUnredMessages(conversation['receiverId']);
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          Direct2Message(receiverId: conversation['receiverId']),
+                    context, MaterialPageRoute(
+                      builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
                     ),
                   );
                 },

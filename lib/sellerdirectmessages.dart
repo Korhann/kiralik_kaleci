@@ -6,6 +6,7 @@ import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/direct2messagepage.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:rxdart/rxdart.dart';
 
 class SellerDirectMessages extends StatefulWidget {
   const SellerDirectMessages({super.key});
@@ -18,58 +19,59 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
   String currentUser = FirebaseAuth.instance.currentUser!.uid;
   List<Map<String, dynamic>> conversations = [];
 
-  late Future<void> fetchConvos;
 
   @override
   void initState() {
     super.initState();
-    fetchConvos = _fetchConversations();
   }
 
-  Future<void> _fetchConversations() async {
-    try {
-      QuerySnapshot sentMessages = await FirebaseFirestore.instance
-          .collectionGroup('messages')
-          .where('senderId', isEqualTo: currentUser)
-          .get();
+  Stream<List<Map<String, dynamic>>> fetchConversations() {
+  Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
+      .collectionGroup('messages')
+      .where('senderId', isEqualTo: currentUser)
+      .snapshots();
 
-      QuerySnapshot receivedMessages = await FirebaseFirestore.instance
-          .collectionGroup('messages')
-          .where('receiverId', isEqualTo: currentUser)
-          .get();
+  Stream<QuerySnapshot> receivedStream = FirebaseFirestore.instance
+      .collectionGroup('messages')
+      .where('receiverId', isEqualTo: currentUser)
+      .snapshots();
 
+  return Rx.combineLatest2(
+    sentStream,
+    receivedStream,
+    (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) async {  
       Set<String> participantIds = {};
 
-      for (var doc in sentMessages.docs) {
+      for (var doc in sentSnap.docs) {
         participantIds.add(doc['receiverId']);
       }
 
-      for (var doc in receivedMessages.docs) {
+      for (var doc in receivedSnap.docs) {
         participantIds.add(doc['senderId']);
       }
 
       List<Map<String, dynamic>> tempConversations = [];
 
+
       for (String participantId in participantIds) {
+        
         String lastMessage = await _getLastMessage(participantId);
         String receiverName = await _getReceiverName(participantId);
         String? imageUrl = await _getReceiverImage(participantId);
+        int unreadCount = await getUnreadCount(participantId);
 
         tempConversations.add({
           'receiverId': participantId,
           'receiverName': receiverName,
           'lastMessage': lastMessage,
           'imageUrl': imageUrl,
+          'unread': unreadCount
         });
       }
-
-      setState(() {
-        conversations = tempConversations;
-      });
-    } catch (e) {
-      print("Error fetching conversations: $e");
-    }
-  }
+      return tempConversations;
+    },
+  ).asyncMap((futureList) => futureList);
+}
 
   Future<String> _getLastMessage(String receiverId) async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
@@ -103,15 +105,63 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
     return null;
   }
 
+  Future<int> getUnreadCount(String participantId) async {
+  List<String> ids = [currentUser, participantId];
+  ids.sort();
+  String chatRoomId = ids.join('_');
+
+  DocumentSnapshot metaDoc = await FirebaseFirestore.instance
+    .collection('chat_rooms')
+    .doc(chatRoomId)
+    .collection('messages')
+    .doc('meta')
+    .get();
+
+  if (!metaDoc.exists) return 0;
+
+  Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
+
+  if (data['senderId'] == currentUser) {
+    return data['to_msg'] ?? 0;
+  } else {
+    return data['from_msg'] ?? 0;
+  }
+} 
+  
+  Future<void> resetUnredMessages(String participantId) async{
+    List<String> ids = [currentUser, participantId];
+    ids.sort();
+    String chatRoomId = ids.join('_');
+
+    DocumentSnapshot metaDoc = await FirebaseFirestore.instance
+    .collection('chat_rooms')
+    .doc(chatRoomId)
+    .collection('messages')
+    .doc('meta')
+    .get();
+    
+    Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
+    if (data['senderId'] == currentUser) {
+      metaDoc.reference.update({
+        'to_msg': 0
+      });
+    } else {
+      metaDoc.reference.update({
+        'from_msg': 0
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ConnectivityWrapper(
-      child: FutureBuilder(
-        future: fetchConvos,
+      child: StreamBuilder(
+        stream: fetchConversations(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return MessagesShimmer();
           }
+          var conversations = snapshot.data!;
           return Scaffold(
           appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -130,12 +180,28 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
               child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
             ),
             title: Text(conversation['receiverName'], style: TextStyle(color: Colors.white)),
-            subtitle: Text(conversation['lastMessage'],style: TextStyle(color: Colors.white)),
-            onTap: () {
+            subtitle: Row(
+                  children: [
+                    Text(conversation['lastMessage'], style: TextStyle(color: Colors.white)),
+                    const Spacer(),
+                    if (conversation['unread'] > 0) 
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${conversation['unread']}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      )
+                  ]
+                ),
+            onTap: () async{
+              await resetUnredMessages(conversation['receiverId']);
               Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
+                context, MaterialPageRoute(builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
                 ),
               );
             },
