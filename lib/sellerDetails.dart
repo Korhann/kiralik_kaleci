@@ -57,7 +57,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   bool isEmpty = false;
 
   //Stream<QuerySnapshot<Map<String, dynamic>>>? userStream;
-  late Stream<void> _daysNameFuture;
+  late Future<void> _daysNameFuture;
 
   @override
   void initState() {
@@ -145,8 +145,8 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
     var imageUrl = widget.sellerDetails['imageUrls'][0];
 
     return ConnectivityWithBackButton(
-      child: StreamBuilder<void>(
-        stream: _daysNameFuture,
+      child: FutureBuilder<void>(
+        future: _daysNameFuture,
         builder: (context,snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             switch (widget.wherFrom){
@@ -232,15 +232,11 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                             children: [
                                               //todo: Gece saatleri sıkıntılı çalışıyor ve _getDaysName de de aynı kod çalışıyor, hangisi boş anla
                                               StreamBuilder<DocumentSnapshot>(
-                                                stream: FirebaseFirestore.instance
-                                                  .collection('Users')
-                                                  .doc(widget.sellerUid)
-                                                  .snapshots(),
+                                                stream: _stream(),
                                                 builder: (context, snapshot) {
-                                                  if (!snapshot.hasData || snapshot.data == null) {
+                                                  if (!snapshot.hasData) {
                                                     return const Center(child: CircularProgressIndicator());
                                                   }
-                                                  
                                                   final userData = snapshot.data!.data() as Map<String, dynamic>;
                                                   final selectedHoursByDay = userData['sellerDetails']?['selectedHoursByDay'] as Map<String, dynamic>?;
                                                   if (selectedHoursByDay == null) {
@@ -253,9 +249,14 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                   
                                                   final now = DateTime.now().toUtc().add(const Duration(hours: 3));
                                                   final int currentDayIndex = now.weekday - 1;
+                                                  print('current day is $currentDayIndex');
                                                   
                                                   for (int i = 0; i < orderedDays.length; i++) {
                                                     final day = orderedDays[i];
+                                                    print('---------');
+                                                    print(i);
+                                                    print(day);
+                                                    print('---------');
                                                     if (!selectedHoursByDay.containsKey(day)) continue;
                                                       List<dynamic> hourList = selectedHoursByDay[day];
                                                       
@@ -269,27 +270,12 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                           final String? takenby = hourMap['takenby'];
                                                           final String startTime = title.split('-')[0];
                                                           final String dayHourKey = '$day $title';
-                                                          List<String> titles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
-                                                          bool contains = titles.contains(title);
-                                                          
-                                                          bool isPastDay = i < currentDayIndex;
-                                                          bool sameDay = i == currentDayIndex;
-                                                          bool isPastHour = sameDay && isStartTimePast(now, startTime) && !contains;
-                                                          
-                                                          if (istaken || isPastDay || isPastHour) {
-                                                            if (takenby == currentUserUid) {
-                                                              hourColors[dayHourKey] = Colors.green;
-                                                            } else {
-                                                              hourColors[dayHourKey] = Colors.grey.shade600;
-                                                            }
-                                                          } else {
-                                                            hourColors[dayHourKey] = Colors.cyan;
-                                                          }
-                                                          
-                                                          hourTitles.add(title);
+                                                          List<String> nightTitles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
+                                                          bool isNightHour = nightTitles.contains(title);
+
+                                                          dayChecker(i, currentDayIndex, now, startTime, dayHourKey, takenby!, day, title, hourTitles, isNightHour, istaken);
                                                         }
                                                         
-                                                      hoursByDay[day] = hourTitles;
                                                     }
                                                     
                                                   return DayHourListView(
@@ -320,9 +306,8 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                                         });
                                                       });
                                                     },
-                                                  );
-                                                },
-                                              ),
+                                                  );                                     
+                                                }),
                                             const SizedBox(height: 10),
                                           ],
                                         ),
@@ -370,8 +355,48 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
       ),
     );
   }
+  //todo: Olmazsa eski yerine geri al
+  void dayChecker(int i, int currentDayIndex, final now, String startTime, String dayHourKey, String takenby, String day, String title, List<String> hourTitles, bool isNightHour, bool istaken) {
+    if (isNightHour) {
+                                                            bool isPastNightHour = i < currentDayIndex && isPastNightHours(now, startTime);
+                                                            if (isPastNightHour) {
+                                                              hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600; 
+                                                              markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
+                                                            } else {
+                                                              hourColors[dayHourKey] = Colors.cyan;
+                                                            }
+                                                            hourTitles.add(title);
+                                                            hoursByDay[day] = hourTitles;
+                                                          } else {
+                                                            bool isPastDay = i < currentDayIndex;
+                                                            bool sameDay = i == currentDayIndex;
+                                                            bool isPastHour = isStartTimePast(now, startTime, isNightHour) && sameDay;
+                                                          
+                                                          if (istaken || isPastDay || isPastHour) {
+                                                            hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600;
+                                                                if (isPastDay) {
+                                                                  markPastDayAsTaken(userId: widget.sellerUid, day: day, title: title);
+                                                                } else if (isPastHour) {
+                                                                  markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
+                                                                }
+                                                          } else {
+                                                            hourColors[dayHourKey] = Colors.cyan;
+                                                          }
+
+                                                          hourTitles.add(title);
+                                                          }
+                                                          hoursByDay[day] = hourTitles;
+  }
+
+  Stream<DocumentSnapshot> _stream() {
+    return FirebaseFirestore.instance
+    .collection('Users')
+    .doc(widget.sellerUid)
+    .snapshots();
+  }
+
   //todo: Burayada saate göre geçme mantığını uygula
-  Stream<void> _getDaysName(String userId) async*{
+  Future<void> _getDaysName(String userId) async{
   DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(userId).get();
 
   if (snapshot.exists) {
@@ -395,60 +420,60 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
         }
 
         // Get the current day
-        final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-        final int currentDayIndex = now.weekday - 1; // 0 pazartesi, 6 pazar
+        // final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+        // final int currentDayIndex = now.weekday - 1; // 0 pazartesi, 6 pazar
         
-        for (int i = 0; i < orderedDays.length; i++) {
-          final day = orderedDays[i];
-          if (!selectedHoursByDay.containsKey(day)) continue;
+        // for (int i = 0; i < orderedDays.length; i++) {
+        //   final day = orderedDays[i];
+        //   if (!selectedHoursByDay.containsKey(day)) continue;
 
-          List<dynamic> hourList = selectedHoursByDay[day] as List;
-          List<String> hourTitles = [];
-          for (var hour in hourList) {
-            Map<String, dynamic> hourMap = hour as Map<String, dynamic>;
-            String title = hourMap['title'];
-            bool istaken = hourMap['istaken'];
-            String? takenby = hourMap['takenby'];
-            String startTime = title.split('-')[0].toString();
+        //   List<dynamic> hourList = selectedHoursByDay[day] as List;
+        //   List<String> hourTitles = [];
+        //   for (var hour in hourList) {
+        //     Map<String, dynamic> hourMap = hour as Map<String, dynamic>;
+        //     String title = hourMap['title'];
+        //     bool istaken = hourMap['istaken'];
+        //     String? takenby = hourMap['takenby'];
+        //     String startTime = title.split('-')[0].toString();
 
-            // Determine the color based on istaken and whether the day is past
-            List<String> titles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
-            bool contains = titles.contains(title);
-            String dayHourKey = '$day $title';
-            bool isPastDay = i < currentDayIndex;
-            bool sameDay = i == currentDayIndex;
+        //     // Determine the color based on istaken and whether the day is past
+        //     List<String> titles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
+        //     bool contains = titles.contains(title);
+        //     String dayHourKey = '$day $title';
+        //     bool isPastDay = i < currentDayIndex;
+        //     bool sameDay = i == currentDayIndex;
 
 
-            if (isPastDay) {
-              // kesinlikle geçmiş olarak işaretle
-              await markPastDayAsTaken(userId: userId, day: day, title: title);
-            } else if (sameDay && !contains) {
-              // saate göre geçme methodu yap
-              final isPastHour = isStartTimePast(now, startTime);
-              if (isPastHour) {
-                await markSingleHourAsTaken(userId: userId, day: day, title: title);
-              }
-            }
+        //     if (isPastDay) {
+        //       // kesinlikle geçmiş olarak işaretle
+        //       await markPastDayAsTaken(userId: userId, day: day, title: title);
+        //     } else if (sameDay && !contains) {
+        //       // saate göre geçme methodu yap
+        //       final isPastHour = isStartTimePast(now, startTime);
+        //       if (isPastHour) {
+        //         await markSingleHourAsTaken(userId: userId, day: day, title: title);
+        //       }
+        //     }
 
-            // duruma göre renk belirliyor
-            if (istaken) {
-              if (takenby == currentUserUid) {
-                hourColors[dayHourKey] = Colors.green;
-              } else {
-                hourColors[dayHourKey] = Colors.grey.shade600;  
-              }
-            } else {
-              hourColors[dayHourKey] = Colors.cyan;
-            }
-            hourTitles.add(title);
-          }
+        //     // duruma göre renk belirliyor
+        //     if (istaken) {
+        //       if (takenby == currentUserUid) {
+        //         hourColors[dayHourKey] = Colors.green;
+        //       } else {
+        //         hourColors[dayHourKey] = Colors.grey.shade600;  
+        //       }
+        //     } else {
+        //       hourColors[dayHourKey] = Colors.cyan;
+        //     }
+        //     hourTitles.add(title);
+        //   }
         
-        if (mounted) {
-          setState(() {
-            hoursByDay[day] = hourTitles;
-          });
-        }
-        }
+        // if (mounted) {
+        //   setState(() {
+        //     hoursByDay[day] = hourTitles;
+        //   });
+        // }
+        // }
       }
     }
   }
@@ -492,18 +517,32 @@ Future<void> markSingleHourAsTaken({required String userId, required String day,
   });
 }
 
-bool isStartTimePast(DateTime now, String startTime) {
+bool isStartTimePast(DateTime now, String startTime, bool isNightHour) {
   final nowInMinutes = now.hour * 60 + now.minute;
 
   final parts = startTime.split(':');
   final startHour = int.parse(parts[0]);
   final startMinute = int.parse(parts[1]);
   final startInMinutes = startHour * 60 + startMinute;
-  print('now is $nowInMinutes');
-  print('start is $startInMinutes');
+
+  // Gece saati ise ertesi günmüş gibi davranıyor
+  if (isNightHour) return false;
 
   return nowInMinutes >= startInMinutes;
 }
+
+bool isPastNightHours(DateTime now, String startTime) {
+  final nowInMinutes = now.hour * 60 + now.minute;
+
+  final parts = startTime.split(':');
+  final startHour = int.parse(parts[0]);
+  final startMinute = int.parse(parts[1]);
+  final startInMinutes = startHour * 60 + startMinute;
+
+  return nowInMinutes >= startInMinutes;
+}
+
+
 
 class SellerFields extends StatefulWidget {
   final String selectedField;
