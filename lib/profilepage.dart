@@ -416,8 +416,7 @@ class _BeSellerOrUserState extends State<BeSellerOrUser> {
                     children: [
                       Text(
                         "Kaleci Ol",
-                        style: GoogleFonts.roboto(
-                            fontSize: 18, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.roboto(fontSize: 18, fontWeight: FontWeight.w500),
                       ),
                       ToggleSwitch(
                         minWidth: 80.0,

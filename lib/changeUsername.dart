@@ -108,7 +108,7 @@ class _ChangeUserNameState extends State<ChangeUserName> {
                     }
                     isUpdated = false;
                   },
-                  style: GlobalStyles.buttonPrimary(),
+                  style: GlobalStyles.buttonPrimary(context),
                   child: Text(
                     'Onayla',
                     style: GoogleFonts.roboto(

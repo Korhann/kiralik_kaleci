@@ -96,6 +96,7 @@ class _SignUpState extends State<SignUp> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final width = constraints.maxWidth;
             return SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: EdgeInsets.only(
@@ -103,6 +104,7 @@ class _SignUpState extends State<SignUp> {
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
+              minWidth: constraints.maxWidth,
               minHeight: constraints.maxHeight
             ),
             child: IntrinsicHeight(
@@ -120,33 +122,36 @@ class _SignUpState extends State<SignUp> {
                             style: GoogleFonts.inter(
                                 fontSize: 25,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black),
+                                color: Colors.black
+                            ),
                           ),
               
                           const SizedBox(height: 25),
               
                           // AD SOYAD
-                          TextFormField(
-                              controller: fullNameController,
-                              style:
-                                  const TextStyle(color: Colors.black, fontSize: 20),
-                              decoration: GlobalStyles.inputDecoration1(
-                                  hintText: 'Ad Soyad', showError: _showErrorName),
-                              validator: (value) {
-                                final nameSurname = value?.trim();
-                                if (nameSurname!.isEmpty ||
-                                    !RegExp(r'^[a-z A-Z]+$').hasMatch(nameSurname)) {
-                                  setState(() {
-                                    _showErrorName = true;
-                                  });
-                                  return '';
-                                } else {
-                                  setState(() {
-                                    _showErrorName = false;
-                                  });
-                                  return null;
-                                }
-                              }),
+                          SizedBox(
+                            width: width,
+                            child: TextFormField(
+                                controller: fullNameController,
+                                style: const TextStyle(color: Colors.black, fontSize: 20),
+                                decoration: GlobalStyles.inputDecoration1(
+                                    hintText: 'Ad Soyad', showError: _showErrorName),
+                                validator: (value) {
+                                  final nameSurname = value?.trim();
+                                  if (nameSurname!.isEmpty ||
+                                      !RegExp(r'^[a-z A-Z]+$').hasMatch(nameSurname)) {
+                                    setState(() {
+                                      _showErrorName = true;
+                                    });
+                                    return '';
+                                  } else {
+                                    setState(() {
+                                      _showErrorName = false;
+                                    });
+                                    return null;
+                                  }
+                                }),
+                          ),
               
                           if (_showErrorName)
                             Align(
@@ -162,31 +167,34 @@ class _SignUpState extends State<SignUp> {
                           const SizedBox(height: 10),
               
                           // EMAİL
-                          TextFormField(
-                              controller: emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              style:
-                                  const TextStyle(color: Colors.black, fontSize: 20),
-                              decoration: GlobalStyles.inputDecoration1(
-                                  hintText: 'Email', showError: _showErrorEmail),
-                              validator: (value) {
-                                final email = value?.trim();
-                                if (email!.isEmpty ||
-                                    !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                        .hasMatch(email) ||
-                                    _emailInUse) {
-                                  setState(() {
-                                    _showErrorEmail = true;
-                                    _emailInUse = false;
-                                  });
-                                  return '';
-                                } else {
-                                  setState(() {
-                                    _showErrorEmail = false;
-                                  });
-                                  return null;
-                                }
-                              }),
+                          SizedBox(
+                            width: width,
+                            child: TextFormField(
+                                controller: emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                style:
+                                    const TextStyle(color: Colors.black, fontSize: 20),
+                                decoration: GlobalStyles.inputDecoration1(
+                                    hintText: 'Email', showError: _showErrorEmail),
+                                validator: (value) {
+                                  final email = value?.trim();
+                                  if (email!.isEmpty ||
+                                      !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                          .hasMatch(email) ||
+                                      _emailInUse) {
+                                    setState(() {
+                                      _showErrorEmail = true;
+                                      _emailInUse = false;
+                                    });
+                                    return '';
+                                  } else {
+                                    setState(() {
+                                      _showErrorEmail = false;
+                                    });
+                                    return null;
+                                  }
+                                }),
+                          ),
               
                           // Email başka bir hesap tarafından kullanımda olmasına rağmen hata vermiyor.
                           if (_showErrorEmail)
@@ -203,27 +211,30 @@ class _SignUpState extends State<SignUp> {
                           const SizedBox(height: 10),
               
                           // PAROLA
-                          TextFormField(
-                            controller: passwordController,
-                            style: const TextStyle(color: Colors.black, fontSize: 20),
-                            decoration: GlobalStyles.inputDecoration1(
-                                hintText: 'Parola', showError: _showErrorPassword),
-                            validator: (value) {
-                              final password = value?.trim();
-                              if (password!.isEmpty ||
-                                  password.length < 6 ||
-                                  password.contains(" ")) {
-                                setState(() {
-                                  _showErrorPassword = true;
-                                });
-                                return '';
-                              } else {
-                                setState(() {
-                                  _showErrorPassword = false;
-                                });
-                                return null;
-                              }
-                            },
+                          SizedBox(
+                            width: width,
+                            child: TextFormField(
+                              controller: passwordController,
+                              style: const TextStyle(color: Colors.black, fontSize: 20),
+                              decoration: GlobalStyles.inputDecoration1(
+                                  hintText: 'Parola', showError: _showErrorPassword),
+                              validator: (value) {
+                                final password = value?.trim();
+                                if (password!.isEmpty ||
+                                    password.length < 6 ||
+                                    password.contains(" ")) {
+                                  setState(() {
+                                    _showErrorPassword = true;
+                                  });
+                                  return '';
+                                } else {
+                                  setState(() {
+                                    _showErrorPassword = false;
+                                  });
+                                  return null;
+                                }
+                              },
+                            ),
                           ),
               
                           if (_showErrorPassword &&
@@ -261,30 +272,33 @@ class _SignUpState extends State<SignUp> {
                           const SizedBox(height: 10),
               
                           // PAROLA TEKRAR
-                          Focus(
-                            child: TextFormField(
-                              controller: confirmPasswordController,
-                              style:
-                                  const TextStyle(color: Colors.black, fontSize: 20),
-                              decoration: GlobalStyles.inputDecoration1(
-                                  hintText: 'Parola Tekrar',
-                                  showError: _showErrorRePassword),
-                              validator: (value) {
-                                final repassword = value?.trim();
-                                if (repassword!.isEmpty ||
-                                    confirmPasswordController.text.trim() !=
-                                        passwordController.text.trim()) {
-                                  setState(() {
-                                    _showErrorRePassword = true;
-                                  });
-                                  return '';
-                                } else {
-                                  setState(() {
-                                    _showErrorRePassword = false;
-                                  });
-                                  return null;
-                                }
-                              },
+                          SizedBox(
+                            width: width,
+                            child: Focus(
+                              child: TextFormField(
+                                controller: confirmPasswordController,
+                                style:
+                                    const TextStyle(color: Colors.black, fontSize: 20),
+                                decoration: GlobalStyles.inputDecoration1(
+                                    hintText: 'Parola Tekrar',
+                                    showError: _showErrorRePassword),
+                                validator: (value) {
+                                  final repassword = value?.trim();
+                                  if (repassword!.isEmpty ||
+                                      confirmPasswordController.text.trim() !=
+                                          passwordController.text.trim()) {
+                                    setState(() {
+                                      _showErrorRePassword = true;
+                                    });
+                                    return '';
+                                  } else {
+                                    setState(() {
+                                      _showErrorRePassword = false;
+                                    });
+                                    return null;
+                                  }
+                                },
+                              ),
                             ),
                           ),
               
@@ -346,14 +360,14 @@ class _SignUpState extends State<SignUp> {
                           PlatformElevatedButton(
                             onPressed: () async {
                               if (formkey.currentState!.validate()) {
-                                signUpUser();
+                                await signUpUser();
                               }
                             },
                             child: PlatformText("Kayıt Ol",
                                 style: GoogleFonts.inter(
                                     color: Colors.black, textStyle: style)),
                             material: (_, __) => MaterialElevatedButtonData(
-                                style: GlobalStyles.buttonPrimary()),
+                                style: GlobalStyles.buttonPrimary(context)),
                             cupertino: (_, __) => CupertinoElevatedButtonData(),
                           ),
                         ],

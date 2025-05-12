@@ -4,7 +4,6 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kiralik_kaleci/forgetpasswordpage.dart';
-import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/signuppage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -101,6 +100,7 @@ class _LogInState extends State<LogIn> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final width = constraints.maxWidth;
             return SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.only(
@@ -130,7 +130,7 @@ class _LogInState extends State<LogIn> {
                       const SizedBox(height: 40),
                       
                        SizedBox(
-                        width: MediaQuery.of(context).size.width,
+                        width: width,
                         child: TextFormField(
                           keyboardType: TextInputType.emailAddress,
                           controller: emailController,
@@ -166,7 +166,7 @@ class _LogInState extends State<LogIn> {
                         ),
                       const SizedBox(height: 10),
                       SizedBox(
-                        width: MediaQuery.of(context).size.width,
+                        width: width,
                         child: TextFormField(
                           keyboardType: TextInputType.text,
                           obscureText: _obsecureText,
@@ -284,8 +284,7 @@ class _LogInState extends State<LogIn> {
                       PlatformElevatedButton(
                         onPressed: () async{
                           if (formkey.currentState!.validate()) {
-                            print('validating');
-                            await signInUser();
+                            signInUser();
                           }
                         },
                         child: Text(
@@ -294,7 +293,7 @@ class _LogInState extends State<LogIn> {
                               textStyle: style, color: Colors.black),
                         ),
                         material: (_,__) => MaterialElevatedButtonData(
-                          style: GlobalStyles.buttonPrimary()
+                          style: GlobalStyles.buttonPrimary(context)
                         ),
                         cupertino: (_,__) => CupertinoElevatedButtonData(
                           borderRadius: BorderRadius.circular(20),

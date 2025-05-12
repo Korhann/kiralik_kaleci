@@ -169,57 +169,6 @@ Future<void> addParticipantIdToPrefs(String participantId) async {
     return null;
   }
 
-
-  // Future<void> _resetUnreadMessages(String receiverId) async {
-  //   try {
-  //     String docPath;
-
-  //     // Determine the document path
-  //     if (currentUser.compareTo(receiverId) < 0) {
-  //       docPath = '${currentUser}_$receiverId';
-  //     } else {
-  //       docPath = '${receiverId}_$currentUser';
-  //     }
-
-  //     DocumentReference messageDocRef = FirebaseFirestore.instance
-  //         .collection('chat_rooms')
-  //         .doc(docPath)
-  //         .collection('messages')
-  //         .doc('messageDoc');
-
-  //     DocumentSnapshot messageDocSnapshot = await messageDocRef.get();
-
-  //     if (messageDocSnapshot.exists && messageDocSnapshot.data() != null) {
-  //       Map<String, dynamic> data = messageDocSnapshot.data() as Map<String, dynamic>;
-
-  //       if (data['receiverId'] == currentUser) {
-  //         await messageDocRef.update({'from_msg': 0});
-  //       } else if (data['senderId'] == currentUser) {
-  //         await messageDocRef.update({'to_msg': 0});
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error resetting unread messages: $e");
-  //   }
-  // }
-
-    //todo: Bunu kullanmana gerek yok zaten sayfa değiştirince yenileniyor
-//   Future<String> _getUpdatedName(String userId) async {
-//   try {
-//     DocumentSnapshot userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-
-//     if (userSnapshot.exists) {
-//       Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>;
-//       return userData['fullName'] ?? 'Unknown';
-//     } else {
-//       return 'Unknown';
-//     }
-//   } catch (e) {
-//     print("Error fetching user name: $e");
-//     return 'Unknown';
-//   }
-// }
-
   @override
 Widget build(BuildContext context) {
   return ConnectivityWrapper(
@@ -229,8 +178,8 @@ Widget build(BuildContext context) {
         if (!snapshot.hasData) {
           return MessagesShimmer();
         }
-
         var conversations = snapshot.data!;
+        //final width = MediaQuery.sizeOf(context).width;
 
         return Scaffold(
           appBar: AppBar(
@@ -246,43 +195,49 @@ Widget build(BuildContext context) {
             centerTitle: true,
           ),
           backgroundColor: background,
-          body: ListView.builder(
-            itemCount: conversations.length,
-            itemBuilder: (context, index) {
-              var conversation = conversations[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
-                  child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
-                ),
-                title: Text(conversation['receiverName']),
-                subtitle: Row(
-                  children: [
-                    Text(conversation['lastMessage']),
-                    const Spacer(),
-                    if (conversation['unread'] > 0) 
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${conversation['unread']}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      )
-                  ]
-                ),
-                onTap: () async{
-                  await resetUnredMessages(conversation['receiverId']);
-                  Navigator.push(
-                    context, MaterialPageRoute(
-                      builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
-                    ),
-                  );
-                },
-              );
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              return ListView.builder(
+              itemCount: conversations.length,
+              itemBuilder: (context, index) {
+                var conversation = conversations[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    radius: MediaQuery.of(context).size.width * 0.055,
+                    backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
+                    child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
+                  ),
+                  title: Text(conversation['receiverName'], style: TextStyle(fontSize: width * 0.045)),
+                  subtitle: Row(
+                    children: [
+                      Text(conversation['lastMessage'], style: TextStyle(fontSize: width * 0.04)),
+                      const Spacer(),
+                      if (conversation['unread'] > 0) 
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${conversation['unread']}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        )
+                    ]
+                  ),
+                  onTap: () async{
+                    await resetUnredMessages(conversation['receiverId']);
+                    Navigator.push(
+                      context, MaterialPageRoute(
+                        builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
             },
           ),
         );

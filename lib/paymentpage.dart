@@ -187,7 +187,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     }
                   }
                 }, 
-              style: GlobalStyles.buttonPrimary(),
+              style: GlobalStyles.buttonPrimary(context),
               child: Text(
                 'Ödeme',
                 style: GoogleFonts.inter(

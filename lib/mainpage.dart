@@ -26,7 +26,6 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   late Stream<User?> _authStream;
   int _currentIndex = 0;
-  String currentUser = FirebaseAuth.instance.currentUser!.uid;
   int _unreadMessages = 0;
 
   @override
@@ -48,6 +47,8 @@ Widget build(BuildContext context) {
       if (snapshot.hasData) {
         // kullanıcı giriş yaptı
         return Scaffold(
+          
+          resizeToAvoidBottomInset: true,
           body: screens()[_currentIndex],
           bottomNavigationBar: BottomNavyBar(
             backgroundColor: background,
@@ -132,9 +133,11 @@ Widget build(BuildContext context) {
   }
 
   void listenToUnreadCount() async {
-  final prefs = await SharedPreferences.getInstance();
-  List<String>? sharedIds = prefs.getStringList('ids');
-  if (sharedIds == null) return;
+    try {
+    String currentUser = FirebaseAuth.instance.currentUser!.uid;
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? sharedIds = prefs.getStringList('ids');
+    if (sharedIds == null) return;
 
   Map<String, int> unreadPerChat = {};
 
@@ -164,5 +167,8 @@ Widget build(BuildContext context) {
       });
     });
   }
+    } catch (e) {
+      print('Error is $e');
+    }
 }
 }

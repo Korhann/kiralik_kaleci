@@ -102,7 +102,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                 const SizedBox(height: 30),
 
                 ElevatedButton(
-                  style: GlobalStyles.buttonPrimary(),
+                  style: GlobalStyles.buttonPrimary(context),
                   onPressed: () async{
                     if (formkey.currentState!.validate()) {
                       if (resetController.text.trim().isNotEmpty) {

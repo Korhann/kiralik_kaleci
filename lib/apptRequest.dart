@@ -148,7 +148,7 @@ class _ApptRequestState extends State<ApptRequest> {
                     }
                   }
                 }, 
-              style: GlobalStyles.buttonPrimary(),
+              style: GlobalStyles.buttonPrimary(context),
               child: Text(
                 'Randevu Talebi Gönder',
                 style: GoogleFonts.inter(

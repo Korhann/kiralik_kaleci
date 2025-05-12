@@ -125,7 +125,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                     MaterialPageRoute(builder: (context) => const SellerMainPage(index: 2,))
                   );
                 },
-                style: GlobalStyles.buttonPrimary(),
+                style: GlobalStyles.buttonPrimary(context),
                 child: Text(
                   'İlan ver',
                   style: GoogleFonts.inter(
@@ -358,34 +358,32 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   //todo: Olmazsa eski yerine geri al
   void dayChecker(int i, int currentDayIndex, final now, String startTime, String dayHourKey, String takenby, String day, String title, List<String> hourTitles, bool isNightHour, bool istaken) {
     if (isNightHour) {
-                                                            bool isPastNightHour = i < currentDayIndex && isPastNightHours(now, startTime);
-                                                            if (isPastNightHour) {
-                                                              hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600; 
-                                                              markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
-                                                            } else {
-                                                              hourColors[dayHourKey] = Colors.cyan;
-                                                            }
-                                                            hourTitles.add(title);
-                                                            hoursByDay[day] = hourTitles;
-                                                          } else {
-                                                            bool isPastDay = i < currentDayIndex;
-                                                            bool sameDay = i == currentDayIndex;
-                                                            bool isPastHour = isStartTimePast(now, startTime, isNightHour) && sameDay;
-                                                          
-                                                          if (istaken || isPastDay || isPastHour) {
-                                                            hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600;
-                                                                if (isPastDay) {
-                                                                  markPastDayAsTaken(userId: widget.sellerUid, day: day, title: title);
-                                                                } else if (isPastHour) {
-                                                                  markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
-                                                                }
-                                                          } else {
-                                                            hourColors[dayHourKey] = Colors.cyan;
-                                                          }
-
-                                                          hourTitles.add(title);
-                                                          }
-                                                          hoursByDay[day] = hourTitles;
+      bool isPastNightHour = i < currentDayIndex && isPastNightHours(now, startTime);
+      if (isPastNightHour) {
+        hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600; 
+        markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
+        } else {
+          hourColors[dayHourKey] = Colors.cyan;
+        }
+        hourTitles.add(title);
+        hoursByDay[day] = hourTitles;
+        } else {
+          bool isPastDay = i < currentDayIndex;
+          bool sameDay = i == currentDayIndex;
+          bool isPastHour = isStartTimePast(now, startTime, isNightHour) && sameDay;
+          if (istaken || isPastDay || isPastHour) {
+            hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600;
+            if (isPastDay) {
+              markPastDayAsTaken(userId: widget.sellerUid, day: day, title: title);
+              } else if (isPastHour) {
+                markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
+              }
+            } else {
+              hourColors[dayHourKey] = Colors.cyan;
+            }
+            hourTitles.add(title);
+        }
+      hoursByDay[day] = hourTitles;
   }
 
   Stream<DocumentSnapshot> _stream() {
@@ -483,17 +481,25 @@ Future<void> markPastDayAsTaken({required String userId,required String day,requ
 
   final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
   List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
+  bool needsUpdate = false;
   List<dynamic> updatedData = data.map((hour) {
+    if (hour['istaken'] == false) {
+      needsUpdate = true;
       return {
         'title': hour['title'],
         'istaken': true,
         'takenby': 'empty'
       };
+    } else {
+      return hour;
+    }
   }).toList();
 
-  await FirebaseFirestore.instance.collection('Users').doc(userId).update({
+  if (needsUpdate) {
+    await FirebaseFirestore.instance.collection('Users').doc(userId).update({
     'sellerDetails.selectedHoursByDay.$day': updatedData
   });
+  }
 }
 }
 
@@ -502,7 +508,7 @@ Future<void> markSingleHourAsTaken({required String userId, required String day,
   List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
 
   List<dynamic> updatedData = data.map((hour) {
-    if (hour['title'] == title) {
+    if (hour['title'] == title && hour['istaken'] == false) {
       return {
         'title': hour['title'],
         'istaken': true,
@@ -1107,7 +1113,7 @@ class PaymentButton extends StatelessWidget {
                           );
                           }
                         },
-                        style: GlobalStyles.buttonPrimary(),
+                        style: GlobalStyles.buttonPrimary(context),
                         child: Text(
                           getPrice(),
                           style: GoogleFonts.inter(

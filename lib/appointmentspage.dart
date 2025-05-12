@@ -796,15 +796,19 @@ class CheckDaysPastUser {
         .doc(currentuser)
         .collection('appointmentbuyer')
         .doc(docId);
-
+      
       final snapshot = await docRef.get();
-      final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
-      final payStatus = snapshot['appointmentDetails']['paymentStatus'];
+      if (snapshot.exists && snapshot.data()?['appointmentDetails'] != null) {
+        final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
+        final payStatus = snapshot['appointmentDetails']['paymentStatus'];
 
-      if (isPastDay == 'false' && payStatus == 'waiting') {
-        await docRef.update({
-          'appointmentDetails.isPastDay': 'true',
-        });
+          if (isPastDay == 'false' && payStatus == 'waiting') {
+            await docRef.update({
+              'appointmentDetails.isPastDay': 'true',
+            });
+          }
+      } else {
+        return;
       }
     }
   }

@@ -46,25 +46,21 @@ class _Direct2MessageState extends State<Direct2Message> {
         icon: const Icon(Icons.arrow_back),
       ),
     ),
-    body: SafeArea(
-      child: Column(
-        children: [
-          // Messages List
-          Expanded(
-            child: _buildMessageList(),
-          ),
-
-          // Message Input Field
-          Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: _buildMessageInput()
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
+    body: Column(
+      children: [
+        // Messages List
+        Expanded(
+          child: _buildMessageList(),
+        ),
+        
+        // Message Input Field
+        _buildMessageInput(),
+        const SizedBox(height: 20)
+      ],
     ),
   );
 }
+
 
 
   Widget _buildMessageList() {
@@ -99,7 +95,6 @@ class _Direct2MessageState extends State<Direct2Message> {
   Widget _buildMessageItem(DocumentSnapshot documentSnapshot) {
     // bunun document i yanlış olduğu için göstermiyor
     Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-    print('data is $data');
 
     var alignment = (data['uid'] == _firebaseAuth.currentUser!.uid)
         ? Alignment.centerRight
@@ -136,6 +131,7 @@ class _Direct2MessageState extends State<Direct2Message> {
           Expanded(
             child: Focus(
               child: TextField(
+                autofocus: true,
                 controller: _messageController,
                 decoration: const InputDecoration(
                   hintText: 'Mesaj yazın',

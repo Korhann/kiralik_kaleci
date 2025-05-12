@@ -210,7 +210,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                       Showalert(context: context, text: 'Ooops...').showErrorAlert();
                     }
                   },
-                  style: GlobalStyles.buttonPrimary(),
+                  style: GlobalStyles.buttonPrimary(context),
                   child: Text(
                     'Kaydet',
                     style: GoogleFonts.roboto(

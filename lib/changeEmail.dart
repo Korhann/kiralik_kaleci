@@ -157,7 +157,7 @@ class _ChangeEmailState extends State<ChangeEmail> {
                     }
                     isUpdated = false;
                   },
-                  style: GlobalStyles.buttonPrimary(),
+                  style: GlobalStyles.buttonPrimary(context),
                   child: Text(
                     'Onayla',
                     style: GoogleFonts.roboto(

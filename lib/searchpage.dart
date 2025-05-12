@@ -1,4 +1,3 @@
-import 'package:banner_carousel/banner_carousel.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -62,7 +61,7 @@ class _GetUserDataState extends State<GetUserData> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return SellerGridShimmer();
+      return Expanded(child: SellerGridShimmer());
     }
 
     return Scaffold(
@@ -93,21 +92,19 @@ class _GetUserDataState extends State<GetUserData> {
 
                 // BANNER BÖLÜMÜ
                 //TODO: REMOVE THE AUTO PADDING HERE
-                SizedBox(
-                  width: double.infinity,
-                  height: 100,
-                  child: ImageSliderDemo()
-                ),
+                ImageSliderDemo(),
 
                 const SizedBox(height: 10),
 
-                docs.isEmpty
-                    ? _EmptyState()
-                    : _SellerGrid(
-                        docs: docs,
-                        onCardTap: _handleCardTap,
-                        isLoading: isLoading
-                      ),
+                Expanded(
+                  child: docs.isEmpty
+                      ? _EmptyState()
+                      : _SellerGrid(
+                          docs: docs,
+                          onCardTap: _handleCardTap,
+                          isLoading: isLoading
+                        ),
+                ),
               ],
             ),
           );
@@ -217,70 +214,78 @@ class _HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: background,
-      padding: const EdgeInsets.only(top: 15),
-      child: Row(
-        children: [
-          Text(
-            "Kalecilerimiz",
-            style: GoogleFonts.inter(
-                fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black),
-          ),
-          const SizedBox(width: 10),
-          const Icon(Icons.handshake),
-          const Spacer(),
-
-          //todo: Bunu class a çevir performans için :D
-          GestureDetector(
-            onTap: onNotificationTap,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: Icon(Icons.notifications, size: 24, color: Colors.black),
-                ),
-                StreamBuilder<int>(
-                  stream: getUnreadCount(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData || snapshot.data == 0) {
-                      return SizedBox();
-                    }
-                    return Positioned(
-                      right: 5, // Adjust position
-                      top: -3,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          snapshot.data.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = width * 0.2;
+        return Container(
+        width: width,
+        height: height,
+        color: background,
+        padding: const EdgeInsets.only(top: 15),
+        child: Row(
+          children: [
+            Text(
+              "Kalecilerimiz",
+              style: GoogleFonts.inter(
+                  fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black),
+            ),
+            const SizedBox(width: 10),
+            const Icon(Icons.handshake),
+            const Spacer(),
+      
+            //todo: Bunu class a çevir performans için :D
+            GestureDetector(
+              onTap: onNotificationTap,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Icon(Icons.notifications, size: 24, color: Colors.black),
+                  ),
+                  StreamBuilder<int>(
+                    stream: getUnreadCount(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData || snapshot.data == 0) {
+                        return SizedBox();
+                      }
+                      return Positioned(
+                        right: 5, // Adjust position
+                        top: -3,
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            snapshot.data.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-          GestureDetector(
-            onTap: onFilterTap,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 20),
-              child:
-                  Image.asset('lib/icons/setting.png', width: 20, height: 20),
+            GestureDetector(
+              onTap: onFilterTap,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 20),
+                child:
+                    Image.asset('lib/icons/setting.png', width: 20, height: 20),
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      );
+      },
     );
   }
   Stream<int> getUnreadCount() {
@@ -305,23 +310,25 @@ class _HeaderSection extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.search, size: 70, color: Colors.grey.shade500),
-            const SizedBox(height: 10),
-            Text(
-              'İlgili sonuç bulunamadı',
-              style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black),
-            ),
-          ],
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (BuildContext ctx, BoxConstraints constraints) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.search, size: 70, color: Colors.grey.shade500),
+              const SizedBox(height: 10),
+              Text(
+                'İlgili sonuç bulunamadı',
+                style: GoogleFonts.inter(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black),
+              ),
+            ],
+          ),
+        );
+      }
     );
   }
 }
@@ -331,37 +338,47 @@ class _SellerGrid extends StatelessWidget {
   final Function(BuildContext, Map<String, dynamic>, String) onCardTap;
   final bool isLoading;
 
-  const _SellerGrid({required this.docs, required this.onCardTap, required this.isLoading});
+  const _SellerGrid({
+    required this.docs,
+    required this.onCardTap,
+    required this.isLoading,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: GridView.builder(
-        padding: EdgeInsets.zero,
-        physics: const ScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 5,
-          mainAxisSpacing: 5,
-          childAspectRatio: 1.8 / 2.3,
-        ),
-        itemCount: docs.length,
-        itemBuilder: (context, index) {
-          var sellerDetails = docs[index]['sellerDetails'];
-          var sellerUid = docs[index].id;
-      
-          return SellerGridItem(
-            sellerDetails: sellerDetails,
-            sellerUid: sellerUid,
-            onTap: (uid) => onCardTap(context, sellerDetails, uid),
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = constraints.maxWidth;
+        int crossAxisCount = width > 600 ? 3 : 2; 
+
+        return GridView.builder(
+          padding: EdgeInsets.zero,
+          physics: const ScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1.8 / 2.3,
+          ),
+          itemCount: docs.length,
+          itemBuilder: (context, index) {
+            var sellerDetails = docs[index]['sellerDetails'];
+            var sellerUid = docs[index].id;
+        
+            return SellerGridItem(
+              sellerDetails: sellerDetails,
+              sellerUid: sellerUid,
+              onTap: (uid) => onCardTap(context, sellerDetails, uid),
+            );
+          },
+        );
+      },
     );
   }
 }
+
 class ImageSliderDemo extends StatelessWidget {
-  
   final List<String> bannerImages = [
     'lib/images/kalecimafis1.jpg',
     'lib/images/kalecimafis2.jpg'
@@ -369,18 +386,37 @@ class ImageSliderDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CarouselSlider(
-      options: CarouselOptions(
-        viewportFraction: 1,
-        enlargeCenterPage: false,
-        autoPlay: true,
-        height: 100,
-        disableCenter: true,
-        padEnds: false
-      ),
-      items: bannerImages.map((item) => Center(
-        child:Image.asset(item, fit: BoxFit.cover, width: double.maxFinite)
-        )).toList(),
-      );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = width * 0.3;
+
+        return SizedBox(
+          width: width,
+          height: height,
+          child: CarouselSlider(
+            options: CarouselOptions(
+              viewportFraction: 1.0,
+              enlargeCenterPage: false,
+              autoPlay: true,
+              height: 100,
+              padEnds: false,
+            ),
+            items: bannerImages.map((item) => 
+              SizedBox(
+                width: width,
+                child: Image.asset(
+                  item,
+                  width: width,
+                  fit: BoxFit.fill,
+                ),
+              ),
+            ).toList(),
+          ),
+        );
+      },
+    );
   }
 }
+
+

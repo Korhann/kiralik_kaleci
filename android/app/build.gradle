@@ -16,7 +16,7 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '
 
 android {
     namespace "com.example.kiralik_kaleci" // Define the namespace
-    compileSdkVersion 34 // Match the latest stable SDK version
+    compileSdkVersion 35 // Match the latest stable SDK version
     ndkVersion = "27.0.12077973" // Ensure NDK matches installed version
     lintOptions {
         abortOnError false
@@ -40,7 +40,7 @@ android {
     defaultConfig {
         applicationId "com.example.kiralik_kaleci" // App package name
         minSdkVersion 23 // Minimum supported Android version
-        targetSdkVersion 34 // Target Android version
+        targetSdkVersion 35 // Target Android version
         versionCode flutterVersionCode.toInteger() // Version code from `local.properties`
         versionName flutterVersionName // Version name from `local.properties`
         multiDexEnabled true // Enable multidex support

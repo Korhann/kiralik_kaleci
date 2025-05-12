@@ -337,7 +337,7 @@ class _FilterPageState extends State<FilterPage> {
                           'maxFilter': maxFilter
                         });
                       },
-                      style: GlobalStyles.buttonPrimary(),
+                      style: GlobalStyles.buttonPrimary(context),
                       child: Text(
                         'Filtrele',
                         style: GoogleFonts.roboto(

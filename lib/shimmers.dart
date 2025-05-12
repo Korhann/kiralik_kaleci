@@ -8,63 +8,61 @@ class SellerGridShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.7,
-          ),
-          itemCount: 6, // showing 6 shimmer cards
-          itemBuilder: (context, index) {
-            return Shimmer.fromColors(
-              baseColor: Colors.grey.shade300,
-              highlightColor: Colors.grey.shade100,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[400],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      height: 15,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 5),
-                    Container(
-                      height: 15,
-                      width: 60,
-                      color: Colors.grey[400],
-                    ),
-                    const Spacer(),
-                    Container(
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[400],
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 0.7,
         ),
+        itemCount: 6, // showing 6 shimmer cards
+        itemBuilder: (context, index) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    height: 15,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 5),
+                  Container(
+                    height: 15,
+                    width: 60,
+                    color: Colors.grey[400],
+                  ),
+                  const Spacer(),
+                  Container(
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

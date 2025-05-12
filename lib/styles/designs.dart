@@ -27,18 +27,21 @@ class GlobalStyles {
       filled: true,
     );
   }
-  static ButtonStyle buttonPrimary() {
-    return ElevatedButton.styleFrom(
-      minimumSize: const Size(335, 55),
-      backgroundColor: green, // Your custom green color
-      elevation: 0,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(20),
-        ),
+  static ButtonStyle buttonPrimary(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  return ElevatedButton.styleFrom(
+    minimumSize: Size(screenWidth * 0.85, 55), 
+    backgroundColor: green, 
+    elevation: 0,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(
+        Radius.circular(20),
       ),
-    );
-  }
+    ),
+  );
+}
+
+  
 Widget buildTextField(
 
   TextEditingController controller,

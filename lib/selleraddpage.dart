@@ -568,7 +568,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 const SizedBox(height: 40),
                 Center(
                   child: ElevatedButton(
-                      style: GlobalStyles.buttonPrimary(),
+                      style: GlobalStyles.buttonPrimary(context),
                       onPressed: () async {
                         try {
                           if (await InternetConnection().hasInternetAccess) {

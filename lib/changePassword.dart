@@ -169,7 +169,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     }
                     isUpdated = false;
                   },
-                  style: GlobalStyles.buttonPrimary(),
+                  style: GlobalStyles.buttonPrimary(context),
                   child: Text(
                     'Onayla',
                     style: GoogleFonts.roboto(
