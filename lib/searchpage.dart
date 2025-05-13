@@ -215,9 +215,12 @@ class _HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-        return Container(
-        width: double.infinity,
-        height: MediaQuery.sizeOf(context).height * 0.1,
+      final iconSize = MediaQuery.sizeOf(context).width * 0.06;
+      final width = MediaQuery.sizeOf(context).width;
+      final height = MediaQuery.sizeOf(context).height * 0.07;
+      return Container(
+        width: width,
+        height: height,
         color: background,
         padding: const EdgeInsets.only(top: 15),
         child: Row(
@@ -228,7 +231,7 @@ class _HeaderSection extends StatelessWidget {
               textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
             ),
             const SizedBox(width: 10),
-            Icon(Icons.handshake, size: MediaQuery.sizeOf(context).width * 0.06),
+            Icon(Icons.handshake, size: iconSize),
             const Spacer(),
       
             //todo: Bunu class a çevir performans için :D
@@ -239,7 +242,7 @@ class _HeaderSection extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 10),
-                    child: Icon(Icons.notifications, size: MediaQuery.sizeOf(context).width * 0.06, color: Colors.black),
+                    child: Icon(Icons.notifications, size: iconSize, color: Colors.black),
                   ),
                   StreamBuilder<int>(
                     stream: getUnreadCount(),
@@ -277,7 +280,7 @@ class _HeaderSection extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child:
-                    Image.asset('lib/icons/setting.png', width: MediaQuery.sizeOf(context).width * 0.06, height: MediaQuery.sizeOf(context).width * 0.06),
+                    Image.asset('lib/icons/setting.png', width: iconSize, height: MediaQuery.sizeOf(context).width * 0.05),
               ),
             ),
           ],
