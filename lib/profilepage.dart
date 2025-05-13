@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
@@ -8,6 +11,7 @@ import 'package:kiralik_kaleci/approvedfields.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/policiespage.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
@@ -47,134 +51,152 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 30),
-              Row(
-                children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 10.0),
-                  child: UserNameHeaderText()
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsMenu(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.030),
+                    Row(
+                      children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: UserNameHeaderText()
+                        ),
                       ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.settings,
-                    size: 28,
-                    color: Colors.black,
-                  ),
-                )
-              ]),
-              const SizedBox(height: 30),
-              BeSellerOrUser(),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.only(left: 10.0),
-                child: Text(
-                  "Hesap",
-                  textAlign: TextAlign.start,
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsMenu(),
+                            ),
+                          );
+                        },
+                        icon: Icon(
+                          Icons.settings,
+                          size: MediaQuery.sizeOf(context).width * 0.065,
+                          color: Colors.black,
+                        ),
+                      )
+                    ]),
+                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.030),
+
+                    BeSellerOrUser(),
+
+                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.030),
+
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: Text(
+                        "Hesap",
+                        textAlign: TextAlign.start,
+                        style: GoogleFonts.roboto(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // kullanıcı adı
+                    UserName(),
+                  
+                    Container(
+                      height: 1,
+                      color: Colors.black,
+                    ),
+                  
+                    // email
+                    Email(),
+                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.030),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Text(
+                        "Diğer",
+                        style: GoogleFonts.roboto(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black),
+                            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                      ),
+                    ),
+                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.010),
+                  
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => AppointmentsPage(whereFrom: 'fromProfile'))
+                      );
+                      },
+                      child: OtherBars(
+                        text: 'Randevularım',
+                        icons: Icon(Icons.alarm, size: MediaQuery.sizeOf(context).width * 0.06),
+                      ),
+                    ),
+                  
+                    Container(height: 1, color: Colors.black),
+                  
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => FavouritesPage())
+                      );
+                      },
+                      child: OtherBars(
+                        text: 'Favorilerim',
+                        icons: Icon(Icons.favorite_border,size: MediaQuery.sizeOf(context).width * 0.06),
+                      ),
+                    ),
+                  
+                    Container(height: 1, color: Colors.black),
+                  
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => ApprovedFields())
+                      );
+                      },
+                      child: OtherBars(
+                        text: 'Onaylı Halı Sahalar',
+                        icons: Icon(
+                        Icons.location_on,size: MediaQuery.sizeOf(context).width * 0.06),
+                      ),
+                    ),
+                  
+                    Container(height: 1, color: Colors.black),
+                  
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => PoliciesPage())
+                      );
+                      },
+                      child: OtherBars(
+                        text: 'Kiralık Kaleci',
+                        icons: Icon(Icons.handshake_outlined,size: MediaQuery.sizeOf(context).width * 0.06),
+                      ),
+                    ),
+                  
+                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.060),
+                  
+                    SignUserOut(),
+                  
+                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.030)
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              // kullanıcı adı
-              UserName(),
-    
-              Container(
-                height: 1,
-                color: Colors.black,
-              ),
-    
-              // email
-              Email(),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: Text(
-                  "Diğer",
-                  style: GoogleFonts.roboto(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black),
-                ),
-              ),
-              const SizedBox(height: 10),
-    
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AppointmentsPage(whereFrom: 'fromProfile'))
-                );
-                },
-                child: OtherBars(
-                  text: 'Randevularım',
-                  icons: Icon(Icons.alarm, size: 24),
-                ),
-              ),
-    
-              Container(height: 1, color: Colors.black),
-    
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => FavouritesPage())
-                );
-                },
-                child: OtherBars(
-                  text: 'Favorilerim',
-                  icons: Icon(Icons.favorite_border,size: 24,),
-                ),
-              ),
-    
-              Container(height: 1, color: Colors.black),
-    
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => ApprovedFields())
-                );
-                },
-                child: OtherBars(
-                  text: 'Onaylı Halı Sahalar',
-                  icons: Icon(
-                  Icons.location_on,size: 24,),
-                ),
-              ),
-    
-              Container(height: 1, color: Colors.black),
-    
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => PoliciesPage())
-                );
-                },
-                child: OtherBars(
-                  text: 'Kiralık Kaleci',
-                  icons: Icon(Icons.handshake_outlined,size: 24,),
-                ),
-              ),
-    
-              const SizedBox(height: 60),
-    
-              SignUserOut(),
-    
-              const SizedBox(height: 30)
-            ],
-          ),
+            ),
+          );
+          },
         ),
       ),
     );
@@ -200,7 +222,7 @@ class Email extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
+      height: MediaQuery.sizeOf(context).height * 0.080,
       width: double.infinity,
       color: Colors.white,
       child: Padding(
@@ -211,8 +233,8 @@ class Email extends StatelessWidget {
           children: [
             Text(
               "Email",
-              style:
-                  GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500),
+              style:GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500),
+              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
             ),
             EmailText()
           ],
@@ -241,8 +263,8 @@ class EmailText extends StatelessWidget {
         var userData = snapshot.data!.data() as Map<String, dynamic>;
         return Text(
           userData['email'] ?? '',
-          style: GoogleFonts.roboto(
-              fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black),
+          style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black),
+          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
         );
       },
     );
@@ -253,7 +275,7 @@ class UserName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
+      height: MediaQuery.sizeOf(context).height * 0.080,
       width: double.infinity,
       color: Colors.white,
       child: Padding(
@@ -264,8 +286,8 @@ class UserName extends StatelessWidget {
           children: [
             Text(
               "Ad Soyad",
-              style:
-                  GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500),
+              style:GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500),
+              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
             ),
             UserNameText(),
           ],
@@ -296,7 +318,9 @@ class UserNameText extends StatelessWidget {
             style: GoogleFonts.roboto(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
-                color: Colors.black));
+                color: Colors.black),
+              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+            );
       },
     );
   }
@@ -323,10 +347,14 @@ class UserNameHeaderText extends StatelessWidget {
               style: GoogleFonts.roboto(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black));
+                  color: Colors.black,
+                ),
+                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+              );
         });
   }
 }
+
 class LoadingWidget extends StatelessWidget {
   const LoadingWidget({super.key});
 
@@ -345,7 +373,7 @@ class OtherBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
+      height: MediaQuery.sizeOf(context).height * 0.070,
       width: double.infinity,
       color: Colors.white,
       child: Padding(
@@ -355,10 +383,10 @@ class OtherBars extends StatelessWidget {
           children: [
             Text(
               text,
-              style: GoogleFonts.roboto(
-                  fontSize: 22, fontWeight: FontWeight.w500),
+              style: GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500),
+              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
             ),
-            icons
+            icons,
           ],
         ),
       ),
@@ -371,28 +399,34 @@ class SignUserOut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth _auth = FirebaseAuth.instance;
+    final width = MediaQuery.sizeOf(context).width * 0.50;
+    final height = MediaQuery.sizeOf(context).height * 0.060;
     return Center(
       child: SizedBox(
-        width: 200,
-        height: 60,
+        width: width,
+        height: height,
         child: ElevatedButton(
             onPressed: () async {
               // sign out the user
               _auth.signOut();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Çıkış Yap",
-                  style: GoogleFonts.roboto(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-                const Icon(Icons.door_back_door, size: 24, color: Colors.black)
-              ],
+            child: Align(
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Çıkış Yap",
+                    style: GoogleFonts.roboto(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  ),
+                  Icon(Icons.door_back_door, size: MediaQuery.sizeOf(context).width * 0.06, color: Colors.black)
+                ],
+              ),
             )),
       ),
     );
@@ -408,7 +442,7 @@ class _BeSellerOrUserState extends State<BeSellerOrUser> {
   Widget build(BuildContext context) {
     return Container(
                 color: Colors.white,
-                height: 50,
+                height: MediaQuery.sizeOf(context).height * 0.070,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Row(
@@ -416,10 +450,12 @@ class _BeSellerOrUserState extends State<BeSellerOrUser> {
                     children: [
                       Text(
                         "Kaleci Ol",
-                        style: GoogleFonts.roboto(fontSize: 18, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.roboto(fontSize: 18, fontWeight: FontWeight.w500,),
+                        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                       ),
                       ToggleSwitch(
-                        minWidth: 80.0,
+                        minHeight: MediaQuery.sizeOf(context).height * 0.045,
+                        minWidth:  MediaQuery.of(context).size.width * 0.25,
                         cornerRadius: 20.0,
                         activeBgColors: [
                           [Colors.green[800]!],
@@ -468,3 +504,4 @@ class _BeSellerOrUserState extends State<BeSellerOrUser> {
               );
   }
 }
+

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/firebase_options.dart';
@@ -61,19 +62,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlatformApp(
-      // locale: DevicePreview.locale(context),
-      // builder: DevicePreview.appBuilder,
-      // theme: ThemeData.light(),
-      // darkTheme: ThemeData.dark(),
-      // home: const MainPage(),
-      debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,
-      title: 'Kalecim',
-      initialRoute: '/',
-      home:  userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
-      // routes: {
-      //   '/':(context) => MainPage(index: 2),
-      // },
+    // locale: DevicePreview.locale(context),
+    // builder: DevicePreview.appBuilder,
+    // theme: ThemeData.light(),
+    // darkTheme: ThemeData.dark(),
+    // home: const MainPage(),
+    debugShowCheckedModeBanner: false,
+    navigatorKey: navigatorKey,
+    title: 'Kalecim',
+    initialRoute: '/',
+    home:  userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
+    // routes: {
+    //   '/':(context) => MainPage(index: 2),
+    // },
     );
   }
 }

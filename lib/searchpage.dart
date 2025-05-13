@@ -7,6 +7,7 @@ import 'package:kiralik_kaleci/SellerGridItem.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'sellerDetails.dart';
@@ -214,24 +215,20 @@ class _HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final height = width * 0.2;
         return Container(
-        width: width,
-        height: height,
+        width: double.infinity,
+        height: MediaQuery.sizeOf(context).height * 0.1,
         color: background,
         padding: const EdgeInsets.only(top: 15),
         child: Row(
           children: [
             Text(
               "Kalecilerimiz",
-              style: GoogleFonts.inter(
-                  fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black),
+              style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black),
+              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
             ),
             const SizedBox(width: 10),
-            const Icon(Icons.handshake),
+            Icon(Icons.handshake, size: MediaQuery.sizeOf(context).width * 0.06),
             const Spacer(),
       
             //todo: Bunu class a çevir performans için :D
@@ -242,7 +239,7 @@ class _HeaderSection extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 10),
-                    child: Icon(Icons.notifications, size: 24, color: Colors.black),
+                    child: Icon(Icons.notifications, size: MediaQuery.sizeOf(context).width * 0.06, color: Colors.black),
                   ),
                   StreamBuilder<int>(
                     stream: getUnreadCount(),
@@ -261,11 +258,12 @@ class _HeaderSection extends StatelessWidget {
                           ),
                           child: Text(
                             snapshot.data.toString(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
+                            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                           ),
                         ),
                       );
@@ -279,15 +277,14 @@ class _HeaderSection extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child:
-                    Image.asset('lib/icons/setting.png', width: 20, height: 20),
+                    Image.asset('lib/icons/setting.png', width: MediaQuery.sizeOf(context).width * 0.06, height: MediaQuery.sizeOf(context).width * 0.06),
               ),
             ),
           ],
         ),
       );
-      },
-    );
   }
+
   Stream<int> getUnreadCount() {
     final String currentUser = FirebaseAuth.instance.currentUser!.uid;
 

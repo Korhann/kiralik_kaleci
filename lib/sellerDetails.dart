@@ -185,7 +185,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                           borderRadius: BorderRadius.circular(20),
                           child: Container(
                             color: userorseller ? sellergrey: Colors.white,
-                            height: 400,
+                            height: MediaQuery.sizeOf(context).height * 0.70,
                             width: MediaQuery.sizeOf(context).width,
                             child: SingleChildScrollView(
                               child: Column(
@@ -830,7 +830,7 @@ class DayHourListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 150,
+      height: MediaQuery.sizeOf(context).height,
       width: double.infinity,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -853,7 +853,7 @@ class DayHourListView extends StatelessWidget {
                 ),
                 const SizedBox(height: 7),
                 SizedBox(
-                  height: 120,
+                  height: MediaQuery.sizeOf(context).height * 0.20,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Column(
