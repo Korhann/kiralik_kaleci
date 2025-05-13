@@ -7,12 +7,12 @@ import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
 import 'package:kiralik_kaleci/apptRequest.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
-import 'package:shimmer/shimmer.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
@@ -87,6 +87,8 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   @override
   Widget build(BuildContext context) {
     // eğer kullanıcı hiç ilan açmamış ise
+    final height = MediaQuery.sizeOf(context).height;
+    final width = MediaQuery.sizeOf(context).width;
     if (widget.sellerDetails.isEmpty) {
       return Scaffold(
         appBar: AppBar(
@@ -100,11 +102,11 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
         ),
         body: SafeArea(
           child: Container(
-            width: MediaQuery.sizeOf(context).width,
+            width: width,
             color: sellerbackground,
             child: Column(
               children: [
-                const SizedBox(height: 30),
+                SizedBox(height: height * 0.030),
                 Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Text(
@@ -114,10 +116,11 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
+                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: height * 0.030),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -156,6 +159,10 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 return SellerDetailsShimmer();
             } 
           }
+
+          final width = MediaQuery.sizeOf(context).width;
+          final height = MediaQuery.sizeOf(context).height;
+
           return Scaffold(
           appBar: AppBar(
           backgroundColor: userorseller ? sellerbackground : background,
@@ -169,183 +176,179 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
           body: SafeArea(
             child: Stack(
             children: [
-              SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: MediaQuery.sizeOf(context).height
-                  ),
-                  child: Container(
-                  color: userorseller ? sellerbackground : background,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 25),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            color: userorseller ? sellergrey: Colors.white,
-                            height: MediaQuery.sizeOf(context).height * 0.70,
-                            width: MediaQuery.sizeOf(context).width,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid)
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.sizeOf(context).height
+                ),
+                child: Container(
+                color: userorseller ? sellerbackground : background,
+                child: Column(
+                  children: [
+                    SizedBox(height: height * 0.025),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          color: userorseller ? sellergrey: Colors.white,
+                          height: height * 0.65,
+                          width: width,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid, width: width, height: height)
+                                ),
+                                SizedBox(height: height * 0.020),
+                                
+                                showNameSurname(sellerDetails: widget.sellerDetails),
+                                
+                                SizedBox(height: height * 0.007),
+                                
+                                showCityDistrict(sellerDetails: widget.sellerDetails),
+                                
+                                SizedBox(height: height * 0.005),
+                                
+                                SellerFields(
+                                  selectedField: _selectedField ?? widget.sellerDetails['fields'][0],
+                                  sellerDetails: widget.sellerDetails,
+                                  onFieldChanged: (newField) {
+                                    setState(() {
+                                      _selectedField = newField;
+                                    });
+                                  }, 
+                                  width: width,
                                   ),
-                                  const SizedBox(height: 20),
-                                  
-                                  showNameSurname(sellerDetails: widget.sellerDetails),
-                                  
-                                  const SizedBox(height: 7),
-                                  
-                                  showCityDistrict(sellerDetails: widget.sellerDetails),
-                                  
-                                  const SizedBox(height: 5),
-                                  
-                                  SellerFields(
-                                    selectedField: _selectedField ?? widget.sellerDetails['fields'][0],
-                                    sellerDetails: widget.sellerDetails,
-                                    onFieldChanged: (newField) {
-                                      setState(() {
-                                        _selectedField = newField;
-                                      });
-                                    }, 
-                                    ),
-                                  const SizedBox(height: 10),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          "Saatler",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600,
-                                            color: userorseller ? Colors.white : Colors.black,
-                                          ),
+                                SizedBox(height: height * 0.010),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        "Saatler",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: userorseller ? Colors.white : Colors.black,
                                         ),
-                                        SingleChildScrollView(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              //todo: Gece saatleri sıkıntılı çalışıyor ve _getDaysName de de aynı kod çalışıyor, hangisi boş anla
-                                              StreamBuilder<DocumentSnapshot>(
-                                                stream: _stream(),
-                                                builder: (context, snapshot) {
-                                                  if (!snapshot.hasData) {
-                                                    return const Center(child: CircularProgressIndicator());
-                                                  }
-                                                  final userData = snapshot.data!.data() as Map<String, dynamic>;
-                                                  final selectedHoursByDay = userData['sellerDetails']?['selectedHoursByDay'] as Map<String, dynamic>?;
-                                                  if (selectedHoursByDay == null) {
-                                                    return const Text('Saat bilgisi bulunamadı');
-                                                  }
-                                                  
-                                                  days.clear();
-                                                  hoursByDay.clear();
-                                                  hourColors.clear();
-                                                  
-                                                  final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-                                                  final int currentDayIndex = now.weekday - 1;
-                                                  print('current day is $currentDayIndex');
-                                                  
-                                                  for (int i = 0; i < orderedDays.length; i++) {
-                                                    final day = orderedDays[i];
-                                                    print('---------');
-                                                    print(i);
-                                                    print(day);
-                                                    print('---------');
-                                                    if (!selectedHoursByDay.containsKey(day)) continue;
-                                                      List<dynamic> hourList = selectedHoursByDay[day];
-                                                      
-                                                      if (hourList.isEmpty) continue;
-                                                        days.add(day);
-                                                        List<String> hourTitles = [];
-                                                        for (var hour in hourList) {
-                                                          final hourMap = hour as Map<String, dynamic>;
-                                                          final String title = hourMap['title'];
-                                                          final bool istaken = hourMap['istaken'];
-                                                          final String? takenby = hourMap['takenby'];
-                                                          final String startTime = title.split('-')[0];
-                                                          final String dayHourKey = '$day $title';
-                                                          List<String> nightTitles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
-                                                          bool isNightHour = nightTitles.contains(title);
-
-                                                          dayChecker(i, currentDayIndex, now, startTime, dayHourKey, takenby!, day, title, hourTitles, isNightHour, istaken);
-                                                        }
-                                                        
-                                                    }
-                                                    
-                                                  return DayHourListView(
-                                                    days: days,
-                                                    hoursByDay: hoursByDay,
-                                                    hourColors: hourColors,
-                                                    selectedDay: _selectedDay,
-                                                    selectedHour: _selectedHour,
-                                                    userorseller: userorseller,
-                                                    onDaySelected: (selectedDay) {
-                                                      setState(() {
-                                                        _selectedDay = selectedDay;
-                                                      });
-                                                    },
-                                                    onHourSelected: (selectedHour) {
-                                                      setState(() {
-                                                        _selectedHour = selectedHour;
-                                                      });
-                                                    },
-                                                    onClearSelection: () {
-                                                      setState(() {
-                                                        _selectedDay = null;
-                                                        _selectedHour = null;
-                                                        hourColors.forEach((key, value) {
-                                                          if (value != Colors.grey.shade600 && value != Colors.green) {
-                                                            hourColors[key] = Colors.cyan;
-                                                          }
-                                                        });
-                                                      });
-                                                    },
-                                                  );                                     
-                                                }),
-                                            const SizedBox(height: 10),
-                                          ],
-                                        ),
+                                        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                       ),
-                                        const SizedBox(height: 10,)
-                                      ],
+                                      SizedBox(height: height * 0.010),
+                                      SingleChildScrollView(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            //todo: Gece saatleri sıkıntılı çalışıyor ve _getDaysName de de aynı kod çalışıyor, hangisi boş anla
+                                            StreamBuilder<DocumentSnapshot>(
+                                              stream: _stream(),
+                                              builder: (context, snapshot) {
+                                                if (!snapshot.hasData) {
+                                                  return const Center(child: CircularProgressIndicator());
+                                                }
+                                                final userData = snapshot.data!.data() as Map<String, dynamic>;
+                                                final selectedHoursByDay = userData['sellerDetails']?['selectedHoursByDay'] as Map<String, dynamic>?;
+                                                if (selectedHoursByDay == null) {
+                                                  return const Text('Saat bilgisi bulunamadı');
+                                                }
+                                                
+                                                days.clear();
+                                                hoursByDay.clear();
+                                                hourColors.clear();
+                                                
+                                                final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+                                                final int currentDayIndex = now.weekday - 1;
+                                                
+                                                for (int i = 0; i < orderedDays.length; i++) {
+                                                  final day = orderedDays[i];
+                                                  if (!selectedHoursByDay.containsKey(day)) continue;
+                                                    List<dynamic> hourList = selectedHoursByDay[day];
+                                                    
+                                                    if (hourList.isEmpty) continue;
+                                                      days.add(day);
+                                                      List<String> hourTitles = [];
+                                                      for (var hour in hourList) {
+                                                        final hourMap = hour as Map<String, dynamic>;
+                                                        final String title = hourMap['title'];
+                                                        final bool istaken = hourMap['istaken'];
+                                                        final String? takenby = hourMap['takenby'];
+                                                        final String startTime = title.split('-')[0];
+                                                        final String dayHourKey = '$day $title';
+                                                        List<String> nightTitles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
+                                                        bool isNightHour = nightTitles.contains(title);
+              
+                                                        dayChecker(i, currentDayIndex, now, startTime, dayHourKey, takenby!, day, title, hourTitles, isNightHour, istaken);
+                                                      }
+                                                      
+                                                  }
+                                                  
+                                                return DayHourListView(
+                                                  width: width,
+                                                  heigth: height,
+                                                  days: days,
+                                                  hoursByDay: hoursByDay,
+                                                  hourColors: hourColors,
+                                                  selectedDay: _selectedDay,
+                                                  selectedHour: _selectedHour,
+                                                  userorseller: userorseller,
+                                                  onDaySelected: (selectedDay) {
+                                                    setState(() {
+                                                      _selectedDay = selectedDay;
+                                                    });
+                                                  },
+                                                  onHourSelected: (selectedHour) {
+                                                    setState(() {
+                                                      _selectedHour = selectedHour;
+                                                    });
+                                                  },
+                                                  onClearSelection: () {
+                                                    setState(() {
+                                                      _selectedDay = null;
+                                                      _selectedHour = null;
+                                                      hourColors.forEach((key, value) {
+                                                        if (value != Colors.grey.shade600 && value != Colors.green) {
+                                                          hourColors[key] = Colors.cyan;
+                                                        }
+                                                      });
+                                                    });
+                                                  },
+                                                );
+                                              }),
+                                        ],
+                                      ),
                                     ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 15),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: showInfoAppointments()
-                      ),
-                      const SizedBox(height: 60),
-                      PaymentButton(
-                        selectedDay: _selectedDay,
-                        selectedHour: _selectedHour,
-                        selectedField: _selectedField,
-                        currentUserUid: currentUserUid,
-                        sellerUid: widget.sellerUid,
-                        sellerDetails: widget.sellerDetails
-                      ),
-                      const SizedBox(height: 30),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: height * 0.015),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: showInfoAppointments(width: width, height: height)
+                    ),
+                    SizedBox(height: height * 0.030),
+                    PaymentButton(
+                      selectedDay: _selectedDay,
+                      selectedHour: _selectedHour,
+                      selectedField: _selectedField,
+                      currentUserUid: currentUserUid,
+                      sellerUid: widget.sellerUid,
+                      sellerDetails: widget.sellerDetails
+                    ),
+                    SizedBox(height: height * 0.030),
+                  ],
                 ),
-                ),
+              ),
               ),
               Positioned(
                 bottom: 120,
                 right: 20,
-                child: ChatButton(sellerUid: widget.sellerUid)
+                child: ChatButton(sellerUid: widget.sellerUid, width: width,height: height,)
               )
             ],
             ),
@@ -554,12 +557,14 @@ class SellerFields extends StatefulWidget {
   final String selectedField;
   final Map<String, dynamic> sellerDetails;
   final ValueChanged<String> onFieldChanged;
+  final double width;
 
   const SellerFields({
     super.key,
     required this.selectedField,
     required this.sellerDetails,
     required this.onFieldChanged,
+    required this.width
   });
 
   @override
@@ -580,6 +585,7 @@ class _SellerFieldsState extends State<SellerFields> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Container(
+        width: widget.width,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: Colors.white, // Background color
@@ -606,6 +612,7 @@ class _SellerFieldsState extends State<SellerFields> {
                 child: Text(
                   value.toString(),
                   style: const TextStyle(fontSize: 16, color: Colors.black87),
+                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               );
             }).toList(),
@@ -631,6 +638,8 @@ class showImage extends StatefulWidget {
   final bool isFavorited; 
   final Map<String, dynamic> sellerDetails;
   final String sellerUid;
+  final double width;
+  final double height;
 
   const showImage({
     super.key,
@@ -638,6 +647,8 @@ class showImage extends StatefulWidget {
     required this.isFavorited,
     required this.sellerDetails,
     required this.sellerUid,
+    required this.width,
+    required this.height
   });
 
   @override
@@ -655,21 +666,24 @@ class _showImageState extends State<showImage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final imageHeight = widget.height * 0.40;
+
     return Stack(
       children: [
         Image.network(
           widget.imageUrl,
-          height: 180,
-          width: double.infinity,
+          height: imageHeight,
+          width: widget.width,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
-    return Image.asset(
-      'lib/images/imageDefault.jpg',
-      fit: BoxFit.contain,
-      height: 180,
-      width: MediaQuery.of(context).size.width,
-    );
-  },
+            return Image.asset(
+              'lib/images/imageDefault.jpg',
+              fit: BoxFit.contain,
+              height: imageHeight,
+              width: widget.width,
+            );
+          },
         ),
         Positioned(
           top: 15,
@@ -681,6 +695,7 @@ class _showImageState extends State<showImage> {
             child: Icon(
               Icons.favorite,
               color: _isFavorited ? Colors.red : Colors.grey,
+              size: widget.width * 0.06,
             ),
           ),
         ),
@@ -737,6 +752,7 @@ class showNameSurname extends StatelessWidget {
               fontWeight: FontWeight.w400,
               color: userorseller ? Colors.white : Colors.black,
             ),
+            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
           ),
         ],
       ),
@@ -758,6 +774,7 @@ class showCityDistrict extends StatelessWidget {
           fontWeight: FontWeight.w300,
           color: userorseller ? Colors.white : Colors.black,
         ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
       ),
     );
   }
@@ -803,6 +820,7 @@ class chooseCard extends StatelessWidget {
     );
   }
 }
+//todo: bottom overflowd 30 pixels
 class DayHourListView extends StatelessWidget {
   final List<String> days;
   final Map<String, List<String>> hoursByDay;
@@ -813,6 +831,8 @@ class DayHourListView extends StatelessWidget {
   final ValueChanged<String> onDaySelected;
   final ValueChanged<String> onHourSelected;
   final VoidCallback onClearSelection;
+  final double width;
+  final double heigth;
 
   const DayHourListView({
     super.key,
@@ -825,12 +845,14 @@ class DayHourListView extends StatelessWidget {
     required this.onDaySelected,
     required this.onHourSelected,
     required this.onClearSelection,
+    required this.width,
+    required this.heigth
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.sizeOf(context).height,
+      height: heigth,
       width: double.infinity,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -850,10 +872,11 @@ class DayHourListView extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: userorseller ? Colors.white : Colors.black,
                   ),
+                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
-                const SizedBox(height: 7),
+                SizedBox(height: heigth * 0.007),
                 SizedBox(
-                  height: MediaQuery.sizeOf(context).height * 0.20,
+                  height: heigth,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Column(
@@ -894,6 +917,7 @@ class DayHourListView extends StatelessWidget {
                                       fontWeight: FontWeight.w400,
                                       color: userorseller ? Colors.white : Colors.black,
                                     ),
+                                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                   ),
                                 ),
                               ),
@@ -912,7 +936,7 @@ class DayHourListView extends StatelessWidget {
                                       child: const Icon(
                                         Icons.close,
                                         color: Colors.white,
-                                        size: 8,
+                                        size: 10,
                                       ),
                                     ),
                                   ),
@@ -933,7 +957,9 @@ class DayHourListView extends StatelessWidget {
   }
 }
 class showInfoAppointments extends StatelessWidget {
-  const showInfoAppointments({super.key});
+  final double width;
+  final double height;
+  const showInfoAppointments({super.key, required this.width, required this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -944,57 +970,60 @@ class showInfoAppointments extends StatelessWidget {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: Container(
-                              height: 10,
-                              width: 10,
+                              height: 15,
+                              width: 15,
                               color: Colors.green,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: width*0.020),
                           Text(
                             'Randevu saatin',
                             style: TextStyle(
                               color: userorseller ? Colors.white: Colors.black
                             ),
+                            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                           )
                         ],
                       ),
-                      const SizedBox(height: 5),
+                      SizedBox(height: height * 0.010),
                       Row(
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: Container(
-                              height: 10,
-                              width: 10,
+                              height: 15,
+                              width: 15,
                               color: Colors.cyan,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: width * 0.020),
                           Text(
                             'Müsait',
                             style: TextStyle(
                               color: userorseller ? Colors.white: Colors.black
                             ),
+                            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                           )
                         ],
                       ),
-                      const SizedBox(height: 5),
+                      SizedBox(height: height * 0.010),
                       Row(
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: Container(
-                              height: 10,
-                              width: 10,
+                              height: 15,
+                              width: 15,
                               color: Colors.grey.shade600,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: width*0.020),
                           Text(
                             'Alınmış veya geçmiş',
                             style: TextStyle(
                               color: userorseller ? Colors.white : Colors.black
                             ),
+                            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                           )
                         ],
                       ),
@@ -1004,10 +1033,14 @@ class showInfoAppointments extends StatelessWidget {
 }
 class ChatButton extends StatelessWidget {
   final String sellerUid;
+  final double width;
+  final double height;
   
   const ChatButton({
     super.key,
     required this.sellerUid,
+    required this.width,
+    required this.height
   });
 
   @override
@@ -1031,19 +1064,19 @@ class ChatButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           color: Colors.white,
-          width: 120,
-          height: 50,
+          width: width*0.30,
+          height: height*0.05,
           child: Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.forward_to_inbox,
                   color: Colors.black,
-                  size: 24,
+                  size: width*0.06,
                 ),
-                const SizedBox(width: 5),
+                SizedBox(width: 5),
                 Text(
                   "Sohbet",
                   style: GoogleFonts.inter(
@@ -1051,6 +1084,7 @@ class ChatButton extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: Colors.black,
                   ),
+                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ],
             ),
@@ -1121,6 +1155,7 @@ class PaymentButton extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             color: userorseller ? Colors.white : Colors.black,
                           ),
+                          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                         ),
                       );
   }

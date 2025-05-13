@@ -78,6 +78,10 @@ class _GetUserDataState extends State<GetUserData> {
           }
           var docs = snapshot.data!.docs.where((doc) => doc.data().containsKey('sellerDetails')).toList();
 
+          final width = MediaQuery.sizeOf(context).width;
+          final height = MediaQuery.sizeOf(context).height;
+          final bannerHeight = width * 0.3;
+
           return MediaQuery.removePadding(
             context: context,
             removeTop: true,
@@ -89,11 +93,13 @@ class _GetUserDataState extends State<GetUserData> {
                 _HeaderSection(
                   onFilterTap: _navigateToFilterPage,
                   onNotificationTap: _navigateToAppsPage,
+                  width: width,
+                  height: height,
                 ),
 
                 // BANNER BÖLÜMÜ
                 //TODO: REMOVE THE AUTO PADDING HERE
-                ImageSliderDemo(),
+                ImageSliderDemo(width: width, height: bannerHeight),
 
                 const SizedBox(height: 10),
 
@@ -210,17 +216,18 @@ class _GetUserDataState extends State<GetUserData> {
 class _HeaderSection extends StatelessWidget {
   final VoidCallback onFilterTap;
   final VoidCallback onNotificationTap;
+  final double width;
+  final double height;
 
-  const _HeaderSection({required this.onFilterTap, required this.onNotificationTap});
+  const _HeaderSection({required this.onFilterTap, required this.onNotificationTap, required this.width, required this.height});
 
   @override
   Widget build(BuildContext context) {
-      final iconSize = MediaQuery.sizeOf(context).width * 0.06;
-      final width = MediaQuery.sizeOf(context).width;
-      final height = MediaQuery.sizeOf(context).height * 0.07;
+
+      final iconSize = width * 0.06;
       return Container(
         width: width,
-        height: height,
+        height: height * 0.07,
         color: background,
         padding: const EdgeInsets.only(top: 15),
         child: Row(
@@ -312,18 +319,21 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext ctx, BoxConstraints constraints) {
+        final iconSize = MediaQuery.sizeOf(context).width * 0.08;
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.search, size: 70, color: Colors.grey.shade500),
+              Icon(Icons.search, size: iconSize, color: Colors.grey.shade500),
               const SizedBox(height: 10),
               Text(
                 'İlgili sonuç bulunamadı',
                 style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black),
+                    color: Colors.black
+                ),
+                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
               ),
             ],
           ),
@@ -379,18 +389,18 @@ class _SellerGrid extends StatelessWidget {
 }
 
 class ImageSliderDemo extends StatelessWidget {
+  final double width;
+  final double height;
+
   final List<String> bannerImages = [
     'lib/images/kalecimafis1.jpg',
     'lib/images/kalecimafis2.jpg'
   ];
 
+  ImageSliderDemo({super.key, required this.width, required this.height});
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final height = width * 0.3;
-
         return SizedBox(
           width: width,
           height: height,
@@ -414,8 +424,6 @@ class ImageSliderDemo extends StatelessWidget {
             ).toList(),
           ),
         );
-      },
-    );
   }
 }
 
