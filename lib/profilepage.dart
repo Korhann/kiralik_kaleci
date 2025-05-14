@@ -399,12 +399,10 @@ class SignUserOut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth _auth = FirebaseAuth.instance;
-    final width = MediaQuery.sizeOf(context).width * 0.50;
-    final height = MediaQuery.sizeOf(context).height * 0.060;
     return Center(
       child: SizedBox(
-        width: width,
-        height: height,
+        width: 200,
+        height: 60,
         child: ElevatedButton(
             onPressed: () async {
               // sign out the user
@@ -422,9 +420,8 @@ class SignUserOut extends StatelessWidget {
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.black),
-                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                   ),
-                  Icon(Icons.door_back_door, size: MediaQuery.sizeOf(context).width * 0.06, color: Colors.black)
+                  Icon(Icons.door_back_door, size: 24, color: Colors.black)
                 ],
               ),
             )),

@@ -6,6 +6,7 @@ import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/enterVerificationCode.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/paymentpage.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -105,6 +106,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return ConnectivityWithBackButton(
       child: StreamBuilder<QuerySnapshot>(
         stream: appointmentStream(),
@@ -165,6 +168,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   fontWeight: FontWeight.bold,
                   color: userorseller ? Colors.white : Colors.black,
                 ),
+                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
               ),
             ),
             if (userorseller == false)
@@ -225,6 +229,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   isPastDay: isPastDay,
                   docId: docId,
                   userorseller: userorseller,
+                  width: width,
+                  height: height,
                   onApprove: () async {
                     await approveAppointment(docId, index);
                   },
@@ -376,8 +382,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
-  //
+  
   Widget buyerStatusInfo() {
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Padding(
@@ -396,8 +403,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             Text(
               'Alındı',
               style: TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -409,10 +417,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Reddedildi',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style:TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -424,10 +432,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Beklemede',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style:TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -439,10 +447,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Ödeme gerekiyor',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style:TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -454,8 +462,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Geçmiş',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style:TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
           ],
         ),
@@ -464,6 +472,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   Widget sellerStatusInfo() {
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Padding(
@@ -481,10 +490,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Onaylandı',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style:TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -496,10 +505,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Reddedildi',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style:TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -511,10 +520,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Beklemede',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style:TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -526,8 +535,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             const SizedBox(width: 5),
             Text(
               'Geçmiş',
-              style:
-                  TextStyle(color: userorseller ? Colors.white : Colors.black),
+              style:TextStyle(color: userorseller ? Colors.white : Colors.black),
+              textScaler: textScaler,
             ),
           ],
         ),
@@ -553,6 +562,7 @@ class apptsEmpty extends StatelessWidget {
               color: userorseller ? Colors.white : Colors.black,
               fontWeight: FontWeight.bold,
             ),
+            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
             textAlign: TextAlign.center,
           ),
         ),
@@ -579,6 +589,8 @@ class AppointmentView extends StatelessWidget {
   final bool userorseller;
   final VoidCallback? onApprove;
   final VoidCallback? onReject;
+  final double height;
+  final double width;
 
   const AppointmentView({
     Key? key,
@@ -599,6 +611,8 @@ class AppointmentView extends StatelessWidget {
     required this.userorseller,
     this.onApprove,
     this.onReject,
+    required this.height,
+    required this.width
   }) : super(key: key);
 
   @override
@@ -622,11 +636,12 @@ class AppointmentView extends StatelessWidget {
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        const Icon(Icons.location_on),
+                        Icon(Icons.location_on, size: width*0.06),
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
                             field,
+                            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                           ),
                         ),
                         const Spacer(),
@@ -840,20 +855,22 @@ class iconDayHour extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return Row(
       children: [
-        const Icon(Icons.calendar_month),
+        Icon(Icons.calendar_month, size: MediaQuery.sizeOf(context).width*0.05,),
         const SizedBox(width: 5),
-        Text(day),
+        Text(day, textScaler: textScaler),
         const Spacer(),
-        const Icon(Icons.watch_later_outlined),
+        Icon(Icons.watch_later_outlined, size: MediaQuery.sizeOf(context).width*0.05,),
         const SizedBox(width: 5),
-        Text(hour),
+        Text(hour, textScaler: textScaler),
       ],
     );
   }
 }
 class nameSurname extends StatelessWidget {
+  
   final String name;
   final String surname;
   const nameSurname({
@@ -870,6 +887,7 @@ class nameSurname extends StatelessWidget {
         fontSize: 18,
         color: Colors.black,
       ),
+      textScaler :TextScaler.linear(ScaleSize.textScaleFactor(context))
     );
   }
 }

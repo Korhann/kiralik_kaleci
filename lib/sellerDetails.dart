@@ -235,88 +235,86 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                                         textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                       ),
                                       SizedBox(height: height * 0.010),
-                                      SingleChildScrollView(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            //todo: Gece saatleri sıkıntılı çalışıyor ve _getDaysName de de aynı kod çalışıyor, hangisi boş anla
-                                            StreamBuilder<DocumentSnapshot>(
-                                              stream: _stream(),
-                                              builder: (context, snapshot) {
-                                                if (!snapshot.hasData) {
-                                                  return const Center(child: CircularProgressIndicator());
-                                                }
-                                                final userData = snapshot.data!.data() as Map<String, dynamic>;
-                                                final selectedHoursByDay = userData['sellerDetails']?['selectedHoursByDay'] as Map<String, dynamic>?;
-                                                if (selectedHoursByDay == null) {
-                                                  return const Text('Saat bilgisi bulunamadı');
-                                                }
-                                                
-                                                days.clear();
-                                                hoursByDay.clear();
-                                                hourColors.clear();
-                                                
-                                                final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-                                                final int currentDayIndex = now.weekday - 1;
-                                                
-                                                for (int i = 0; i < orderedDays.length; i++) {
-                                                  final day = orderedDays[i];
-                                                  if (!selectedHoursByDay.containsKey(day)) continue;
-                                                    List<dynamic> hourList = selectedHoursByDay[day];
-                                                    
-                                                    if (hourList.isEmpty) continue;
-                                                      days.add(day);
-                                                      List<String> hourTitles = [];
-                                                      for (var hour in hourList) {
-                                                        final hourMap = hour as Map<String, dynamic>;
-                                                        final String title = hourMap['title'];
-                                                        final bool istaken = hourMap['istaken'];
-                                                        final String? takenby = hourMap['takenby'];
-                                                        final String startTime = title.split('-')[0];
-                                                        final String dayHourKey = '$day $title';
-                                                        List<String> nightTitles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
-                                                        bool isNightHour = nightTitles.contains(title);
-              
-                                                        dayChecker(i, currentDayIndex, now, startTime, dayHourKey, takenby!, day, title, hourTitles, isNightHour, istaken);
-                                                      }
-                                                      
-                                                  }
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          //todo: Gece saatleri sıkıntılı çalışıyor ve _getDaysName de de aynı kod çalışıyor, hangisi boş anla
+                                          StreamBuilder<DocumentSnapshot>(
+                                            stream: _stream(),
+                                            builder: (context, snapshot) {
+                                              if (!snapshot.hasData) {
+                                                return const Center(child: CircularProgressIndicator());
+                                              }
+                                              final userData = snapshot.data!.data() as Map<String, dynamic>;
+                                              final selectedHoursByDay = userData['sellerDetails']?['selectedHoursByDay'] as Map<String, dynamic>?;
+                                              if (selectedHoursByDay == null) {
+                                                return const Text('Saat bilgisi bulunamadı');
+                                              }
+                                              
+                                              days.clear();
+                                              hoursByDay.clear();
+                                              hourColors.clear();
+                                              
+                                              final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+                                              final int currentDayIndex = now.weekday - 1;
+                                              
+                                              for (int i = 0; i < orderedDays.length; i++) {
+                                                final day = orderedDays[i];
+                                                if (!selectedHoursByDay.containsKey(day)) continue;
+                                                  List<dynamic> hourList = selectedHoursByDay[day];
                                                   
-                                                return DayHourListView(
-                                                  width: width,
-                                                  heigth: height,
-                                                  days: days,
-                                                  hoursByDay: hoursByDay,
-                                                  hourColors: hourColors,
-                                                  selectedDay: _selectedDay,
-                                                  selectedHour: _selectedHour,
-                                                  userorseller: userorseller,
-                                                  onDaySelected: (selectedDay) {
-                                                    setState(() {
-                                                      _selectedDay = selectedDay;
+                                                  if (hourList.isEmpty) continue;
+                                                    days.add(day);
+                                                    List<String> hourTitles = [];
+                                                    for (var hour in hourList) {
+                                                      final hourMap = hour as Map<String, dynamic>;
+                                                      final String title = hourMap['title'];
+                                                      final bool istaken = hourMap['istaken'];
+                                                      final String? takenby = hourMap['takenby'];
+                                                      final String startTime = title.split('-')[0];
+                                                      final String dayHourKey = '$day $title';
+                                                      List<String> nightTitles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
+                                                      bool isNightHour = nightTitles.contains(title);
+                                                    
+                                                      dayChecker(i, currentDayIndex, now, startTime, dayHourKey, takenby!, day, title, hourTitles, isNightHour, istaken);
+                                                    }
+                                                    
+                                                }
+                                                
+                                              return DayHourListView(
+                                                width: width,
+                                                heigth: height,
+                                                days: days,
+                                                hoursByDay: hoursByDay,
+                                                hourColors: hourColors,
+                                                selectedDay: _selectedDay,
+                                                selectedHour: _selectedHour,
+                                                userorseller: userorseller,
+                                                onDaySelected: (selectedDay) {
+                                                  setState(() {
+                                                    _selectedDay = selectedDay;
+                                                  });
+                                                },
+                                                onHourSelected: (selectedHour) {
+                                                  setState(() {
+                                                    _selectedHour = selectedHour;
+                                                  });
+                                                },
+                                                onClearSelection: () {
+                                                  setState(() {
+                                                    _selectedDay = null;
+                                                    _selectedHour = null;
+                                                    hourColors.forEach((key, value) {
+                                                      if (value != Colors.grey.shade600 && value != Colors.green) {
+                                                        hourColors[key] = Colors.cyan;
+                                                      }
                                                     });
-                                                  },
-                                                  onHourSelected: (selectedHour) {
-                                                    setState(() {
-                                                      _selectedHour = selectedHour;
-                                                    });
-                                                  },
-                                                  onClearSelection: () {
-                                                    setState(() {
-                                                      _selectedDay = null;
-                                                      _selectedHour = null;
-                                                      hourColors.forEach((key, value) {
-                                                        if (value != Colors.grey.shade600 && value != Colors.green) {
-                                                          hourColors[key] = Colors.cyan;
-                                                        }
-                                                      });
-                                                    });
-                                                  },
-                                                );
-                                              }),
-                                        ],
+                                                  });
+                                                },
+                                              );
+                                            }),
+                                      ],
                                       ),
-                                    ),
                                     ],
                                   ),
                                 ),
@@ -346,7 +344,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
               ),
               ),
               Positioned(
-                bottom: 120,
+                bottom: height > 700 ? height*0.18: height*0.12,
                 right: 20,
                 child: ChatButton(sellerUid: widget.sellerUid, width: width,height: height,)
               )
@@ -933,10 +931,10 @@ class DayHourListView extends StatelessWidget {
                                         shape: BoxShape.circle,
                                         color: Colors.red,
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.close,
                                         color: Colors.white,
-                                        size: 10,
+                                        size: width*0.02,
                                       ),
                                     ),
                                   ),

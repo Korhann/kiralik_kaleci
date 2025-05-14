@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -12,7 +13,13 @@ class Showalert {
   Showalert({required this.context, required this.text});
 
   void showSuccessAlert() {
-    QuickAlert.show(context: context, text: text,type: QuickAlertType.success,confirmBtnText: 'Tamam',title: 'Başarılı');
+    QuickAlert.show(
+      context: context,
+      text: text,
+      type: QuickAlertType.success,
+      confirmBtnText: 'Tamam',
+      title: 'Başarılı',
+    );
   }
   void showErrorAlert() {
     QuickAlert.show(context: context, text: text,type: QuickAlertType.error,confirmBtnText: 'Tamam',title: 'Bir şeyler ters gitti');

@@ -409,7 +409,7 @@ class ImageSliderDemo extends StatelessWidget {
               viewportFraction: 1.0,
               enlargeCenterPage: false,
               autoPlay: true,
-              height: 100,
+              height: height,
               padEnds: false,
             ),
             items: bannerImages.map((item) => 

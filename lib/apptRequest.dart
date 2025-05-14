@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/notification_model.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -47,6 +48,8 @@ class _ApptRequestState extends State<ApptRequest> {
   
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: background,
@@ -61,10 +64,10 @@ class _ApptRequestState extends State<ApptRequest> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 10),
+            const SizedBox(height: 30),
             Container(
               width: double.infinity,
-              height: 220,
+              height: height*0.30,
               color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -72,13 +75,14 @@ class _ApptRequestState extends State<ApptRequest> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 10),
                     Text(
                       'Seçilen gün ve saat',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.bold
                       ),
+                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                     ),
                     const SizedBox(height: 8),
                     Padding(
@@ -91,26 +95,28 @@ class _ApptRequestState extends State<ApptRequest> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
                     Text(
                       'Seçilen saha',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.bold
                       ),
+                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
                     ),
                     const SizedBox(height: 8),
                     Padding(
                       padding: EdgeInsets.only(right: 20),
                       child: _selectedField(),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
                     Text(
                       'Ödenecek Tutar',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.bold
                       ),
+                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
                     ),
                     const SizedBox(height: 8),
                     Padding(
@@ -124,6 +130,7 @@ class _ApptRequestState extends State<ApptRequest> {
                                 fontWeight: FontWeight.normal,
                                 color: Colors.black
                               ),
+                              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
                           ),
                           const Spacer(),
                           _price()
@@ -134,7 +141,7 @@ class _ApptRequestState extends State<ApptRequest> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             Center(
               child: ElevatedButton(
                 // check for the internet connection
@@ -156,6 +163,7 @@ class _ApptRequestState extends State<ApptRequest> {
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
+                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
                 )
               ),
             )
@@ -183,6 +191,7 @@ class _ApptRequestState extends State<ApptRequest> {
       fontWeight: FontWeight.normal,
       color: Colors.black,
     ),
+    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
     );
   }
 
@@ -194,6 +203,7 @@ class _ApptRequestState extends State<ApptRequest> {
       fontWeight: FontWeight.normal,
       color: Colors.black,
     ),
+    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
   );
 }
   Widget _selectedHour() {
@@ -204,6 +214,7 @@ class _ApptRequestState extends State<ApptRequest> {
       fontWeight: FontWeight.normal,
       color: Colors.black,
     ),
+    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
   );
 }
 
@@ -215,6 +226,7 @@ class _ApptRequestState extends State<ApptRequest> {
             fontWeight: FontWeight.normal,
             color: Colors.black
           ),
+          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
         );
   }
 
