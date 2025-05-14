@@ -671,14 +671,15 @@ class AppointmentView extends StatelessWidget {
     required Map<String, dynamic> appointmentDetails,
     required String hour
   }) {
-    final style = GoogleFonts.poppins(fontSize: 14, color: Colors.black);
+    final style = GoogleFonts.poppins(fontSize: 16, color: Colors.black);
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     // kullanıcı için
   if (!userorseller) {
     //todo: Kullanıcı pazartesi oynadığı maç için salı günü ödeme yapamasın(veya başlangıc saatinden sonra yapamsın)
     if (status == 'approved' && paymentStatus == 'waiting' && isPastDay == 'false') {
       return paymentButton(appointmentDetails: appointmentDetails, docId: docId);
     } else if (status == 'approved' && paymentStatus == 'done') {
-      return Text(verificationCode);
+      return Text(verificationCode, textScaler: textScaler);
     } else if (isPastDay == 'true' || paymentStatus == 'taken') {
       return showTextBasedOnGreyCard(isPastDay: isPastDay, paymentStatus: paymentStatus);
     } else {
@@ -686,22 +687,23 @@ class AppointmentView extends StatelessWidget {
     }
     // kaleci için
   } else if (userorseller && verificationState == 'notVerified' && status == 'approved' && isPastDay == 'false') {
-    return ElevatedButton(
-      onPressed: () async{
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => EnterVerificationCode(docId: docId))
-        );
-      }, 
-      child: Text('Kodu gir')
-    );
+      return ElevatedButton(
+        onPressed: () async{
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => EnterVerificationCode(docId: docId))
+          );
+        }, 
+        child: Text('Kodu gir')
+      );
+    
     // todo: buraya kaleci için textleri yap ve kodu girdikten sonra hemen onaylandı olarak gözüksün
   } else if (status == 'rejected') {
-    return Text('Reddedildi', style: style);
+    return Text('Reddedildi', style: style, textScaler: textScaler,);
   } else if (status == 'approved' && verificationState == 'verified') {
-    return Text('Onaylandı', style: style);
+    return Text('Onaylandı', style: style, textScaler: textScaler,);
   } else if (isPastDay == 'true') {
-    return Text('Geçmiş', style: style);
+    return Text('Geçmiş', style: style, textScaler: textScaler);
   }
   else {
     return const SizedBox();
@@ -902,6 +904,7 @@ class paymentButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     String currentUser = FirebaseAuth.instance.currentUser!.uid;
     return ElevatedButton(
       onPressed: () {
@@ -922,9 +925,10 @@ class paymentButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green,
       ),
-      child: const Text(
+      child: Text(
         'Ödeme yap',
         style: TextStyle(color: Colors.white),
+        textScaler: textScaler,
       ),
     );
   }
@@ -935,12 +939,14 @@ class showTextBasedOnStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return Text(
       status == 'pending' ? 'Beklemede' : status == 'rejected' ? 'Reddedildi' : '',
       style: GoogleFonts.poppins(
         fontSize: 14,
         color: Colors.black,
       ),
+      textScaler: textScaler,
     );
   }
 }
@@ -956,6 +962,7 @@ class showTextBasedOnGreyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return Text(
         isPastDay == 'true' && paymentStatus != 'taken' ? 'Geçmiş'
       : isPastDay == 'false' && paymentStatus == 'taken' ? 'Dolu'
@@ -964,6 +971,7 @@ class showTextBasedOnGreyCard extends StatelessWidget {
         fontSize: 14,
         color: Colors.black,
       ),
+      textScaler: textScaler,
     );
   }
 }
@@ -978,6 +986,7 @@ class sellerApproveOrReject extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: Row(
@@ -988,14 +997,14 @@ class sellerApproveOrReject extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                         ),
-                        child: const Text('Onayla'),
+                        child: Text('Onayla', textScaler: textScaler),
                       ),
                       ElevatedButton(
                         onPressed: onReject,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                         ),
-                        child: const Text('Reddet'),
+                        child: Text('Reddet', textScaler: textScaler,),
                       ),
                     ],
                   ),

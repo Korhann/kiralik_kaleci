@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -39,6 +40,9 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return Scaffold(
       appBar: AppBar(
         backgroundColor: sellerbackground,
@@ -55,13 +59,12 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
               TitleOfPage(),
               const SizedBox(height: 10),
               Container(
-                width: double.infinity,
+                width: width,
                 color: userorseller ? sellerbackground : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
-                    decoration: GlobalStyles.inputDecoration1(
-                        hintText: 'Doğrulama Kodu', showError: _showErrorCode),
+                    decoration: GlobalStyles.inputDecoration1(hintText: 'Doğrulama Kodu', showError: _showErrorCode),
                     style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: codeVerifield,
                     onChanged: (value) => clearErrors(),
@@ -114,6 +117,7 @@ class _EnterVerificationCodeState extends State<EnterVerificationCode> {
                       fontWeight: FontWeight.bold,
                       color: userorseller ? Colors.white : Colors.black,
                     ),
+                    textScaler: textScaler,
                   ),
                 ),
               )
@@ -179,6 +183,7 @@ class TitleOfPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextScaler textScaler= TextScaler.linear(ScaleSize.textScaleFactor(context));
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20),
       child: Text(
@@ -187,6 +192,7 @@ class TitleOfPage extends StatelessWidget {
           fontSize: 24,
           color: Colors.white
         ),
+        textScaler: textScaler,
       ),
     );
   }

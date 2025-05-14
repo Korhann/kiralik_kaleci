@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/football_field.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -60,9 +61,6 @@ class _FilterPageState extends State<FilterPage> {
     days = widget.daysFilter;
     // çok zaman aldığı için runMethods ta çalıştırmıyorum
     FootballField.storeFields();
-    print(cityFilter);
-    print(districtFilter);
-    print(fieldFilter);
   }
 
   // if i dont run fetch cities first there is no element
@@ -127,6 +125,9 @@ class _FilterPageState extends State<FilterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return ConnectivityWithBackButton(
       child: FutureBuilder(
         future: _runMethods,
@@ -162,7 +163,7 @@ class _FilterPageState extends State<FilterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
+                SizedBox(height: height*0.040),
                 Stack(
                   children: [
                     Align(
@@ -173,6 +174,7 @@ class _FilterPageState extends State<FilterPage> {
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.black),
+                          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                       ),
                     ),
                     Align(
@@ -198,6 +200,8 @@ class _FilterPageState extends State<FilterPage> {
                           nameFilter = value;
                         });
                       },
+                      width: width,
+                      height: height
                     ),
                     const SizedBox(height: 8),
       
@@ -276,7 +280,7 @@ class _FilterPageState extends State<FilterPage> {
                   ],
                 ),
       
-                const SizedBox(height: 40),
+                SizedBox(height: height*0.040),
                 Padding(
                   padding: const EdgeInsets.only(left: 15),
                   child: Text(
@@ -284,10 +288,12 @@ class _FilterPageState extends State<FilterPage> {
                     style: GoogleFonts.roboto(
                         fontSize: 18,
                         fontWeight: FontWeight.normal,
-                        color: Colors.black),
+                        color: Colors.black
+                      ),
+                      textScaler: textScaler,
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: height*0.020),
       
                 DayPickerFirst(days: days),
       
@@ -307,22 +313,26 @@ class _FilterPageState extends State<FilterPage> {
                     style: GoogleFonts.roboto(
                         fontSize: 18,
                         fontWeight: FontWeight.normal,
-                        color: Colors.black),
+                        color: Colors.black
+                      ),
+                      textScaler: textScaler,
                   ),
                 ),
       
-                const SizedBox(height: 20),
+                SizedBox(height: height*0.020),
       
                 Padding(
                   padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                   child: PriceRanger(
                     minPriceController: _minPriceController,
                     maxPriceController: _maxPriceController,
-                    onPriceChanged: updatePriceFilters
+                    onPriceChanged: updatePriceFilters,
+                    width: width,
+                    height: height,
                   ),
                 ),
       
-                const SizedBox(height: 50),
+                SizedBox(height: height*0.050),
                 Center(
                   child: ElevatedButton(
                       onPressed: () {
@@ -344,6 +354,7 @@ class _FilterPageState extends State<FilterPage> {
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.black),
+                            textScaler: textScaler,
                       )),
                 ),
                 const SizedBox(height: 30)
@@ -466,8 +477,8 @@ class clearFilters extends StatelessWidget {
         padding: EdgeInsets.only(right: 10),
         child: Text(
           'Temizle',
-          style: GoogleFonts.roboto(
-              fontSize: 18, fontWeight: FontWeight.normal, color: Colors.red),
+          style: GoogleFonts.roboto(fontSize: 18, fontWeight: FontWeight.normal, color: Colors.red),
+          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
         ),
       ),
     );
@@ -477,10 +488,14 @@ class clearFilters extends StatelessWidget {
 class NameInputField extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final double width;
+  final double height;
 
   const NameInputField({
     required this.controller,
     required this.onChanged,
+    required this.width,
+    required this.height,
     super.key,
   });
 
@@ -492,17 +507,19 @@ class NameInputField extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           color: Colors.white,
-          width: MediaQuery.sizeOf(context).width,
-          height: 45,
-          child: TextField(
-            controller: controller,
-            onChanged: onChanged,
-            decoration: InputDecoration(
-              hintText: 'Ad Soyad',
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+          width: width,
+          height: 50,
+          child: Center(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                hintText: 'Ad Soyad',
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+              style: const TextStyle(decoration: TextDecoration.none, color: Colors.grey, fontWeight: FontWeight.w300),
             ),
-            style: const TextStyle(decoration: TextDecoration.none, color: Colors.grey, fontWeight: FontWeight.w300),
           ),
         ),
       ),
@@ -594,7 +611,7 @@ class DistrictDropdown extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          height: 45,
+          height: 50,
           width: MediaQuery.sizeOf(context).width,
           color: Colors.white,
           child: Stack(
@@ -660,7 +677,7 @@ class FieldDropdown extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          height: 45,
+          height: 50,
           width: MediaQuery.sizeOf(context).width,
           color: Colors.white,
           child: Stack(
@@ -740,25 +757,31 @@ class _DayPickerFirstState extends State<DayPickerFirst> {
   }
 
   Widget _dayButton(String day) {
-    bool isPressed = widget.days.contains(day);
+  final Size screenSize = MediaQuery.sizeOf(context);
+  bool isPressed = widget.days.contains(day);
 
-    return SizedBox(
-      width: 115,
-      height: 40,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPressed ? green : Colors.white,
-        ),
-        onPressed: () => toggleDay(day),
-        child: Text(
-          day,
-          style: GoogleFonts.roboto(
-            color: Colors.black,
-          ),
-        ),
+  double buttonWidth = screenSize.width * 0.30; // ~28% of screen width
+  double buttonHeight = screenSize.height * 0.055; // ~5.5% of screen height
+
+  return SizedBox(
+    width: buttonWidth,
+    height: buttonHeight,
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isPressed ? green : Colors.white,
       ),
-    );
-  }
+      onPressed: () => toggleDay(day),
+      child: Text(
+        day,
+        style: GoogleFonts.roboto(
+          color: Colors.black,
+        ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+      ),
+    ),
+  );
+}
+
 
   void toggleDay(String day) {
     setState(() {
@@ -806,25 +829,30 @@ class DayPickerSecondState extends State<DayPickerSecond> {
     );
   }
   Widget _dayButton(String day) {
-    bool isPressed = widget.days.contains(day);
+  final Size screenSize = MediaQuery.sizeOf(context);
+  bool isPressed = widget.days.contains(day);
 
-    return SizedBox(
-      width: 115,
-      height: 40,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPressed ? green : Colors.white,
-        ),
-        onPressed: () => toggleDay(day),
-        child: Text(
-          day,
-          style: GoogleFonts.roboto(
-            color: Colors.black,
-          ),
-        ),
+  double buttonWidth = screenSize.width * 0.30; // ~28% of screen width
+  double buttonHeight = screenSize.height * 0.055; // ~5.5% of screen height
+
+  return SizedBox(
+    width: buttonWidth,
+    height: buttonHeight,
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isPressed ? green : Colors.white,
       ),
-    );
-  }
+      onPressed: () => toggleDay(day),
+      child: Text(
+        day,
+        style: GoogleFonts.roboto(
+          color: Colors.black,
+        ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+      ),
+    ),
+  );
+}
 
   void toggleDay(String day) {
     setState(() {
@@ -863,25 +891,30 @@ class _dayPickerThirdState extends State<dayPickerThird> {
     );
   }
   Widget _dayButton(String day) {
-    bool isPressed = widget.days.contains(day);
+  final Size screenSize = MediaQuery.sizeOf(context);
+  bool isPressed = widget.days.contains(day);
 
-    return SizedBox(
-      width: 115,
-      height: 40,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPressed ? green : Colors.white,
-        ),
-        onPressed: () => toggleDay(day),
-        child: Text(
-          day,
-          style: GoogleFonts.roboto(
-            color: Colors.black,
-          ),
-        ),
+  double buttonWidth = screenSize.width * 0.30; // ~28% of screen width
+  double buttonHeight = screenSize.height * 0.055; // ~5.5% of screen height
+
+  return SizedBox(
+    width: buttonWidth,
+    height: buttonHeight,
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isPressed ? green : Colors.white,
       ),
-    );
-  }
+      onPressed: () => toggleDay(day),
+      child: Text(
+        day,
+        style: GoogleFonts.roboto(
+          color: Colors.black,
+        ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+      ),
+    ),
+  );
+}
   void toggleDay(String day) {
     setState(() {
       if (widget.days.contains(day)) {
@@ -897,11 +930,15 @@ class PriceRanger extends StatefulWidget {
   final TextEditingController minPriceController;
   final TextEditingController maxPriceController;
   final Function(int, int) onPriceChanged; // Callback to send values back
+  final double height;
+  final double width;
 
   const PriceRanger({
     required this.minPriceController,
     required this.maxPriceController,
     required this.onPriceChanged,
+    required this.height,
+    required this.width,
     super.key,
   });
 
@@ -946,22 +983,25 @@ class _PriceRangerState extends State<PriceRanger> {
             borderRadius: BorderRadius.circular(10),
             child: Container(
               color: Colors.white,
-              height: 40,
-              width: 80,
-              child: TextField(
-                controller: widget.minPriceController,
-                onChanged: updateMinFilter,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(10),
-                    hintText: 'Min'
+              height: widget.height*0.050,
+              width: widget.width*0.180,
+              child: Center(
+                child: TextField(
+                  controller: widget.minPriceController,
+                  onChanged: updateMinFilter,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.all(10),
+                      hintText: 'Min'
+                  ),
+                  style: GoogleFonts.roboto(
+                      fontSize: widget.height>1024?20:15,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black
+                    ),
                 ),
-                style: GoogleFonts.roboto(
-                    fontSize: 15,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black),
               ),
             ),
           ),
@@ -976,22 +1016,24 @@ class _PriceRangerState extends State<PriceRanger> {
             borderRadius: BorderRadius.circular(10),
             child: Container(
               color: Colors.white,
-              height: 40,
-              width: 80,
-              child: TextField(
-                controller: widget.maxPriceController,
-                onChanged: updateMaxFilter,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(10),
-                    hintText: 'Max'
+              height: widget.height*0.050,
+              width: widget.width*0.180,
+              child: Center(
+                child: TextField(
+                  controller: widget.maxPriceController,
+                  onChanged: updateMaxFilter,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.all(10),
+                      hintText: 'Max'
+                  ),
+                  style: GoogleFonts.roboto(
+                      fontSize: widget.height>1024?20:15,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black),
                 ),
-                style: GoogleFonts.roboto(
-                    fontSize: 15,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black),
               ),
             ),
           ),

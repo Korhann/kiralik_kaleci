@@ -29,8 +29,9 @@ class GlobalStyles {
   }
   static ButtonStyle buttonPrimary(BuildContext context) {
   final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.sizeOf(context).height;
   return ElevatedButton.styleFrom(
-    minimumSize: Size(screenWidth * 0.85, 50), 
+    minimumSize: Size(screenWidth * 0.85, screenHeight > 1024 ? 70 : 50), 
     backgroundColor: green, 
     elevation: 0,
     shape: const RoundedRectangleBorder(
