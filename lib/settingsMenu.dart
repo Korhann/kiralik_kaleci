@@ -4,6 +4,7 @@ import 'package:kiralik_kaleci/changeEmail.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/changePassword.dart';
 import 'package:kiralik_kaleci/changeUsername.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class SettingsMenu extends StatefulWidget {
@@ -16,6 +17,8 @@ class SettingsMenu extends StatefulWidget {
 class _SettingsMenuState extends State<SettingsMenu> {
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: userorseller ? sellerbackground : background,
@@ -88,10 +91,13 @@ class Menus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return GestureDetector(
       onTap: ontap,
       child: Container(
-        height: 50,
+        height: height*0.065,
         width: double.infinity,
         color: userorseller ? sellergrey : Colors.white,
         child: Padding(
@@ -104,11 +110,12 @@ class Menus extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
                     color: userorseller ? Colors.white : Colors.black),
+                    textScaler: textScaler,
               ),
               const Spacer(),
               Icon(
                 Icons.arrow_forward,
-                size: 24,
+                size: width*0.06,
                 color: userorseller ? Colors.white : Colors.black,
               )
             ],

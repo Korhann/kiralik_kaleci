@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -177,6 +178,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                       fontWeight: FontWeight.bold,
                       color: userorseller ? Colors.white : Colors.black,
                     ),
+                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                   ),
                 ),
               )
@@ -247,6 +249,7 @@ class passwordCurrent extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: userorseller ? Colors.white : Colors.black,
         ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
       ),
     );
   }
@@ -266,6 +269,7 @@ class passwordNew extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: userorseller ? Colors.white : Colors.black,
         ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
       ),
     );
   }

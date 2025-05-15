@@ -7,11 +7,13 @@ import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/selleribanpage.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:kiralik_kaleci/userorseller.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -43,6 +45,8 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       backgroundColor: sellerbackground,
       body: SafeArea(
@@ -50,7 +54,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 30),
+              SizedBox(height: height*0.030),
               Row(
                 children: [
                   Padding(
@@ -67,28 +71,19 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                         ),
                       );
                     },
-                      icon: const Icon(Icons.settings,
-                      size: 28, color: Colors.white),
+                      icon: GlobalStyles.iconStyle(context: context, icon: Icons.settings, color: Colors.white),
                     ),
                   ],
                 ),
-              const SizedBox(height: 30),
+              SizedBox(height: height*0.030),
               BeSellerOrUser(),
               
-              const SizedBox(height: 30),
+              SizedBox(height: height*0.030),
 
               // kullanıcı hesap bilgileri
               Padding(
                 padding: const EdgeInsets.only(left: 10.0),
-                child: Text(
-                  "Hesap",
-                  textAlign: TextAlign.start,
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white
-                  ),
-                ),
+                child: GlobalStyles.textStyle(text: 'Hesap', context: context, size: 20, fontWeight: FontWeight.w600, color: Colors.white),
               ),
               const SizedBox(height: 10),
               UserName(),
@@ -99,17 +94,10 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
               ),
 
               Email(),
-              const SizedBox(height: 30),
+              SizedBox(height: height*0.030),
               Padding(
                 padding: const EdgeInsets.only(left: 10),
-                child: Text(
-                  'Ödeme',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white
-                  ),
-                ),
+                child: GlobalStyles.textStyle(text: 'Ödeme', context: context, size: 20, fontWeight: FontWeight.w600, color: Colors.white),
               ),
 
               const SizedBox(height: 10),
@@ -123,7 +111,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 child: Stack(
                     children: [
                       Container(
-                      height: 70,
+                      height: height * 0.080,
                       width: double.infinity,
                       color: sellergrey,
                       child: Padding(
@@ -132,14 +120,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Iban No',
-                              style: GoogleFonts.roboto(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
+                            GlobalStyles.textStyle(text: 'Iban No', context: context, size: 22, fontWeight: FontWeight.w500, color: Colors.white),
                             _getIbanNo()
                           ],
                         ),
@@ -148,10 +129,10 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                     Positioned(
                       right: 30,
                       top: 20,
-                      child: const Icon(
+                      child: Icon(
                         Icons.add,
                         color: Colors.white,
-                        size: 24,
+                        size: width*0.06,
                       ),
                     )
                     ],
@@ -176,18 +157,11 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                     iconColor: Colors.white,
                   )
                 ),
-              const SizedBox(height: 30),
+              SizedBox(height: height*0.030),
 
               Padding(
                 padding: const EdgeInsets.only(left: 10),
-                child: Text(
-                  'Diğer',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white
-                  ),
-                ),
+                child: GlobalStyles.textStyle(text: 'Diğer', context: context, size: 20, fontWeight: FontWeight.w600, color: Colors.white),
               ),
               const SizedBox(height: 10),
 
@@ -222,11 +196,11 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                 )
               ),
               // İlanlarım sayfası
-              const SizedBox(height: 60),
+              SizedBox(height: height*0.060),
 
               SignUserOut(),
 
-              const SizedBox(height: 30)
+              SizedBox(height: height*0.030)
             ],
           ),
         ),
@@ -247,23 +221,17 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
         var userData = snapshot.data!.data() as Map<String, dynamic>;
         if (userData.containsKey('ibanDetails') && userData['ibanDetails'].isNotEmpty) {
           var ibanDetails = userData['ibanDetails'] as Map<String, dynamic>;
-          return Text(
-            ibanDetails['ibanNo'] ?? '',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Colors.white
-            ),
-          );
+          // return Text(
+          //   ibanDetails['ibanNo'] ?? '',
+          //   style: GoogleFonts.roboto(
+          //     fontSize: 16,
+          //     fontWeight: FontWeight.w400,
+          //     color: Colors.white
+          //   ),
+          // );
+          return GlobalStyles.textStyle(text: ibanDetails['ibanNo'] ?? '', context: context, size: 16, fontWeight: FontWeight.w400, color: Colors.white);
         } else {
-          return Text(
-            'İban bilgisi yok',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Colors.white
-            ),
-          );
+           return GlobalStyles.textStyle(text: 'İban bilgisi yok', context: context, size: 16, fontWeight: FontWeight.w400, color: Colors.white);
         }
       },
     );
@@ -291,7 +259,7 @@ class UserName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
+      height: MediaQuery.sizeOf(context).height * 0.080,
       width: double.infinity,
       color: sellergrey,
       child: Padding(
@@ -300,10 +268,7 @@ class UserName extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Ad Soyad",
-              style: GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500, color: Colors.white),
-            ),
+            GlobalStyles.textStyle(text: 'Ad Soyad', context: context, size: 22, fontWeight:FontWeight.w500 , color: Colors.white),
             UserNameText(),
           ],
         ),
@@ -329,11 +294,7 @@ class UserNameText extends StatelessWidget {
           return const Text('Veri bulunamadı');
         }
         var userData = snapshot.data!.data() as Map<String, dynamic>;
-        return Text(userData['fullName'] ?? '',
-            style: GoogleFonts.roboto(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: Colors.white));
+        return GlobalStyles.textStyle(text: userData['fullName'] ?? '', context: context, size: 16, fontWeight: FontWeight.w400, color: Colors.white);
       },
     );
   }
@@ -356,11 +317,14 @@ class UserNameHeaderText extends StatelessWidget {
             return const Text('Veri bulunamadı');
           }
           var userData = snapshot.data!.data() as Map<String, dynamic>;
-          return Text(userData['fullName'] ?? '',
-              style: GoogleFonts.roboto(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white));
+          // return Text(userData['fullName'] ?? '',
+          //     style: GoogleFonts.roboto(
+          //         fontSize: 20,
+          //         fontWeight: FontWeight.bold,
+          //         color: Colors.white),
+          //         textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+          //       );
+          return GlobalStyles.textStyle(text: userData['fullName'] ?? '', context: context, size: 20, fontWeight: FontWeight.bold,color: Colors.white);
         });
   }
 }
@@ -375,7 +339,7 @@ class OtherBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
+      height:  MediaQuery.sizeOf(context).height * 0.070,
       width: double.infinity,
       color: sellergrey,
       child: Padding(
@@ -383,13 +347,8 @@ class OtherBars extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              text,
-              style: GoogleFonts.roboto(
-                fontSize: 22, fontWeight: FontWeight.w500, color: Colors.white
-            ),
-            ),
-            Icon(icon,color: iconColor)
+            GlobalStyles.textStyle(text: text, context: context, size: 22, fontWeight: FontWeight.w500, color: Colors.white),
+            GlobalStyles.iconStyle(context: context, icon: icon, color: Colors.white)
           ],
         ),
       ),
@@ -401,7 +360,7 @@ class Email extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
+      height: MediaQuery.sizeOf(context).height * 0.080,
       width: double.infinity,
       color: sellergrey,
       child: Padding(
@@ -410,10 +369,8 @@ class Email extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Email",
-              style:GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500, color: Colors.white),
-            ),
+            
+            GlobalStyles.textStyle(text: 'Email', context: context, size: 22, fontWeight: FontWeight.w500, color: Colors.white),
             EmailText()
           ],
         ),
@@ -439,11 +396,7 @@ class EmailText extends StatelessWidget {
           return const Text('Veri bulunamadı');
         }
         var userData = snapshot.data!.data() as Map<String, dynamic>;
-        return Text(
-          userData['email'] ?? '',
-          style: GoogleFonts.roboto(
-              fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-        );
+        return GlobalStyles.textStyle(text: userData['email'] ?? '', context: context, size: 16, fontWeight: FontWeight.w400, color: Colors.white);
       },
     );
   }
@@ -459,21 +412,20 @@ class BeSellerOrUser extends StatefulWidget {
 class _BeSellerOrUserState extends State<BeSellerOrUser> {
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height;
+    final width = MediaQuery.sizeOf(context).width;
     return Container(
                 color: sellergrey,
-                height: 50,
+                height: height*0.070,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Kaleci Ol",
-                        style: GoogleFonts.roboto(
-                            fontSize: 18, fontWeight: FontWeight.w500, color: Colors.white),
-                      ),
+                      GlobalStyles.textStyle(text: 'Kaleci Ol', context: context, size: 18, fontWeight: FontWeight.w500, color: Colors.white),
                       ToggleSwitch(
-                        minWidth: 80.0,
+                        minWidth: width*0.25,
+                        minHeight: height*0.045,
                         cornerRadius: 20.0,
                         activeBgColors: [
                           [Colors.green[800]!],

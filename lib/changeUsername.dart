@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -57,8 +58,7 @@ class _ChangeUserNameState extends State<ChangeUserName> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
-                    decoration: GlobalStyles.inputDecoration1(
-                        hintText: 'Ad Soyad', showError: _showErrorUsername),
+                    decoration: GlobalStyles.inputDecoration1(hintText: 'Ad Soyad', showError: _showErrorUsername),
                     style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: _newUsername,
                     onChanged: (value) => clearErrors(),
@@ -116,6 +116,7 @@ class _ChangeUserNameState extends State<ChangeUserName> {
                       fontWeight: FontWeight.bold,
                       color: userorseller ? Colors.white : Colors.black,
                     ),
+                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                   ),
                 ),
               )
@@ -175,6 +176,7 @@ class newUserName extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: userorseller ? Colors.white : Colors.black,
         ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
       ),
     );
   }

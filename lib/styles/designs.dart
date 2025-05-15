@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class GlobalStyles {
@@ -39,6 +40,36 @@ class GlobalStyles {
         Radius.circular(20),
       ),
     ),
+  );
+}
+
+static Text textStyle({
+  required String text,
+  required BuildContext context,
+  required double size,
+  required FontWeight fontWeight,
+  required Color color
+  }) {
+  return Text(
+    text,
+    style: GoogleFonts.roboto(
+      fontSize: size,
+      fontWeight: fontWeight,
+      color: color,
+    ),
+    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+  );
+}
+
+static Icon iconStyle({
+  required BuildContext context,
+  required IconData icon,
+  required Color color,
+}) {
+  return Icon(
+    icon,
+    size: MediaQuery.sizeOf(context).width*0.06,
+    color: color,
   );
 }
 

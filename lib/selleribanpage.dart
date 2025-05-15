@@ -59,6 +59,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: sellerbackground,
@@ -76,17 +77,10 @@ class SellerIbanPageState extends State<SellerIbanPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
+              SizedBox(height: height*0.040),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  'IBAN no',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white
-                  ),
-                ),
+                child: GlobalStyles.textStyle(text: 'IBAN No', context: context, size: 20, fontWeight: FontWeight.w500, color: Colors.white)
               ),
               const SizedBox(height: 5),
               Container(
@@ -159,14 +153,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
               const SizedBox(height: 30),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  'İban Sahibinin Adı',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white
-                  ),
-                ),
+                child: GlobalStyles.textStyle(text: 'İban Sahibinin Adı', context: context, size: 20, fontWeight: FontWeight.w500, color: Colors.white)
               ),
               const SizedBox(height: 5),
               Container(
@@ -197,7 +184,7 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: height*0.060),
 
               Center(
                 child: ElevatedButton(
@@ -211,14 +198,15 @@ class SellerIbanPageState extends State<SellerIbanPage> {
                     }
                   },
                   style: GlobalStyles.buttonPrimary(context),
-                  child: Text(
-                    'Kaydet',
-                    style: GoogleFonts.roboto(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white
-                    ),
-                  )
+                  // child: Text(
+                  //   'Kaydet',
+                  //   style: GoogleFonts.roboto(
+                  //     fontSize: 30,
+                  //     fontWeight: FontWeight.w600,
+                  //     color: Colors.white
+                  //   ),
+                  // )
+                  child: GlobalStyles.textStyle(text: 'Kaydet', context: context, size: 30, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
               )
             ],

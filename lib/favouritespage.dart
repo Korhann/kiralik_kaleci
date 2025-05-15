@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -45,6 +46,8 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return ConnectivityWithBackButton(
       child: FutureBuilder(
         future: fetchFavourites,
@@ -82,7 +85,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                           ? favourite['imageUrls'][0]
                           : 'https://via.placeholder.com/150';
 
-                      return showCardFavourite(imageUrl: imageUrl, sellerFullName: sellerFullName, city: city, district: district, favourite: favourite);
+                      return showCardFavourite(imageUrl: imageUrl, sellerFullName: sellerFullName, city: city, district: district, favourite: favourite, width: width,height: height,);
                 
                     },
                   ),
@@ -108,6 +111,7 @@ class showFavouritesText extends StatelessWidget {
           fontWeight: FontWeight.bold,
           color: userorseller ? Colors.white : Colors.black,
         ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
       ),
     );
   }
@@ -118,6 +122,8 @@ class showCardFavourite extends StatelessWidget {
   final String city;
   final String district;
   final Map<String,dynamic> favourite;
+  final double width;
+  final double height;
   const showCardFavourite({
     Key? key,
     required this.imageUrl,
@@ -125,10 +131,13 @@ class showCardFavourite extends StatelessWidget {
     required this.city,
     required this.district,
     required this.favourite,
+    required this.width,
+    required this.height
   }): super (key: key);
 
   @override
   Widget build(BuildContext context) {
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -139,20 +148,22 @@ class showCardFavourite extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                             child: Image.network(
                               imageUrl,
-                              width: 70,
-                              height: 70,
+                              width: width*0.200,
+                              height: height*0.150,
                               fit: BoxFit.cover,
                             ),
                           ),
                           title: Text(
                             sellerFullName,
                             style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                            textScaler: textScaler,
                           ),
                           subtitle: Text(
                             '$city, $district',
                             style: GoogleFonts.inter(fontSize: 16, color: Colors.grey[700]),
+                            textScaler: textScaler,
                           ),
-                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                          trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey, size: width*0.06),
                           onTap: () {
                             Navigator.push(
                               context,

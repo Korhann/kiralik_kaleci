@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:kiralik_kaleci/approvedfield.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
@@ -84,9 +85,10 @@ class showCardFields extends StatelessWidget {
             color: userorseller ? sellerbackground : Colors.white,
             child: ListTile(
               title: Text(
-                allFields[index]
+                allFields[index],
+                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
               ),
-              leading: const Icon(Icons.sports_soccer_outlined),
+              leading: Icon(Icons.sports_soccer_outlined, size: MediaQuery.sizeOf(context).width*0.06,),
             ),
           );
   }
