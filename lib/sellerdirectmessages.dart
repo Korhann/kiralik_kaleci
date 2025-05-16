@@ -7,6 +7,7 @@ import 'package:kiralik_kaleci/direct2messagepage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -186,7 +187,8 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
           return Scaffold(
           appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Mesajlar', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20, color: Colors.white)),
+        // title: Text('Mesajlar', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20, color: Colors.white)),
+        title: GlobalStyles.textStyle(text: 'Mesajlar', context: context, size: 20, fontWeight: FontWeight.w700, color: Colors.white),
         backgroundColor: sellerbackground,
         centerTitle: true,
       ),

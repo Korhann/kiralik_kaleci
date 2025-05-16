@@ -180,168 +180,170 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 constraints: BoxConstraints(
                   minHeight: MediaQuery.sizeOf(context).height
                 ),
-                child: Container(
-                color: userorseller ? sellerbackground : background,
-                child: Column(
-                  children: [
-                    SizedBox(height: height * 0.025),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          color: userorseller ? sellergrey: Colors.white,
-                          height: height * 0.65,
-                          width: width,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid, width: width, height: height)
-                                ),
-                                SizedBox(height: height * 0.020),
-                                
-                                showNameSurname(sellerDetails: widget.sellerDetails),
-                                
-                                SizedBox(height: height * 0.007),
-                                
-                                showCityDistrict(sellerDetails: widget.sellerDetails),
-                                
-                                SizedBox(height: height * 0.005),
-                                
-                                SellerFields(
-                                  selectedField: _selectedField ?? widget.sellerDetails['fields'][0],
-                                  sellerDetails: widget.sellerDetails,
-                                  onFieldChanged: (newField) {
-                                    setState(() {
-                                      _selectedField = newField;
-                                    });
-                                  }, 
-                                  width: width,
+                child: SingleChildScrollView(
+                  child: Container(
+                  color: userorseller ? sellerbackground : background,
+                  child: Column(
+                    children: [
+                      SizedBox(height: height * 0.025),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            color: userorseller ? sellergrey: Colors.white,
+                            height: height * 0.65,
+                            width: width,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    child: showImage(imageUrl: imageUrl, isFavorited: isFavorited, sellerDetails: widget.sellerDetails, sellerUid: widget.sellerUid, width: width, height: height)
                                   ),
-                                SizedBox(height: height * 0.010),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        "Saatler",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          color: userorseller ? Colors.white : Colors.black,
+                                  SizedBox(height: height * 0.020),
+                                  
+                                  showNameSurname(sellerDetails: widget.sellerDetails),
+                                  
+                                  SizedBox(height: height * 0.007),
+                                  
+                                  showCityDistrict(sellerDetails: widget.sellerDetails),
+                                  
+                                  SizedBox(height: height * 0.005),
+                                  
+                                  SellerFields(
+                                    selectedField: _selectedField ?? widget.sellerDetails['fields'][0],
+                                    sellerDetails: widget.sellerDetails,
+                                    onFieldChanged: (newField) {
+                                      setState(() {
+                                        _selectedField = newField;
+                                      });
+                                    }, 
+                                    width: width,
+                                    ),
+                                  SizedBox(height: height * 0.010),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          "Saatler",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            color: userorseller ? Colors.white : Colors.black,
+                                          ),
+                                          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                         ),
-                                        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-                                      ),
-                                      SizedBox(height: height * 0.010),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          //todo: Gece saatleri sıkıntılı çalışıyor ve _getDaysName de de aynı kod çalışıyor, hangisi boş anla
-                                          StreamBuilder<DocumentSnapshot>(
-                                            stream: _stream(),
-                                            builder: (context, snapshot) {
-                                              if (!snapshot.hasData) {
-                                                return const Center(child: CircularProgressIndicator());
-                                              }
-                                              final userData = snapshot.data!.data() as Map<String, dynamic>;
-                                              final selectedHoursByDay = userData['sellerDetails']?['selectedHoursByDay'] as Map<String, dynamic>?;
-                                              if (selectedHoursByDay == null) {
-                                                return const Text('Saat bilgisi bulunamadı');
-                                              }
-                                              
-                                              days.clear();
-                                              hoursByDay.clear();
-                                              hourColors.clear();
-                                              
-                                              final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-                                              final int currentDayIndex = now.weekday - 1;
-                                              
-                                              for (int i = 0; i < orderedDays.length; i++) {
-                                                final day = orderedDays[i];
-                                                if (!selectedHoursByDay.containsKey(day)) continue;
-                                                  List<dynamic> hourList = selectedHoursByDay[day];
-                                                  
-                                                  if (hourList.isEmpty) continue;
-                                                    days.add(day);
-                                                    List<String> hourTitles = [];
-                                                    for (var hour in hourList) {
-                                                      final hourMap = hour as Map<String, dynamic>;
-                                                      final String title = hourMap['title'];
-                                                      final bool istaken = hourMap['istaken'];
-                                                      final String? takenby = hourMap['takenby'];
-                                                      final String startTime = title.split('-')[0];
-                                                      final String dayHourKey = '$day $title';
-                                                      List<String> nightTitles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
-                                                      bool isNightHour = nightTitles.contains(title);
-                                                    
-                                                      dayChecker(i, currentDayIndex, now, startTime, dayHourKey, takenby!, day, title, hourTitles, isNightHour, istaken);
-                                                    }
-                                                    
+                                        SizedBox(height: height * 0.010),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            //todo: Gece saatleri sıkıntılı çalışıyor ve _getDaysName de de aynı kod çalışıyor, hangisi boş anla
+                                            StreamBuilder<DocumentSnapshot>(
+                                              stream: _stream(),
+                                              builder: (context, snapshot) {
+                                                if (!snapshot.hasData) {
+                                                  return const Center(child: CircularProgressIndicator());
+                                                }
+                                                final userData = snapshot.data!.data() as Map<String, dynamic>;
+                                                final selectedHoursByDay = userData['sellerDetails']?['selectedHoursByDay'] as Map<String, dynamic>?;
+                                                if (selectedHoursByDay == null) {
+                                                  return const Text('Saat bilgisi bulunamadı');
                                                 }
                                                 
-                                              return DayHourListView(
-                                                width: width,
-                                                heigth: height,
-                                                days: days,
-                                                hoursByDay: hoursByDay,
-                                                hourColors: hourColors,
-                                                selectedDay: _selectedDay,
-                                                selectedHour: _selectedHour,
-                                                userorseller: userorseller,
-                                                onDaySelected: (selectedDay) {
-                                                  setState(() {
-                                                    _selectedDay = selectedDay;
-                                                  });
-                                                },
-                                                onHourSelected: (selectedHour) {
-                                                  setState(() {
-                                                    _selectedHour = selectedHour;
-                                                  });
-                                                },
-                                                onClearSelection: () {
-                                                  setState(() {
-                                                    _selectedDay = null;
-                                                    _selectedHour = null;
-                                                    hourColors.forEach((key, value) {
-                                                      if (value != Colors.grey.shade600 && value != Colors.green) {
-                                                        hourColors[key] = Colors.cyan;
+                                                days.clear();
+                                                hoursByDay.clear();
+                                                hourColors.clear();
+                                                
+                                                final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+                                                final int currentDayIndex = now.weekday - 1;
+                                                
+                                                for (int i = 0; i < orderedDays.length; i++) {
+                                                  final day = orderedDays[i];
+                                                  if (!selectedHoursByDay.containsKey(day)) continue;
+                                                    List<dynamic> hourList = selectedHoursByDay[day];
+                                                    
+                                                    if (hourList.isEmpty) continue;
+                                                      days.add(day);
+                                                      List<String> hourTitles = [];
+                                                      for (var hour in hourList) {
+                                                        final hourMap = hour as Map<String, dynamic>;
+                                                        final String title = hourMap['title'];
+                                                        final bool istaken = hourMap['istaken'];
+                                                        final String? takenby = hourMap['takenby'];
+                                                        final String startTime = title.split('-')[0];
+                                                        final String dayHourKey = '$day $title';
+                                                        List<String> nightTitles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
+                                                        bool isNightHour = nightTitles.contains(title);
+                                                      
+                                                        dayChecker(i, currentDayIndex, now, startTime, dayHourKey, takenby!, day, title, hourTitles, isNightHour, istaken);
                                                       }
+                                                      
+                                                  }
+                                                  
+                                                return DayHourListView(
+                                                  width: width,
+                                                  heigth: height,
+                                                  days: days,
+                                                  hoursByDay: hoursByDay,
+                                                  hourColors: hourColors,
+                                                  selectedDay: _selectedDay,
+                                                  selectedHour: _selectedHour,
+                                                  userorseller: userorseller,
+                                                  onDaySelected: (selectedDay) {
+                                                    setState(() {
+                                                      _selectedDay = selectedDay;
                                                     });
-                                                  });
-                                                },
-                                              );
-                                            }),
+                                                  },
+                                                  onHourSelected: (selectedHour) {
+                                                    setState(() {
+                                                      _selectedHour = selectedHour;
+                                                    });
+                                                  },
+                                                  onClearSelection: () {
+                                                    setState(() {
+                                                      _selectedDay = null;
+                                                      _selectedHour = null;
+                                                      hourColors.forEach((key, value) {
+                                                        if (value != Colors.grey.shade600 && value != Colors.green) {
+                                                          hourColors[key] = Colors.cyan;
+                                                        }
+                                                      });
+                                                    });
+                                                  },
+                                                );
+                                              }),
+                                        ],
+                                        ),
                                       ],
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: height * 0.015),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: showInfoAppointments(width: width, height: height)
-                    ),
-                    SizedBox(height: height * 0.030),
-                    PaymentButton(
-                      selectedDay: _selectedDay,
-                      selectedHour: _selectedHour,
-                      selectedField: _selectedField,
-                      currentUserUid: currentUserUid,
-                      sellerUid: widget.sellerUid,
-                      sellerDetails: widget.sellerDetails
-                    ),
-                    SizedBox(height: height * 0.030),
-                  ],
+                      SizedBox(height: height * 0.015),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: showInfoAppointments(width: width, height: height)
+                      ),
+                      SizedBox(height: height * 0.030),
+                      PaymentButton(
+                        selectedDay: _selectedDay,
+                        selectedHour: _selectedHour,
+                        selectedField: _selectedField,
+                        currentUserUid: currentUserUid,
+                        sellerUid: widget.sellerUid,
+                        sellerDetails: widget.sellerDetails
+                      ),
+                      SizedBox(height: height * 0.030),
+                    ],
+                  ),
+                                ),
                 ),
-              ),
               ),
               Positioned(
                 bottom: height > 700 ? height*0.18: height*0.12,

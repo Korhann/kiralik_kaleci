@@ -6,6 +6,7 @@ import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 class SellerHomePage extends StatefulWidget {
   const SellerHomePage({super.key});
@@ -28,6 +29,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       backgroundColor: sellerbackground,
       appBar: AppBar(
@@ -36,14 +38,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
         centerTitle: true,
         title: Padding(
           padding: const EdgeInsets.only(top: 30, bottom: 10),
-          child: Text(
-            'Satıcı Ana Sayfa',
-            style: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.white
-            ),
-          ),
+          child: GlobalStyles.textStyle(text: 'Satıcı Ana Sayfa', context: context, size: 20, fontWeight: FontWeight.w700, color: Colors.white)
         ),
       ),
       body: SafeArea(
@@ -53,7 +48,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 30),
+                SizedBox(height: height*0.030),
                 SellerQuickMenus(text: 'İlan Ekle/Düzenle', ontap: () => _navigateToPage('sellerAdd'), icon: Icons.add),
                 const SizedBox(height: 10),
                 NoOfAppointments(onTap: () => _navigateToPage('appointments')),
@@ -119,32 +114,23 @@ class SellerQuickMenus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return GestureDetector(
       onTap: ontap,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          height: 50,
-          width: MediaQuery.sizeOf(context).width,
+          height: height*0.080,
+          width: width,
           color: sellergrey,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                Text(
-                  text,
-                  style: GoogleFonts.roboto(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white
-                    ),
-                ),
+                GlobalStyles.textStyle(text: text, context: context, size: 18, fontWeight: FontWeight.w400, color: Colors.white),
                 const Spacer(),
-                Icon(
-                  icon,
-                  size: 24,
-                  color: Colors.white,
-                )
+                GlobalStyles.iconStyle(context: context, icon: icon, color: Colors.white)
               ],
             ),
           ),
@@ -161,35 +147,26 @@ class NoOfAppointments extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          height: 50,
-          width: MediaQuery.sizeOf(context).width,
+          height: height*0.080,
+          width: width,
           color: sellergrey,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                Text(
-                  "Randevularım",
-                  style: GoogleFonts.roboto(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
-                ),
+                GlobalStyles.textStyle(text: 'Randevularım', context: context, size: 18, fontWeight: FontWeight.w400, color: Colors.white),
                 const Spacer(),
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Icon(
-                      Icons.notifications,
-                      size: 24,
-                      color: Colors.white,
-                    ),
+                    GlobalStyles.iconStyle(context: context, icon: Icons.notifications, color: Colors.white),
                     StreamBuilder<int>(
                       stream: getUnreadCount(),
                       builder: (context, snapshot) {

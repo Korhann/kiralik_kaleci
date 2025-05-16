@@ -7,6 +7,7 @@ import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'direct2messagepage.dart';
@@ -186,10 +187,7 @@ Widget build(BuildContext context) {
             automaticallyImplyLeading: false,
             title: Padding(
               padding: const EdgeInsets.only(top: 30),
-              child: Text(
-                'Mesajlar',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20),
-              ),
+              child: GlobalStyles.textStyle(text: 'Mesajlar', context: context, size: 20, fontWeight: FontWeight.w700, color: Colors.black),
             ),
             backgroundColor: background,
             centerTitle: true,
@@ -208,7 +206,7 @@ Widget build(BuildContext context) {
                     backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
                     child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
                   ),
-                  title: Text(conversation['receiverName'], style: TextStyle(fontSize: width * 0.045)),
+                   title: Text(conversation['receiverName'], style: TextStyle(fontSize: width * 0.045)),
                   subtitle: Row(
                     children: [
                       Text(conversation['lastMessage'], style: TextStyle(fontSize: width * 0.04)),

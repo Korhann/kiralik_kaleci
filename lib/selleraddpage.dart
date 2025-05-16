@@ -153,6 +153,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     if (isLoading) {
       return const SellerAddPageShimmer();
     }
@@ -185,22 +187,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   padding: const EdgeInsets.only(left: 10),
                   child: Row(
                     children: [
-                      Text(
-                        "Fotoğraf Ekle",
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600
-                          ),
-                      ),
+                      GlobalStyles.textStyle(text: 'Fotoğraf Ekle', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
                       const SizedBox(width: 5),
-                      Text(
-                        "(Opsiyonel)",
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500),
-                      ),
+                      GlobalStyles.textStyle(text: '(Opsiyonel)', context: context, size: 15, fontWeight: FontWeight.w500, color: Colors.white),
                     ],
                   )
                 ),
@@ -220,17 +209,11 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: height*0.020),
 
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Ad Soyad",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
-                  ),
+                  child :GlobalStyles.textStyle(text: 'Ad Soyad', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
                 const SizedBox(height: 10),
 
@@ -242,17 +225,10 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 Seçilen şehire göre ilçeler updateDistrictOptions() fonksiyonu ile popüle ediliyor
                 */
                 
-                const SizedBox(height: 40),
+                SizedBox(height: height*0.040),
                 Padding(
                   padding: const EdgeInsets.only(left: 10), 
-                  child: Text(
-                    "İlçe",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600
-                      ),
-                  ),
+                  child: GlobalStyles.textStyle(text: 'İlçe', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
                 const SizedBox(height: 15),
                 DistrictDropDown(
@@ -269,14 +245,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Halı Sahalar",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600
-                    ),
-                  ),
+                  child:GlobalStyles.textStyle(text: 'Halı Sahalar', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
                 const SizedBox(height: 15),
 
@@ -298,108 +267,105 @@ class _SellerAddPageState extends State<SellerAddPage> {
                 // SAAT BİLGİLERİNİ GİR
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Saatler",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
-                  ),
+                  child: GlobalStyles.textStyle(text: 'Saatler', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
-                const SizedBox(height: 20),
-                FutureBuilder<Map<String,dynamic>>(
-                  future: getInitialDayHours(),
-                  builder: (context,snapshot) {
-                    if (!snapshot.hasData) {
-                      return CircularProgressIndicator();
+                SizedBox(height: height*0.020),
+                SizedBox(
+                  width: width,
+                  child: FutureBuilder<Map<String,dynamic>>(
+                    future: getInitialDayHours(),
+                    builder: (context,snapshot) {
+                      if (!snapshot.hasData) {
+                        return CircularProgressIndicator();
+                      }
+                      final initialData = snapshot.data!;
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Pazartesi', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: mondayKey,
+                                  day: 'Pazartesi',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Pazartesi'] ?? []),
+                                  ),
+                  
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Salı', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: tuesdayKey,
+                                  day: 'Salı',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Salı'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Çarşamba', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: wednesdayKey,
+                                  day: 'Çarşamba',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Çarşamba'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Perşembe', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: thursdayKey,
+                                  day: 'Perşembe',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Perşembe'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Cuma', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: fridayKey,
+                                  day: 'Cuma',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Cuma'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Cumartesi', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: saturdayKey,
+                                  day: 'Cumartesi',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Cumartesi'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Pazar', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: sundayKey,
+                                  day: 'Pazar',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Pazar'] ?? []),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
                     }
-                    final initialData = snapshot.data!;
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              Text("Pazartesi", style: TextStyle(color: Colors.white),),
-                              Amenities(
-                                key: mondayKey,
-                                day: 'Pazartesi',
-                                initials: List<Map<String, dynamic>>.from(initialData['Pazartesi'] ?? []),
-                                ),
-
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              Text("Salı", style: TextStyle(color: Colors.white),),
-                              Amenities(
-                                key: tuesdayKey,
-                                day: 'Salı',
-                                initials: List<Map<String, dynamic>>.from(initialData['Salı'] ?? []),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              Text("Çarşamba", style: TextStyle(color: Colors.white),),
-                              Amenities(
-                                key: wednesdayKey,
-                                day: 'Çarşamba',
-                                initials: List<Map<String, dynamic>>.from(initialData['Çarşamba'] ?? []),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              Text("Perşembe", style: TextStyle(color: Colors.white),),
-                              Amenities(
-                                key: thursdayKey,
-                                day: 'Perşembe',
-                                initials: List<Map<String, dynamic>>.from(initialData['Perşembe'] ?? []),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              Text("Cuma", style: TextStyle(color: Colors.white),),
-                              Amenities(
-                                key: fridayKey,
-                                day: 'Cuma',
-                                initials: List<Map<String, dynamic>>.from(initialData['Cuma'] ?? []),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              Text("Cumartesi", style: TextStyle(color: Colors.white),),
-                              Amenities(
-                                key: saturdayKey,
-                                day: 'Cumartesi',
-                                initials: List<Map<String, dynamic>>.from(initialData['Cumartesi'] ?? []),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              Text("Pazar", style: TextStyle(color: Colors.white),),
-                              Amenities(
-                                key: sundayKey,
-                                day: 'Pazar',
-                                initials: List<Map<String, dynamic>>.from(initialData['Pazar'] ?? []),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                  ),
                 ),
                 // Padding(
                 //   padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -516,14 +482,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   padding: const EdgeInsets.only(left: 10),
                   child: Row(
                     children: [
-                      Text(
-                        "Fiyat",
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600
-                        ),
-                      ),
+                      GlobalStyles.textStyle(text: 'Fiyat', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white)
                     ],
                   ),
                 ),
@@ -543,14 +502,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   padding: const EdgeInsets.only(left: 10),
                   child: Row(
                     children: [
-                      Text(
-                        "Fiyat (00:00'dan sonra)",
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600
-                        ),
-                      ),
+                      GlobalStyles.textStyle(text: "Fiyat (00:00'dan sonra)", context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
                     ],
                   ),
                 ),
@@ -583,13 +535,8 @@ class _SellerAddPageState extends State<SellerAddPage> {
                           Showalert(context: context, text: 'Tüm alanları doldurduğunuza emin misiniz?').showErrorAlert();
                         }
                       },
-                      child: Text(
-                        "Onayla",
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white),
-                      )),
+                      child: GlobalStyles.textStyle(text: 'Onayla', context: context, size: 24, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
                 ),
                 const SizedBox(height: 30),
               ],
@@ -664,7 +611,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
         return Text(
           snapshot.data! ? 'İlanı Düzenle' : 'İlan Ekle',
           style: GoogleFonts.inter(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
@@ -1089,14 +1036,15 @@ Widget build(BuildContext context) {
             margin: const EdgeInsets.symmetric(vertical: 5.0),
             padding: const EdgeInsets.all(8),
             color: container.isCheck ? Colors.green : Colors.white, // seçim rengini yeşil yap
-            child: Text(
-              container.title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: container.isCheck ? Colors.white : Colors.black,
-              ),
-            ),
+            // child: Text(
+            //   container.title,
+            //   textAlign: TextAlign.center,
+            //   style: TextStyle(
+            //     fontSize: 14,
+            //     color: container.isCheck ? Colors.white : Colors.black,
+            //   ),
+            // ),
+            child: GlobalStyles.textStyle(text: container.title, context: context, size: 14, fontWeight: FontWeight.normal, color: container.isCheck?Colors.white:Colors.black),
           ),
         ),
       );
@@ -1472,12 +1420,12 @@ class FieldsDropDown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
           height: 45,
-          width: 350,
+          width: MediaQuery.sizeOf(context).width,
           color: Colors.white,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -1697,14 +1645,7 @@ class YourEarning extends StatelessWidget {
     return Row(
       children: [
         const Spacer(),
-        Text(
-          'Senin Kazancın',
-          style: GoogleFonts.roboto(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w300
-          ),
-        ),
+        GlobalStyles.textStyle(text: 'Senin Kazancın', context: context, size: 14, fontWeight: FontWeight.w300, color: Colors.white),
         const SizedBox(width: 10),
         Text(
           '${calculateEarning()} ₺',
