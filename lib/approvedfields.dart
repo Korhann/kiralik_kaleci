@@ -6,6 +6,7 @@ import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 
 class ApprovedFields extends StatefulWidget {
   const ApprovedFields({super.key});
@@ -50,13 +51,14 @@ class _ApprovedFieldsState extends State<ApprovedFields> {
       ),
       backgroundColor: userorseller ? sellerbackground : background,
       body: approvedFields.isEmpty ? const Center(child: CircularProgressIndicator())
-      : ListView.builder(
-        itemCount: approvedFields.expand((field) => field.fields).length,
-        itemBuilder: (context, index) {
-          List<String> allFields = approvedFields.expand((field) => field.fields).toList();
-          return showCardFields(allFields: allFields, index: index);
-        },
-      ),
+      // : ListView.builder(
+      //   itemCount: approvedFields.expand((field) => field.fields).length,
+      //   itemBuilder: (context, index) {
+      //     List<String> allFields = approvedFields.expand((field) => field.fields).toList();
+      //     return showCardFields(allFields: allFields, index: index);
+      //   },
+      // ),
+      : Center(child: GlobalStyles.textStyle(text: 'Çok Yakında...', context: context, size: 25, fontWeight: FontWeight.bold, color: Colors.black))
     );
         }
       ) ,

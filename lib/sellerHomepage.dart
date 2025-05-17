@@ -55,7 +55,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
                 const SizedBox(height: 10),
                 SellerQuickMenus(text: 'İlanlarım', ontap: () => _navigateToPage('posts'), icon: Icons.diamond),
                 const SizedBox(height: 10),
-                SellerQuickMenus(text: 'Kazançlarım Fiverr a bak', ontap: () => _navigateToPage('earnings'), icon: Icons.attach_money)
+                SellerQuickMenus(text: 'Kazançlarım', ontap: () => _navigateToPage('earnings'), icon: Icons.attach_money)
               ],
             ),
           ),

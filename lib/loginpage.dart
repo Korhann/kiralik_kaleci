@@ -45,7 +45,7 @@ class _LogInState extends State<LogIn> {
 
 
   // Changed the future with void!!
-  Future signInUser() async {
+  Future<void> signInUser() async {
     saveUserType('user');
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text.trim(), password: passwordController.text.trim());

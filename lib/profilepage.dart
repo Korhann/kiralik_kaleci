@@ -181,7 +181,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       );
                       },
                       child: OtherBars(
-                        text: 'Kiralık Kaleci',
+                        text: 'Kalecim',
                         icons: Icon(Icons.handshake_outlined,size: MediaQuery.sizeOf(context).width * 0.06),
                       ),
                     ),

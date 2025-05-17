@@ -178,7 +178,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: MediaQuery.sizeOf(context).height
+                  minHeight: height * 0.65
                 ),
                 child: SingleChildScrollView(
                   child: Container(
@@ -820,7 +820,6 @@ class chooseCard extends StatelessWidget {
     );
   }
 }
-//todo: bottom overflowd 30 pixels
 class DayHourListView extends StatelessWidget {
   final List<String> days;
   final Map<String, List<String>> hoursByDay;
@@ -852,7 +851,7 @@ class DayHourListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: heigth,
+      height: heigth*0.6,
       width: double.infinity,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -875,77 +874,74 @@ class DayHourListView extends StatelessWidget {
                   textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 SizedBox(height: heigth * 0.007),
-                SizedBox(
-                  height: heigth,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: hours.map((hour) {
-                        // Generate unique key for each hour
-                        String dayHourKey = '$day $hour';
-                        bool isSelected = selectedDay == day && selectedHour == hour;
-                        bool isDisabled = hourColors[dayHourKey] == Colors.grey.shade600 || hourColors[dayHourKey] == Colors.grey || hourColors[dayHourKey] == Colors.green;
-                        return GestureDetector(
-                          // Only allow interaction if not disabled
-                          onTap: !isDisabled
-                              ? () {
-                                  onDaySelected(day);
-                                  onHourSelected(hour);
-
-                                  hourColors.forEach((key, value) {
-                                    if (value != Colors.grey.shade600 && value != Colors.green) {
-                                      hourColors[key] = Colors.cyan;
-                                    }
-                                  });
-
-                                  hourColors[dayHourKey] = Colors.grey;
-                                }
-                              : null,
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 3.0),
-                                  padding: const EdgeInsets.all(5),
-                                  color: isSelected ? Colors.grey : hourColors[dayHourKey] ?? Colors.cyan,
-                                  child: Text(
-                                    hour,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: userorseller ? Colors.white : Colors.black,
-                                    ),
-                                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: hours.map((hour) {
+                      // Generate unique key for each hour
+                      String dayHourKey = '$day $hour';
+                      bool isSelected = selectedDay == day && selectedHour == hour;
+                      bool isDisabled = hourColors[dayHourKey] == Colors.grey.shade600 || hourColors[dayHourKey] == Colors.grey || hourColors[dayHourKey] == Colors.green;
+                      return GestureDetector(
+                        // Only allow interaction if not disabled
+                        onTap: !isDisabled
+                            ? () {
+                                onDaySelected(day);
+                                onHourSelected(hour);
+                      
+                                hourColors.forEach((key, value) {
+                                  if (value != Colors.grey.shade600 && value != Colors.green) {
+                                    hourColors[key] = Colors.cyan;
+                                  }
+                                });
+                      
+                                hourColors[dayHourKey] = Colors.grey;
+                              }
+                            : null,
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 3.0),
+                                padding: const EdgeInsets.all(5),
+                                color: isSelected ? Colors.grey : hourColors[dayHourKey] ?? Colors.cyan,
+                                child: Text(
+                                  hour,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: userorseller ? Colors.white : Colors.black,
                                   ),
+                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                 ),
                               ),
-                              if (isSelected)
-                                Positioned(
-                                  right: 0,
-                                  top: 0,
-                                  child: GestureDetector(
-                                    onTap: onClearSelection,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.red,
-                                      ),
-                                      child: Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: width*0.02,
-                                      ),
+                            ),
+                            if (isSelected)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: GestureDetector(
+                                  onTap: onClearSelection,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.red,
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: width*0.02,
                                     ),
                                   ),
-                                )
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                                ),
+                              )
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ],
