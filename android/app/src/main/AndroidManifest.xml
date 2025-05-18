@@ -19,7 +19,7 @@
         </intent>
     </queries>
 
-    <application android:label="Kalecim" android:icon="@drawable/new_icon" android:enableOnBackInvokedCallback="true">
+    <application android:label="Kalecim" android:icon="@mipmap/launcher_icon" android:enableOnBackInvokedCallback="true">
         <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false"/>
 <meta-data android:name="firebase_analytics_collection_enabled" android:value="false"/>
 

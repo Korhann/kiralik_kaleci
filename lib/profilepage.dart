@@ -406,7 +406,7 @@ class SignUserOut extends StatelessWidget {
         child: ElevatedButton(
             onPressed: () async {
               // sign out the user
-              _auth.signOut();
+              await _auth.signOut();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
             child: Align(

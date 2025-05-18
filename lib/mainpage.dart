@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,6 +29,7 @@ class _MainPageState extends State<MainPage> {
   late Stream<User?> _authStream;
   int _currentIndex = 0;
   int _unreadMessages = 0;
+  List<StreamSubscription<DocumentSnapshot>> _listeners = [];
 
   @override
   void initState() {
@@ -34,6 +37,15 @@ class _MainPageState extends State<MainPage> {
     _authStream = FirebaseAuth.instance.authStateChanges();
     _currentIndex = widget.index;
     listenToUnreadCount();
+  }
+
+  @override
+  void dispose() {
+    for (var l in _listeners) {
+      l.cancel();
+    }
+    _listeners.clear();
+    super.dispose();
   }
 
 
@@ -133,42 +145,49 @@ Widget build(BuildContext context) {
   }
 
   void listenToUnreadCount() async {
-    try {
-    String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    String currentUser = user.uid;
     final prefs = await SharedPreferences.getInstance();
     List<String>? sharedIds = prefs.getStringList('ids');
     if (sharedIds == null) return;
 
-  Map<String, int> unreadPerChat = {};
+    Map<String, int> unreadPerChat = {};
 
-  for (var st in sharedIds) {
-    List<String> ids = [currentUser, st];
-    ids.sort();
-    String chatRoomId = ids.join('_');
+    for (var st in sharedIds) {
+      List<String> ids = [currentUser, st];
+      ids.sort();
+      String chatRoomId = ids.join('_');
 
-    FirebaseFirestore.instance
-        .collection('chat_rooms')
-        .doc(chatRoomId)
-        .collection('messages')
-        .doc('meta')
-        .snapshots()
-        .listen((metaDoc) {
-      final data = metaDoc.data();
-      if (data == null) return;
+      var subscription = FirebaseFirestore.instance
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .doc('meta')
+          .snapshots()
+          .listen((metaDoc) {
+        final data = metaDoc.data();
+        if (data == null) return;
 
-      int unread = data['senderId'] == currentUser ? data['to_msg'] ?? 0 : data['from_msg'] ?? 0;
-      unreadPerChat[chatRoomId] = unread;
+        int unread = data['senderId'] == currentUser
+            ? data['to_msg'] ?? 0
+            : data['from_msg'] ?? 0;
+        unreadPerChat[chatRoomId] = unread;
 
-      // Recalculate total
-      int totalUnread = unreadPerChat.values.fold(0, (a, b) => a + b);
+        int totalUnread = unreadPerChat.values.fold(0, (a, b) => a + b);
 
-      setState(() {
-        _unreadMessages = totalUnread;
+        setState(() {
+          _unreadMessages = totalUnread;
+        });
       });
-    });
-  }
-    } catch (e) {
-      print('Error is $e');
+
+      _listeners.add(subscription);
     }
+  } catch (e) {
+    print('Error is $e');
+  }
 }
+
 }

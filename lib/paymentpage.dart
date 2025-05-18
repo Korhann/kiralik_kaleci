@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
+import 'package:kiralik_kaleci/firebase_analytics.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
@@ -284,6 +286,7 @@ class _PaymentPageState extends State<PaymentPage> {
   Future<bool> _processPayment() async {
     print('processing the payment');
     await updatePaymentStatus();
+    await Firebaseanalytics().firebasePaymentNotification(widget.buyerUid!, widget.sellerUid!);
     // Simulate payment process (replace this with actual payment gateway logic)
     await Future.delayed(const Duration(seconds: 2));
     return true; // Return true if payment is successful

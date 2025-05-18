@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,7 +28,7 @@ class SellerMainPageState extends State<SellerMainPage> {
   late Stream<User?> _authStream;
   int _currentIndex = 0;
   int _unreadMessages = 0;
-  String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  List<StreamSubscription<DocumentSnapshot>> _listeners = [];
 
   @override
   void initState() {
@@ -35,6 +37,16 @@ class SellerMainPageState extends State<SellerMainPage> {
     _currentIndex = widget.index;
     listenToUnreadCount();
   }
+
+  @override
+  void dispose() {
+    for (var l in _listeners) {
+      l.cancel();
+    }
+    _listeners.clear();
+    super.dispose();
+  }
+
   
   @override
   Widget build(BuildContext context) {
@@ -105,37 +117,48 @@ class SellerMainPageState extends State<SellerMainPage> {
   }
 
   void listenToUnreadCount() async {
-  final prefs = await SharedPreferences.getInstance();
-  List<String>? sharedIds = prefs.getStringList('ids');
-  if (sharedIds == null) return;
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-  Map<String, int> unreadPerChat = {};
+    String currentUser = user.uid;
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? sharedIds = prefs.getStringList('ids');
+    if (sharedIds == null) return;
 
-  for (var st in sharedIds) {
-    List<String> ids = [currentUser, st];
-    ids.sort();
-    String chatRoomId = ids.join('_');
+    Map<String, int> unreadPerChat = {};
 
-    FirebaseFirestore.instance
-        .collection('chat_rooms')
-        .doc(chatRoomId)
-        .collection('messages')
-        .doc('meta')
-        .snapshots()
-        .listen((metaDoc) {
-      final data = metaDoc.data();
-      if (data == null) return;
+    for (var st in sharedIds) {
+      List<String> ids = [currentUser, st];
+      ids.sort();
+      String chatRoomId = ids.join('_');
 
-      int unread = data['senderId'] == currentUser ? data['to_msg'] ?? 0 : data['from_msg'] ?? 0;
-      unreadPerChat[chatRoomId] = unread;
+      var subscription = FirebaseFirestore.instance
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .doc('meta')
+          .snapshots()
+          .listen((metaDoc) {
+        final data = metaDoc.data();
+        if (data == null) return;
 
-      // Recalculate total
-      int totalUnread = unreadPerChat.values.fold(0, (a, b) => a + b);
+        int unread = data['senderId'] == currentUser
+            ? data['to_msg'] ?? 0
+            : data['from_msg'] ?? 0;
+        unreadPerChat[chatRoomId] = unread;
 
-      setState(() {
-        _unreadMessages = totalUnread;
+        int totalUnread = unreadPerChat.values.fold(0, (a, b) => a + b);
+
+        setState(() {
+          _unreadMessages = totalUnread;
+        });
       });
-    });
+
+      _listeners.add(subscription);
+    }
+  } catch (e) {
+    print('Error is $e');
   }
 }
 

@@ -183,6 +183,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 child: SingleChildScrollView(
                   child: Container(
                   color: userorseller ? sellerbackground : background,
+                  height: height,
                   child: Column(
                     children: [
                       SizedBox(height: height * 0.025),
@@ -364,7 +365,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
       bool isPastNightHour = i < currentDayIndex && isPastNightHours(now, startTime);
       if (isPastNightHour) {
         hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600; 
-        markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
+        //markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
         } else {
           hourColors[dayHourKey] = Colors.cyan;
         }
