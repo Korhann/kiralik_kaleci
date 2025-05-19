@@ -1,6 +1,13 @@
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const admin = require('firebase-admin');
+var Iyzipay = require('iyzipay');
+
+var iyzipay = new Iyzipay({
+    apiKey: 'your api key',
+    secretKey: 'your secret key',
+    uri: 'https://sandbox-api.iyzipay.com'
+});
 
 
 admin.initializeApp();
@@ -85,7 +92,7 @@ exports.runVerificationFunction = onSchedule(
         const userRef = userDoc.doc('');
       }
     } catch (e) {
-
     }
   }
 );
+
