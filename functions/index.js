@@ -2,6 +2,7 @@ const { setGlobalOptions } = require('firebase-functions/v2');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const admin = require('firebase-admin');
 
+
 admin.initializeApp();
 
 setGlobalOptions({ region: 'europe-west2' });

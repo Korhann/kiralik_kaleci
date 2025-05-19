@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +12,7 @@ import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:http/http.dart' as http;
 
 
 class PaymentPage extends StatefulWidget {
@@ -282,7 +285,7 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     );
   }
-  // ÖDEME BURAYA EKLENECEK
+  //ÖDEME BURAYA EKLENECEK
   Future<bool> _processPayment() async {
     print('processing the payment');
     await updatePaymentStatus();
@@ -291,6 +294,7 @@ class _PaymentPageState extends State<PaymentPage> {
     await Future.delayed(const Duration(seconds: 2));
     return true; // Return true if payment is successful
   }
+
 
   Future<void> updatePaymentStatus() async {
     try {
