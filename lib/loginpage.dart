@@ -286,7 +286,7 @@ class _LogInState extends State<LogIn> {
                       PlatformElevatedButton(
                         onPressed: () async{
                           if (formkey.currentState!.validate()) {
-                            await Firebaseanalytics().firebasePaymentNotification('sjfl', 'sfls');
+                            // await Firebaseanalytics().firebasePaymentNotification('sjfl', 'sfls');
                             signInUser();
                           }
                         },

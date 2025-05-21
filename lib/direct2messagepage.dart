@@ -47,18 +47,15 @@ class _Direct2MessageState extends State<Direct2Message> {
       ),
     ),
     body: SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Column(
-          children: [
-            // Messages List
-            Expanded(child: _buildMessageList()),
-                
-            // Message Input Field
-            _buildMessageInput(),
-            const SizedBox(height: 20),
-          ],
-        ),
+      child: Column(
+        children: [
+          // Messages List
+          Expanded(child: _buildMessageList()),
+              
+          // Message Input Field
+          _buildMessageInput(),
+          const SizedBox(height: 20),
+        ],
       ),
     ),
   );

@@ -518,7 +518,7 @@ class NameInputField extends StatelessWidget {
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 10),
               ),
-              style: const TextStyle(decoration: TextDecoration.none, color: Colors.grey, fontWeight: FontWeight.w300),
+              style: const TextStyle(decoration: TextDecoration.none, color: Colors.black, fontWeight: FontWeight.normal),
             ),
           ),
         ),

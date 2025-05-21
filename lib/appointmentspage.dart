@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/enterVerificationCode.dart';
@@ -727,18 +728,27 @@ class CheckDaysPastSeller {
     final int currentDayIndex = now.weekday - 1; // Monday = 0
     final int inputDayIndex = orderedDays.indexOf(day);
 
+    bool nightHours = isNightHour(startTime) && (currentDayIndex == inputDayIndex); 
+
     if (inputDayIndex == -1) {
       throw ArgumentError('Invalid day name: $day');
     }
 
     bool shouldMarkAsPast = false;
 
-    // burada gün zaten geçmiş oluyor
     if (inputDayIndex < currentDayIndex) {
-      shouldMarkAsPast = true;
+      final isPastHour = isStartTimePast(now,startTime,nightHours);
+      if (isPastHour) {
+        shouldMarkAsPast = true;
+      }
       // burada aynı gün sadece saatlere bakıp geçmiş mi diye anlıyor
-    } else if (inputDayIndex == currentDayIndex) {
-      final isPastHour = isStartTimePast(now, startTime);
+    } else if (inputDayIndex == currentDayIndex && !nightHours) {
+      final isPastHour = isStartTimePast(now,startTime, nightHours);
+      if (isPastHour) {
+        shouldMarkAsPast = true;
+      }
+    } else if (nightHours) {
+      final isPastHour = isStartTimePast(now,startTime,nightHours);
       if (isPastHour) {
         shouldMarkAsPast = true;
       }
@@ -793,6 +803,8 @@ class CheckDaysPastUser {
     final int currentDayIndex = now.weekday - 1; // Monday is 1
     final int inputDayIndex = orderedDays.indexOf(day);
 
+    bool nightHours = isNightHour(startTime) && (currentDayIndex == inputDayIndex); 
+
     if (inputDayIndex == -1) {
       throw ArgumentError('Invalid day name: $day');
     }
@@ -800,13 +812,22 @@ class CheckDaysPastUser {
     bool shouldMarkAsPast = false;
 
     if (inputDayIndex < currentDayIndex) {
-      shouldMarkAsPast = true;
-    } else if (inputDayIndex == currentDayIndex) {
-      final isPastHour = isStartTimePast(now, startTime);
+      final isPastHour = isStartTimePast(now,startTime,nightHours);
+      if (isPastHour) {
+        shouldMarkAsPast = true;
+      }
+    } else if (inputDayIndex == currentDayIndex && !nightHours) {
+      final isPastHour = isStartTimePast(now,startTime,nightHours);
+      if (isPastHour) {
+        shouldMarkAsPast = true;
+      }
+    } else if (nightHours) {
+      final isPastHour = isStartTimePast(now,startTime,nightHours);
       if (isPastHour) {
         shouldMarkAsPast = true;
       }
     }
+
     if (shouldMarkAsPast) {
       final docRef = FirebaseFirestore.instance
         .collection('Users')
@@ -831,7 +852,11 @@ class CheckDaysPastUser {
   }
 }
 
-bool isStartTimePast(DateTime now, String startTime) {
+bool isNightHour(String startTime) {
+  return startTime == '01:00' || startTime == '02:00' || startTime == '03:00';
+}
+
+bool isStartTimePast(DateTime now, String startTime, bool isNightHour) {
   print('start time is $startTime');
   final nowInMinutes = now.hour * 60 + now.minute;
 
@@ -840,11 +865,16 @@ bool isStartTimePast(DateTime now, String startTime) {
   final startMinute = int.parse(parts[1]);
   final startInMinutes = startHour * 60 + startMinute;
 
+  // Gece saati ise ertesi günmüş gibi davranıyor
+  if (isNightHour) return false;
+
   print('Current time in minutes: $nowInMinutes');
   print('Appointment start time in minutes: $startInMinutes');
 
   return nowInMinutes >= startInMinutes;
 }
+
+
 
 class iconDayHour extends StatelessWidget {
   final String day;

@@ -301,6 +301,8 @@ class _PaymentPageState extends State<PaymentPage> {
     print('yes');
   } else {
     print('no');
+    print('Status code: ${response.statusCode}');
+  print('Response body: ${response.body}');
   }
     print('processing the payment');
     await updatePaymentStatus();
