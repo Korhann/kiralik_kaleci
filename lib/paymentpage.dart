@@ -287,6 +287,21 @@ class _PaymentPageState extends State<PaymentPage> {
   }
   //ÖDEME BURAYA EKLENECEK
   Future<bool> _processPayment() async {
+    final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api'),
+  headers: {'Content-Type': 'application/json'},
+  body: jsonEncode({
+    'name': 'John',
+    'surname': 'Doe',
+    'email': 'john@example.com',
+    'phone': '+905555555555',
+    'ip': '85.34.78.112', // Get from API or use a dummy for sandbox
+  }),
+);
+  if (response.statusCode == 200) {
+    print('yes');
+  } else {
+    print('no');
+  }
     print('processing the payment');
     await updatePaymentStatus();
     await Firebaseanalytics().firebasePaymentNotification(widget.buyerUid!, widget.sellerUid!);
