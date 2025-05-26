@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -47,6 +45,7 @@ class _PaymentPageState extends State<PaymentPage> {
   late String buyerName;
   late String buyerLastName;
   late String buyerEmail;
+  late int buyerPrice;
   late String buyerIpNo;
 
 
@@ -262,6 +261,7 @@ class _PaymentPageState extends State<PaymentPage> {
           var sellerDetails = userData['sellerDetails'];
           var sellerPrice = sellerDetails['sellerPriceMidnight'];
 
+
           // appointment page için
           sellerFullName = sellerDetails['sellerFullName'];
 
@@ -299,22 +299,22 @@ class _PaymentPageState extends State<PaymentPage> {
     print(buyerLastName);
     print(buyerEmail);
     print(buyerIpNo);
+
     final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api'),
-  headers: {'Content-Type': 'application/json'},
-  body: jsonEncode({
-    'name': buyerName,
-    'surname': buyerLastName,
-    'email': buyerEmail,
-    'phone': '+905555555555',
-    'ip': buyerIpNo, // Get from API or use a dummy for sandbox
-  }),
-);
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'name': buyerName,
+        'surname': buyerLastName,
+        'email': buyerEmail,
+        'phone': '+905555555555',
+        'price': buyerPrice,
+        'ip': buyerIpNo, // Get from API or use a dummy for sandbox
+      }),
+    );
   if (response.statusCode == 200) {
     print('yes');
   } else {
     print('no');
-    print('Status code: ${response.statusCode}');
-  print('Response body: ${response.body}');
   }
     print('processing the payment');
     await updatePaymentStatus();
@@ -469,6 +469,7 @@ class _PaymentPageState extends State<PaymentPage> {
         buyerName = userDoc['fullName'];
         buyerLastName = userDoc['fullName'];
         buyerEmail = userDoc['email'];
+        await getSellerPrice();
         getIpNo();
       }
     } catch (e){
@@ -479,5 +480,18 @@ class _PaymentPageState extends State<PaymentPage> {
     final info = NetworkInfo();
     final wifiIP = await info.getWifiIP();
     buyerIpNo = wifiIP!;
+  }
+  Future<void> getSellerPrice() async {
+    try {
+      DocumentSnapshot snapshot = await _firestore.collection('Users').doc(widget.sellerUid).get();
+      var sellerData = snapshot.data() as Map<String,dynamic>;
+      if (widget.selectedHour == '00:00-01:00' || widget.selectedHour == '01:00-02:00') {
+        buyerPrice = sellerData['sellerDetails']['sellerPriceMidnight'];
+      } else {
+        buyerPrice = sellerData['sellerDetails']['sellerPrice'];
+      }
+    } catch (e){
+      print('Error getting price $e');
+    }
   }
 }

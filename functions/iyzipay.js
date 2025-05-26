@@ -14,15 +14,15 @@ const iyzipay = new Iyzipay({
 
 
 app.post('/', async (req, res) => {
-  const { name, surname, email, phone, ip } = req.body;
+  const { name, surname, email, phone, ip , price} = req.body;
 
-  if (!name || !surname || !email || !phone || !ip) {
+  if (!name || !surname || !email || !phone || !ip || !price) {
     return res.status(400).send({ error: 'Missing required fields' });
   }
 
   const request = {
     locale: Iyzipay.LOCALE.TR,
-    conversationId: '123456789',
+    conversationId: '123451789',
     price: '1', // Actual price
     paidPrice: '1.2', // Price with tax/fees
     currency: Iyzipay.CURRENCY.TRY,
@@ -31,8 +31,8 @@ app.post('/', async (req, res) => {
     paymentChannel: Iyzipay.PAYMENT_CHANNEL.MOBILE,
     paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
     paymentCard: {
-      cardHolderName: 'John Doe',
-      cardNumber: '5528790000000008', // TEST card
+      cardHolderName: name,
+      cardNumber: '3428790001200008', // TEST card
       expireMonth: '12',
       expireYear: '2030',
       cvc: '123',
@@ -44,7 +44,7 @@ app.post('/', async (req, res) => {
       surname,
       gsmNumber: phone,
       email,
-      identityNumber: '11111111110', // Hardcoded
+      identityNumber: '11111111115', // Hardcoded
       lastLoginDate: '2024-05-20 12:00:00',
       registrationDate: '2023-01-01 12:00:00',
       registrationAddress: 'Hardcoded Address',
