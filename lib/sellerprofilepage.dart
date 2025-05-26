@@ -33,7 +33,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
 
   int toggleIndex = 1; // Ensure the toggle switch is at the second index
 
-  final String currentuser = FirebaseAuth.instance.currentUser!.uid;
+  //final String currentuser = FirebaseAuth.instance.currentUser!.uid;
   Map<String,dynamic> sellerDetails = {};
   @override
   void initState() {
@@ -184,6 +184,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
               ),
               GestureDetector(
                 onTap: () {
+                  final String currentuser = FirebaseAuth.instance.currentUser!.uid;
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentuser, wherFrom: 'fromSomewhere'))
@@ -209,7 +210,9 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   }
 
   Widget _getIbanNo() {
-    return StreamBuilder<DocumentSnapshot>(
+    final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
+    if (currentuser != null) {
+      return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance.collection('Users').doc(currentuser).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -235,9 +238,13 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
         }
       },
     );
+    } else {
+      return SizedBox.shrink();
+    }
   }
   Future<void> getUserDetails() async{
     try{
+      final String currentuser = FirebaseAuth.instance.currentUser!.uid;
       DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
       .collection('Users')
       .doc(currentuser)
@@ -281,7 +288,8 @@ class UserNameText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-    return StreamBuilder<DocumentSnapshot>(
+    if (currentuser != null) {
+      return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('Users')
           .doc(currentuser)
@@ -297,6 +305,9 @@ class UserNameText extends StatelessWidget {
         return GlobalStyles.textStyle(text: userData['fullName'] ?? '', context: context, size: 16, fontWeight: FontWeight.w400, color: Colors.white);
       },
     );
+    } else {
+      return SizedBox.shrink();
+    }
   }
 }
 
@@ -304,7 +315,8 @@ class UserNameHeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-    return StreamBuilder<DocumentSnapshot>(
+    if (currentuser != null){
+      return StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Users')
             .doc(currentuser)
@@ -326,6 +338,9 @@ class UserNameHeaderText extends StatelessWidget {
           //       );
           return GlobalStyles.textStyle(text: userData['fullName'] ?? '', context: context, size: 20, fontWeight: FontWeight.bold,color: Colors.white);
         });
+    } else {
+      return SizedBox.shrink();
+    }
   }
 }
 
@@ -383,7 +398,8 @@ class EmailText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-    return StreamBuilder<DocumentSnapshot>(
+    if (currentuser != null) {
+      return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('Users')
           .doc(currentuser)
@@ -399,6 +415,9 @@ class EmailText extends StatelessWidget {
         return GlobalStyles.textStyle(text: userData['email'] ?? '', context: context, size: 16, fontWeight: FontWeight.w400, color: Colors.white);
       },
     );
+    } else {
+      return SizedBox.shrink();
+    }
   }
 }
 

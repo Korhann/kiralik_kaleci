@@ -105,7 +105,8 @@ class PushHelper {
   }
 
   static Future<void> sendPush({required String text, required String id, required Map<String,dynamic> data}) async {
-    // ignore: unused_local_variable
+    try {
+      // ignore: unused_local_variable
     var result = await http.post(Uri.parse('https://onesignal.com/api/v1/notifications'),
             headers: {
               'Authorization':
@@ -119,6 +120,9 @@ class PushHelper {
               "contents": {"en": text},
               'data': data
             }));
+    } catch (e){
+      print('Error send push $e');
+    }
   }
 
   static Future<void> updateOneSignal() async {

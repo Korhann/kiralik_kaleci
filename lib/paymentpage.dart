@@ -299,8 +299,10 @@ class _PaymentPageState extends State<PaymentPage> {
     print(buyerLastName);
     print(buyerEmail);
     print(buyerIpNo);
+    print(buyerPrice);
 
-    final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api'),
+    try {
+      final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': buyerName,
@@ -311,17 +313,17 @@ class _PaymentPageState extends State<PaymentPage> {
         'ip': buyerIpNo, // Get from API or use a dummy for sandbox
       }),
     );
-  if (response.statusCode == 200) {
-    print('yes');
-  } else {
-    print('no');
-  }
-    print('processing the payment');
-    await updatePaymentStatus();
-    await Firebaseanalytics().firebasePaymentNotification(widget.buyerUid!, widget.sellerUid!);
-    // Simulate payment process (replace this with actual payment gateway logic)
-    await Future.delayed(const Duration(seconds: 2));
-    return true; // Return true if payment is successful
+      if (response.statusCode == 200) {
+      await updatePaymentStatus();
+      //await Firebaseanalytics().firebasePaymentNotification(widget.buyerUid!, widget.sellerUid!);
+      return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Payment not succesfull $e');
+    }
+    return false;
   }
 
 

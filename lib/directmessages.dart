@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:kiralik_kaleci/chat_services.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
-import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -18,6 +15,7 @@ class DirectMessages extends StatefulWidget {
   @override
   State<DirectMessages> createState() => _DirectMessagesState();
 }
+//TODO: Error mesajı access denied bu sayfa hakkında olabilir
 
 class _DirectMessagesState extends State<DirectMessages> {
 

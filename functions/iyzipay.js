@@ -23,8 +23,8 @@ app.post('/', async (req, res) => {
   const request = {
     locale: Iyzipay.LOCALE.TR,
     conversationId: '123451789',
-    price: '1', // Actual price
-    paidPrice: '1.2', // Price with tax/fees
+    price: price, // Actual price
+    paidPrice: '0', // Price with tax/fees
     currency: Iyzipay.CURRENCY.TRY,
     installment: '1',
     basketId: 'B67832',

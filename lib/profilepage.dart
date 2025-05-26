@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late String buyerUid;
 
   // authentication of the user
-  final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
+  //final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
   String? cardNumber;
   
   @override
@@ -248,7 +248,8 @@ class EmailText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-    return StreamBuilder<DocumentSnapshot>(
+    if (currentuser != null) {
+      return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('Users')
           .doc(currentuser)
@@ -268,8 +269,11 @@ class EmailText extends StatelessWidget {
         );
       },
     );
+    } else {
+      return SizedBox.shrink();
+    }
   }
-}
+} 
 
 class UserName extends StatelessWidget {
   @override
@@ -301,7 +305,8 @@ class UserNameText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-    return StreamBuilder<DocumentSnapshot>(
+    if (currentuser != null) {
+      return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('Users')
           .doc(currentuser)
@@ -321,8 +326,11 @@ class UserNameText extends StatelessWidget {
                 color: Colors.black),
               textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
             );
-      },
-    );
+        },
+      );
+    } else {
+      return SizedBox.shrink();
+    }
   }
 }
 
@@ -330,7 +338,8 @@ class UserNameHeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
-    return StreamBuilder<DocumentSnapshot>(
+    if (currentuser != null) {
+      return StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Users')
             .doc(currentuser)
@@ -352,6 +361,9 @@ class UserNameHeaderText extends StatelessWidget {
                 textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
               );
         });
+    } else {
+      return SizedBox.shrink();
+    }
   }
 }
 

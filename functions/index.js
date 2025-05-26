@@ -8,6 +8,7 @@ admin.initializeApp();
 
 setGlobalOptions({ region: 'europe-west2' });
 
+// Pazartesi öğlen 5-6 arası çalışıyor
 exports.resetAppointments = onSchedule(
   { schedule: 'every Monday 17:00', timeZone: 'Europe/Istanbul' },
   async () => {

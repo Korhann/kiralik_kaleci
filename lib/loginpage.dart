@@ -36,12 +36,8 @@ class _LogInState extends State<LogIn> {
   bool _showErrorPassword = false;
   bool _invalidcred = false;
 
-  // bool value for the password to show/hide
-  //bool _obsecureText = true;
-
   // Initialize google
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool _obsecureText = true;
 
@@ -70,10 +66,9 @@ class _LogInState extends State<LogIn> {
 
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleSignInAccount =
-          await _googleSignIn.signIn();
-      final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount!.authentication;
+      final FirebaseAuth _auth = FirebaseAuth.instance;
+      final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+      final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
