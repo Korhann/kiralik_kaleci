@@ -1,4 +1,4 @@
-// iyzico için telefon no, ip, isim soyisim, ve email göndermem gerek sadece (diğerlerini hardcoded olarak gönderebilirim)
+// iyzico için (telefon no, ip, isim soyisim, ve email) göndermem gerek sadece (diğerlerini hardcoded olarak gönderebilirim)
 
 const express = require('express');
 const Iyzipay = require('iyzipay');

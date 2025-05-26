@@ -13,7 +13,7 @@ import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:network_info_plus/network_info_plus.dart';
 
 class PaymentPage extends StatefulWidget {
   final String? sellerUid;
@@ -42,12 +42,19 @@ class _PaymentPageState extends State<PaymentPage> {
   //todo : uygulamadan çıkış yapılmışken bildirime basınca oluyor(null check used on null value)
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
   late String sellerFullName;
-  late final sellerAdd;
+
+  // this informations are for the payment
+  late String buyerName;
+  late String buyerLastName;
+  late String buyerEmail;
+  late String buyerIpNo;
+
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getPaymentInformation();
   }
 
   @override
@@ -287,14 +294,19 @@ class _PaymentPageState extends State<PaymentPage> {
   }
   //ÖDEME BURAYA EKLENECEK
   Future<bool> _processPayment() async {
+    print('alıcı bilgileri');
+    print(buyerName);
+    print(buyerLastName);
+    print(buyerEmail);
+    print(buyerIpNo);
     final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api'),
   headers: {'Content-Type': 'application/json'},
   body: jsonEncode({
-    'name': 'John',
-    'surname': 'Doe',
-    'email': 'john@example.com',
+    'name': buyerName,
+    'surname': buyerLastName,
+    'email': buyerEmail,
     'phone': '+905555555555',
-    'ip': '85.34.78.112', // Get from API or use a dummy for sandbox
+    'ip': buyerIpNo, // Get from API or use a dummy for sandbox
   }),
 );
   if (response.statusCode == 200) {
@@ -448,5 +460,24 @@ class _PaymentPageState extends State<PaymentPage> {
   }
   Future<void> sendNotificationToSeller() async {
     await PushHelper.sendPushBefore(userId: widget.sellerUid!, text: 'Ödeme alınmıştır', page: 'appointment');
+  }
+  Future<void> getPaymentInformation() async {
+    try {
+      DocumentSnapshot userDoc = await _firestore.collection('Users').doc(widget.buyerUid).get();
+
+      if (userDoc.exists) {
+        buyerName = userDoc['fullName'];
+        buyerLastName = userDoc['fullName'];
+        buyerEmail = userDoc['email'];
+        getIpNo();
+      }
+    } catch (e){
+      print('Error getting payment info $e');
+    }
+  }
+  void getIpNo() async{
+    final info = NetworkInfo();
+    final wifiIP = await info.getWifiIP();
+    buyerIpNo = wifiIP!;
   }
 }
