@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/direct2messagepage.dart';
-import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -19,17 +17,21 @@ class SellerDirectMessages extends StatefulWidget {
 }
 
 class _SellerDirectMessagesState extends State<SellerDirectMessages> {
-  String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  late String currentUser;
   List<Map<String, dynamic>> conversations = [];
 
 
   @override
   void initState() {
     super.initState();
+    currentUser = FirebaseAuth.instance.currentUser!.uid;
   }
 
   Stream<List<Map<String, dynamic>>> fetchConversations() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null){return const Stream.empty();}
 
+    final currentUser = user.uid;
   Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
       .collectionGroup('messages')
       .where('senderId', isEqualTo: currentUser)

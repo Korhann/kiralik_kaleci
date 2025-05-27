@@ -127,7 +127,7 @@ class _LogInState extends State<LogIn> {
                       const SizedBox(height: 40),
                       
                        SizedBox(
-                        width: width,
+                        width: width,  
                         child: TextFormField(
                           keyboardType: TextInputType.emailAddress,
                           controller: emailController,

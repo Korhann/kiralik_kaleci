@@ -19,15 +19,25 @@ class DirectMessages extends StatefulWidget {
 
 class _DirectMessagesState extends State<DirectMessages> {
 
-  String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  late String currentUser;
   late Stream<int> unreadCount;
 
   @override
   void initState() {
     super.initState();
+    currentUser = FirebaseAuth.instance.currentUser!.uid;
+  }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
   Stream<List<Map<String, dynamic>>> fetchConversations() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null){return const Stream.empty();}
+
+    final currentUser = user.uid;
   Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
       .collectionGroup('messages')
       .where('senderId', isEqualTo: currentUser)
@@ -87,6 +97,11 @@ Future<void> addParticipantIdToPrefs(String participantId) async {
 
 
   Future<int> getUnreadCount(String participantId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return Future.error('noUnreadCount'); // Or redirect to login
+
+    final currentUser = user.uid;
+
   List<String> ids = [currentUser, participantId];
   ids.sort();
   String chatRoomId = ids.join('_');
@@ -110,6 +125,11 @@ Future<void> addParticipantIdToPrefs(String participantId) async {
   }
 
   Future<void> resetUnredMessages(String participantId) async{
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return Future.error('noMessagesReset'); // Or redirect to login
+
+    final currentUser = user.uid;
+
     List<String> ids = [currentUser, participantId];
     ids.sort();
     String chatRoomId = ids.join('_');
@@ -137,6 +157,11 @@ Future<void> addParticipantIdToPrefs(String participantId) async {
 
 
   Future<String> _getLastMessage(String receiverId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return Future.error('noLastMessage'); // Or redirect to login
+
+    final currentUser = user.uid;
+
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collectionGroup('messages')
         .where('senderId', whereIn: [currentUser, receiverId])
