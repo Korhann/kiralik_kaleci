@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/loginpage.dart';
@@ -23,14 +24,15 @@ class _SignUpState extends State<SignUp> {
 
   TextEditingController fullNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
 
-  final style = const TextStyle(
-      fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black);
+  final style = const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black);
 
   bool _showErrorName = false;
   bool _showErrorEmail = false;
+  bool _showErrorPhone = false;
   bool _showErrorPassword = false;
   bool _showErrorRePassword = false;
   bool _emailInUse = false;
@@ -42,14 +44,13 @@ class _SignUpState extends State<SignUp> {
     saveUserType('user');
     try {
       if (samePassword()) {
-        UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email,
           password: password,
         );
 
         String uid = userCredential.user!.uid;
-        addUser(fullNameController.text.trim(), email, uid);
+        await addUser(fullNameController.text.trim(), email, uid, phoneController.text.trim());
 
         Navigator.push(
             context,
@@ -68,14 +69,14 @@ class _SignUpState extends State<SignUp> {
   }
 
   bool samePassword() {
-    return passwordController.text.trim() ==
-        confirmPasswordController.text.trim();
+    return passwordController.text.trim() == confirmPasswordController.text.trim();
   }
 
-  Future addUser(String fullName, String email, String uid) async {
+  Future<void> addUser(String fullName, String email, String uid, String phoneNo) async {
     await FirebaseFirestore.instance.collection("Users").doc(uid).set({
       "fullName": fullName,
       "email": email,
+      'phoneNo': phoneNo
     });
   }
 
@@ -85,6 +86,7 @@ class _SignUpState extends State<SignUp> {
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+    phoneController.dispose();
     super.dispose();
   }
 
@@ -138,8 +140,7 @@ class _SignUpState extends State<SignUp> {
                                     hintText: 'Ad Soyad', showError: _showErrorName),
                                 validator: (value) {
                                   final nameSurname = value?.trim();
-                                  if (nameSurname!.isEmpty ||
-                                      !RegExp(r'^[a-z A-Z]+$').hasMatch(nameSurname)) {
+                                  if (nameSurname!.isEmpty || !RegExp(r'^[a-z A-Z]+$').hasMatch(nameSurname)) {
                                     setState(() {
                                       _showErrorName = true;
                                     });
@@ -159,8 +160,7 @@ class _SignUpState extends State<SignUp> {
                               child: Text(
                                 "Geçerli bir isim soyisim giriniz",
                                 textAlign: TextAlign.start,
-                                style: GoogleFonts.inter(
-                                    textStyle: GlobalStyles().errorstyle),
+                                style: GoogleFonts.inter(textStyle: GlobalStyles().errorstyle),
                               ),
                             ),
               
@@ -172,16 +172,12 @@ class _SignUpState extends State<SignUp> {
                             child: TextFormField(
                                 controller: emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                style:
-                                    const TextStyle(color: Colors.black, fontSize: 20),
+                                style: const TextStyle(color: Colors.black, fontSize: 20),
                                 decoration: GlobalStyles.inputDecoration1(
                                     hintText: 'Email', showError: _showErrorEmail),
                                 validator: (value) {
                                   final email = value?.trim();
-                                  if (email!.isEmpty ||
-                                      !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                          .hasMatch(email) ||
-                                      _emailInUse) {
+                                  if (email!.isEmpty ||!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email) ||_emailInUse) {
                                     setState(() {
                                       _showErrorEmail = true;
                                       _emailInUse = false;
@@ -208,6 +204,50 @@ class _SignUpState extends State<SignUp> {
                               ),
                             ),
               
+                          const SizedBox(height: 10),
+
+                          // phone no
+                          //todo: Telefon no will not be centered
+                          SizedBox(
+                            width: width,
+                            child: TextFormField(
+                                controller: phoneController,
+                                inputFormatters: [LengthLimitingTextInputFormatter(10)],
+                                keyboardType: TextInputType.phone,
+                                style: const TextStyle(color: Colors.black, fontSize: 20),
+                                decoration: GlobalStyles.inputDecorationPhone(
+                                   showError: _showErrorPhone,
+                                  ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty || value.length < 10) {
+                                    setState(() {
+                                      _showErrorPhone = true;
+                                    });
+                                    return 'Lütfen telefon numaranızı girin';
+                                  } else {
+                                    setState(() {
+                                      _showErrorPhone = false;
+                                    });
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  phoneController.text = value!;
+                                }
+                              ),
+                          ),
+
+                          if (_showErrorPhone)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Girdiğiniz numara hatalı",
+                                textAlign: TextAlign.start,
+                                style: GoogleFonts.inter(
+                                    textStyle: GlobalStyles().errorstyle),
+                              ),
+                            ),
+
                           const SizedBox(height: 10),
               
                           // PAROLA

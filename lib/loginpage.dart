@@ -1,10 +1,8 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kiralik_kaleci/firebase_analytics.dart';
 import 'package:kiralik_kaleci/forgetpasswordpage.dart';
 import 'package:kiralik_kaleci/signuppage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -282,7 +280,7 @@ class _LogInState extends State<LogIn> {
                         onPressed: () async{
                           if (formkey.currentState!.validate()) {
                             // await Firebaseanalytics().firebasePaymentNotification('sjfl', 'sfls');
-                            signInUser();
+                            await signInUser();
                           }
                         },
                         child: Text(

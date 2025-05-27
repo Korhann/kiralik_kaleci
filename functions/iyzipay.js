@@ -32,7 +32,7 @@ app.post('/', async (req, res) => {
     paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
     paymentCard: {
       cardHolderName: name,
-      cardNumber: '3428790001200008', // TEST card
+      cardNumber: '3428790001700508', // TEST card
       expireMonth: '12',
       expireYear: '2030',
       cvc: '123',
@@ -44,7 +44,7 @@ app.post('/', async (req, res) => {
       surname,
       gsmNumber: phone,
       email,
-      identityNumber: '11111111115', // Hardcoded
+      identityNumber: '11111111128', // Hardcoded
       lastLoginDate: '2024-05-20 12:00:00',
       registrationDate: '2023-01-01 12:00:00',
       registrationAddress: 'Hardcoded Address',

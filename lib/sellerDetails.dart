@@ -508,6 +508,7 @@ Future<void> markPastDayAsTaken({required String userId,required String day,requ
 }
 
 Future<void> markSingleHourAsTaken({required String userId, required String day, required String title}) async {
+  try {
   final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
   List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
 
@@ -525,6 +526,9 @@ Future<void> markSingleHourAsTaken({required String userId, required String day,
   await FirebaseFirestore.instance.collection('Users').doc(userId).update({
     'sellerDetails.selectedHoursByDay.$day': updatedData,
   });
+  } catch (e) {
+    print('Error getting the hour $e');
+  }
 }
 
 bool isStartTimePast(DateTime now, String startTime, bool isNightHour) {

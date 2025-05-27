@@ -122,11 +122,18 @@ Widget buildTextField(
     ],
   );
 }
-static InputDecoration inputDecoration1({required String hintText, required bool showError}) {
+static InputDecoration inputDecoration1({
+  required String hintText,
+  required bool showError,
+}) {
   return InputDecoration(
     contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
     hintText: hintText,
-    hintStyle: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.normal, color: grey),
+    hintStyle: GoogleFonts.inter(
+      fontSize: 20,
+      fontWeight: FontWeight.normal,
+      color: grey,
+    ),
     enabledBorder: OutlineInputBorder(
       borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
       borderRadius: BorderRadius.circular(15.0),
@@ -136,17 +143,59 @@ static InputDecoration inputDecoration1({required String hintText, required bool
       borderRadius: BorderRadius.circular(15.0),
     ),
     errorBorder: OutlineInputBorder(
-      borderSide: const BorderSide(color: Colors.red), // Error border when unfocused
+      borderSide: const BorderSide(color: Colors.red),
       borderRadius: BorderRadius.circular(15.0),
     ),
     focusedErrorBorder: OutlineInputBorder(
-      borderSide: const BorderSide(color: Colors.red), // Error border when focused
+      borderSide: const BorderSide(color: Colors.red),
       borderRadius: BorderRadius.circular(15.0),
     ),
     fillColor: const Color(0xFFE5E5E5),
     filled: true,
-    errorStyle: const TextStyle(height: 0)
+    errorStyle: const TextStyle(height: 0),
   );
 }
+
+static InputDecoration inputDecorationPhone({
+  required bool showError,
+}) {
+  return InputDecoration(
+    contentPadding: const EdgeInsets.fromLTRB(0.0, 10.0, 20.0, 10.0),
+    prefixIcon: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Text(
+        '+90',
+        style: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.normal,
+          color: Colors.grey,
+        ),
+      ),
+    ),
+    prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+    enabledBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: showError ? Colors.red : Colors.black),
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderSide: const BorderSide(color: Colors.red),
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderSide: const BorderSide(color: Colors.red),
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    fillColor: const Color(0xFFE5E5E5),
+    filled: true,
+    errorStyle: const TextStyle(height: 0),
+  );
+}
+
+
+
 
 }

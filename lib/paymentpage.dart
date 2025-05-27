@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
-import 'package:kiralik_kaleci/firebase_analytics.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
@@ -40,6 +39,7 @@ class _PaymentPageState extends State<PaymentPage> {
   //todo : uygulamadan çıkış yapılmışken bildirime basınca oluyor(null check used on null value)
   String currentuser = FirebaseAuth.instance.currentUser!.uid;
   late String sellerFullName;
+  bool isPaymentLoading = false;
 
   // this informations are for the payment
   late String buyerName;
@@ -47,6 +47,7 @@ class _PaymentPageState extends State<PaymentPage> {
   late String buyerEmail;
   late int buyerPrice;
   late String buyerIpNo;
+  late String buyerPhoneNo;
 
 
   @override
@@ -152,7 +153,9 @@ class _PaymentPageState extends State<PaymentPage> {
             ),
             const SizedBox(height: 20),
             Center(
-              child: ElevatedButton(
+              child: isPaymentLoading 
+              ? CircularProgressIndicator() 
+              : ElevatedButton(
                 onPressed: () async{
                   await checkIfDayPast();
                   bool? hourTaken = await checkIfHourTaken();
@@ -292,32 +295,33 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     );
   }
-  //ÖDEME BURAYA EKLENECEK
+  //todo: sandbox ta fiyatı 1.20 olarak gösteriyor, normalde de öyle mi diye sor
   Future<bool> _processPayment() async {
-    print('alıcı bilgileri');
-    print(buyerName);
-    print(buyerLastName);
-    print(buyerEmail);
-    print(buyerIpNo);
-    print(buyerPrice);
-
     try {
+      setState(() {
+        isPaymentLoading = true;
+      });
       final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': buyerName,
         'surname': buyerLastName,
         'email': buyerEmail,
-        'phone': '+905555555555',
+        'phone': buyerPhoneNo,
         'price': buyerPrice,
-        'ip': buyerIpNo, // Get from API or use a dummy for sandbox
+        'ip': buyerIpNo,
       }),
     );
       if (response.statusCode == 200) {
       await updatePaymentStatus();
-      //await Firebaseanalytics().firebasePaymentNotification(widget.buyerUid!, widget.sellerUid!);
+      setState(() {
+        isPaymentLoading = false;
+      });
       return true;
       } else {
+        setState(() {
+          isPaymentLoading = false;
+        });
         return false;
       }
     } catch (e) {
@@ -472,6 +476,7 @@ class _PaymentPageState extends State<PaymentPage> {
         buyerLastName = userDoc['fullName'];
         buyerEmail = userDoc['email'];
         await getSellerPrice();
+        await getPhoneNo();
         getIpNo();
       }
     } catch (e){
@@ -494,6 +499,16 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     } catch (e){
       print('Error getting price $e');
+    }
+  }
+  Future<void> getPhoneNo() async{
+    try {
+      DocumentSnapshot snapshot = await _firestore.collection('Users').doc(currentuser).get();
+      var data = snapshot.data() as Map<String,dynamic>;
+      buyerPhoneNo = data['phoneNo'];
+      print(buyerPhoneNo);
+    } catch (e) {
+      print('Error getting phone no $e');
     }
   }
 }
