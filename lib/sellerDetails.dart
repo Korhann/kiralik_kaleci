@@ -362,32 +362,36 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   //todo: Olmazsa eski yerine geri al
   void dayChecker(int i, int currentDayIndex, final now, String startTime, String dayHourKey, String takenby, String day, String title, List<String> hourTitles, bool isNightHour, bool istaken) {
     if (isNightHour) {
-      bool isPastNightHour = i < currentDayIndex && isPastNightHours(now, startTime);
-      if (isPastNightHour) {
-        hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600; 
-        //markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
+      // Mark as taken if istaken is true
+      if (istaken) {
+        hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600;
+      } else {
+        bool isPastNightHour = i < currentDayIndex && isPastNightHours(now, startTime);
+        if (isPastNightHour) {
+          hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600;
         } else {
           hourColors[dayHourKey] = Colors.cyan;
         }
-        hourTitles.add(title);
-        hoursByDay[day] = hourTitles;
-        } else {
-          bool isPastDay = i < currentDayIndex;
-          bool sameDay = i == currentDayIndex;
-          bool isPastHour = isStartTimePast(now, startTime, isNightHour) && sameDay;
-          if (istaken || isPastDay || isPastHour) {
-            hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600;
-            if (isPastDay) {
-              markPastDayAsTaken(userId: widget.sellerUid, day: day, title: title);
-              } else if (isPastHour) {
-                markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
-              }
-            } else {
-              hourColors[dayHourKey] = Colors.cyan;
-            }
-            hourTitles.add(title);
-        }
+      }
+      hourTitles.add(title);
       hoursByDay[day] = hourTitles;
+    } else {
+      bool isPastDay = i < currentDayIndex;
+      bool sameDay = i == currentDayIndex;
+      bool isPastHour = isStartTimePast(now, startTime, isNightHour) && sameDay;
+      if (istaken || isPastDay || isPastHour) {
+        hourColors[dayHourKey] = takenby == currentUserUid ? Colors.green : Colors.grey.shade600;
+        if (isPastDay) {
+          markPastDayAsTaken(userId: widget.sellerUid, day: day, title: title);
+        } else if (isPastHour) {
+          markSingleHourAsTaken(userId: widget.sellerUid, day: day, title: title);
+        }
+      } else {
+        hourColors[dayHourKey] = Colors.cyan;
+      }
+      hourTitles.add(title);
+    }
+    hoursByDay[day] = hourTitles;
   }
 
   Stream<DocumentSnapshot> _stream() {

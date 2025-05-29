@@ -13,6 +13,8 @@ import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'globals.dart';
 
+//todo: Saat 00:00 ı geçmiş olarak alıyor aynı gün içindeyse
+
 class AppointmentsPage extends StatefulWidget {
   const AppointmentsPage({
     super.key,
@@ -299,8 +301,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         if (appointmentData != null &&
             appointmentData.containsKey('appointmentDetails')) {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
-          String buyerDocId =
-              appointmentData['appointmentDetails']['buyerDocId'];
+          String buyerDocId = appointmentData['appointmentDetails']['buyerDocId'];
 
           String hour = appointmentData[appointmentDetails]['hour'];
           String day = appointmentData[appointmentDetails]['day'];
