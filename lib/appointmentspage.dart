@@ -724,6 +724,7 @@ class CheckDaysPastSeller {
       'Pazar',
     ];
 
+    try {
     final now = DateTime.now().toUtc().add(const Duration(hours: 3));
     final int currentDayIndex = now.weekday - 1; // Monday = 0
     final int inputDayIndex = orderedDays.indexOf(day);
@@ -762,14 +763,14 @@ class CheckDaysPastSeller {
         .doc(docId);
 
       final snapshot = await docRef.get();
-      final buyerUid = snapshot['appointmentDetails']['buyerUid'];
+      final buyerUid = snapshot['appointmentDetails']['buyerUid'] ?? '';
       final buyerDocId = snapshot['appointmentDetails']['buyerDocId'];
 
       final docRef2 = FirebaseFirestore.instance
-          .collection('Users')
-          .doc(buyerUid)
-          .collection('appointmentbuyer')
-          .doc(buyerDocId);
+        .collection('Users')
+        .doc(buyerUid)
+        .collection('appointmentbuyer')
+        .doc(buyerDocId);
 
       final snapshot2 = await docRef2.get();
 
@@ -782,6 +783,9 @@ class CheckDaysPastSeller {
         });
       }
     }
+    } catch (e) {
+      print('Error in CheckDaysPastSeller: $e');
+    }    
   }
 }
 

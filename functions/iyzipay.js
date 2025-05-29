@@ -20,11 +20,13 @@ app.post('/', async (req, res) => {
     return res.status(400).send({ error: 'Missing required fields' });
   }
 
+  const formattedPrice = Number(price).toFixed(2);
+
   const request = {
     locale: Iyzipay.LOCALE.TR,
-    conversationId: '123451789',
-    price: price, // Actual price
-    paidPrice: '0', // Price with tax/fees
+    conversationId: '123421789',
+    price: formattedPrice, // Actual price
+    paidPrice: formattedPrice, // Price with tax/fees
     currency: Iyzipay.CURRENCY.TRY,
     installment: '1',
     basketId: 'B67832',
@@ -32,7 +34,7 @@ app.post('/', async (req, res) => {
     paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
     paymentCard: {
       cardHolderName: name,
-      cardNumber: '3428790001700508', // TEST card
+      cardNumber: '5528790000000008', // TEST card
       expireMonth: '12',
       expireYear: '2030',
       cvc: '123',
@@ -44,7 +46,7 @@ app.post('/', async (req, res) => {
       surname,
       gsmNumber: phone,
       email,
-      identityNumber: '11111111128', // Hardcoded
+      identityNumber: '11171111128', // Hardcoded
       lastLoginDate: '2024-05-20 12:00:00',
       registrationDate: '2023-01-01 12:00:00',
       registrationAddress: 'Hardcoded Address',
@@ -74,7 +76,7 @@ app.post('/', async (req, res) => {
         category1: 'Goalkeeper',
         category2: 'Rental',
         itemType: Iyzipay.BASKET_ITEM_TYPE.VIRTUAL,
-        price: '1'
+        price: formattedPrice
       }
     ]
   };

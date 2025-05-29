@@ -15,6 +15,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'appointmentspage.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +42,8 @@ void main() async {
 
   setupNotificationListener();
   String? userType = await getUserType();
+
+  final model = FirebaseAI.googleAI().generativeModel(model: 'gemini-2.0-flash');
   
   runApp(MyApp(userType: userType));
 }
