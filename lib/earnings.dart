@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
@@ -10,6 +12,16 @@ class EarningsPage extends StatefulWidget {
 }
 
 class _EarningsPageState extends State<EarningsPage> {
+
+  int balance = 0;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _getBalance();
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.sizeOf(context).height;
@@ -46,7 +58,7 @@ class _EarningsPageState extends State<EarningsPage> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 20, top: 5),
-                        child: GlobalStyles.textStyle(text: '0 TL', context: context, size: 20, fontWeight: FontWeight.w800, color: Colors.white),
+                        child: GlobalStyles.textStyle(text: '$balance TL', context: context, size: 20, fontWeight: FontWeight.w800, color: Colors.white),
                       )
                     ],
                   ),
@@ -54,13 +66,38 @@ class _EarningsPageState extends State<EarningsPage> {
               ),
             ),
             const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: GlobalStyles.textStyle(text: 'Şu ana kadar toplam 4.140.23TL kazandın', context: context, size: 16, fontWeight:FontWeight.w600 , color: Colors.white)
-            )
           ],
         ),
       ),
     );
+  }
+  Future<void> _getBalance() async {
+    try {
+    String currentuser = FirebaseAuth.instance.currentUser!.uid;
+    QuerySnapshot<Map<String,dynamic>> querySnapshot = await firestore.collection('Users')
+    .doc(currentuser)
+    .collection('appointmentseller')
+    .where('appointmentDetails.verificationState', isEqualTo: 'verified')
+    .get();
+
+    num total = 0;
+    for (var doc in querySnapshot.docs) {
+      final data = doc.data();
+      final appointmentDetails = data['appointmentDetails'];
+      if (appointmentDetails != null) {
+        final price = appointmentDetails['price'];
+        if (price is int || price is double) {
+          total += price;
+        } else if (price is String) {
+          total += num.tryParse(price) ?? 0;
+        }
+      }
+    }
+    setState(() {
+      balance = total.toInt();
+    });
+    } catch (e) {
+      print('error getting price $e');
+    }
   }
 }

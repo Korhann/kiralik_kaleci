@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
+import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
@@ -75,6 +76,9 @@ class _SellerHomePageState extends State<SellerHomePage> {
         break;
       case 'posts':
         page = SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUser, wherFrom: 'fromSomewhere');
+      case 'earnings':
+        page = const EarningsPage();
+        break;
       default:
         return; 
     }

@@ -24,17 +24,17 @@ app.post('/', async (req, res) => {
 
   const request = {
     locale: Iyzipay.LOCALE.TR,
-    conversationId: '123421789',
+    conversationId: '123401789',
     price: formattedPrice, // Actual price
     paidPrice: formattedPrice, // Price with tax/fees
     currency: Iyzipay.CURRENCY.TRY,
     installment: '1',
-    basketId: 'B67832',
+    basketId: 'B67932',
     paymentChannel: Iyzipay.PAYMENT_CHANNEL.MOBILE,
     paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
     paymentCard: {
       cardHolderName: name,
-      cardNumber: '5528790000000008', // TEST card
+      cardNumber: '5528798000000008', // TEST card
       expireMonth: '12',
       expireYear: '2030',
       cvc: '123',
@@ -46,7 +46,7 @@ app.post('/', async (req, res) => {
       surname,
       gsmNumber: phone,
       email,
-      identityNumber: '11171111128', // Hardcoded
+      identityNumber: '11171114128', // Hardcoded
       lastLoginDate: '2024-05-20 12:00:00',
       registrationDate: '2023-01-01 12:00:00',
       registrationAddress: 'Hardcoded Address',

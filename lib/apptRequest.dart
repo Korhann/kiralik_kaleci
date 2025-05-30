@@ -335,6 +335,7 @@ class _ApptRequestState extends State<ApptRequest> {
     'day': widget.selectedDay,
     'hour': widget.selectedHour,
     'field':widget.selectedField,
+    'price': widget.selectedPrice,
     'verificationCode': verificationCode,
     'verificationState': 'notVerified',
     'startTime':startTime,

@@ -858,7 +858,7 @@ class CheckDaysPastUser {
 }
 
 bool isNightHour(String startTime) {
-  return startTime == '01:00' || startTime == '02:00' || startTime == '03:00';
+  return startTime == '00:00' || startTime == '01:00' || startTime == '02:00' || startTime == '03:00';
 }
 
 bool isStartTimePast(DateTime now, String startTime, bool isNightHour) {

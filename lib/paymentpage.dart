@@ -301,15 +301,6 @@ class _PaymentPageState extends State<PaymentPage> {
       setState(() {
         isPaymentLoading = true;
       });
-      final body = jsonEncode({
-  'name': buyerName,
-  'surname': buyerLastName,
-  'email': buyerEmail,
-  'phone': buyerPhoneNo,
-  'price': buyerPrice.toString(),
-  'ip': buyerIpNo,
-});
-print('Request body: $body');
       final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
