@@ -948,6 +948,7 @@ class paymentButton extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) =>PaymentPage (
               sellerUid:appointmentDetails['selleruid'],
+              sellerDocId: appointmentDetails['sellerDocId'],
               buyerUid: currentUser,
               selectedDay:appointmentDetails['day'],
               selectedHour:appointmentDetails['hour'],

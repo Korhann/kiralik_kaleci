@@ -71,6 +71,8 @@ class _EarningsPageState extends State<EarningsPage> {
       ),
     );
   }
+
+  
   Future<void> _getBalance() async {
     try {
     String currentuser = FirebaseAuth.instance.currentUser!.uid;
@@ -79,6 +81,8 @@ class _EarningsPageState extends State<EarningsPage> {
     .collection('appointmentseller')
     .where('appointmentDetails.verificationState', isEqualTo: 'verified')
     .get();
+
+
 
     num total = 0;
     for (var doc in querySnapshot.docs) {

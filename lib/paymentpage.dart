@@ -14,6 +14,7 @@ import 'package:network_info_plus/network_info_plus.dart';
 
 class PaymentPage extends StatefulWidget {
   final String? sellerUid;
+  final String? sellerDocId;
   final String? buyerUid;
   final String? selectedDay;
   final String? selectedHour;
@@ -22,6 +23,7 @@ class PaymentPage extends StatefulWidget {
   const PaymentPage({
     super.key,
     this.sellerUid,
+    this.sellerDocId,
     this.buyerUid,
     this.selectedDay,
     this.selectedHour,
@@ -55,6 +57,8 @@ class _PaymentPageState extends State<PaymentPage> {
     // TODO: implement initState
     super.initState();
     getPaymentInformation();
+    print(widget.sellerUid);
+    print(widget.sellerDocId);
   }
 
   @override
@@ -310,6 +314,8 @@ class _PaymentPageState extends State<PaymentPage> {
         'phone': buyerPhoneNo,
         'price': buyerPrice.toString(),
         'ip': buyerIpNo,
+        'sellerId': widget.sellerUid,
+        'sellerDocId': widget.sellerDocId 
       }),
     );
       if (response.statusCode == 200) {
@@ -319,6 +325,7 @@ class _PaymentPageState extends State<PaymentPage> {
       });
       return true;
       } else {
+        print('Payment error: ${response.body}');
         setState(() {
           isPaymentLoading = false;
         });

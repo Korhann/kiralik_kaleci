@@ -12,11 +12,20 @@ const iyzipay = new Iyzipay({
   uri: 'https://sandbox-api.iyzipay.com'
 });
 
+/*
+  You can add custom variables such as userId and appointmentId to the conversationId or basketId fields.
+  Iyzico's panel will show conversationId and basketId in the transaction details.
+  Example usage:
+    - conversationId: `${userId}_${appointmentId}`
+    - basketId: `${appointmentId}`
+  Make sure to set these values in your POST body and use them in the request object.
+*/
+
 
 app.post('/', async (req, res) => {
-  const { name, surname, email, phone, ip , price} = req.body;
+  const { name, surname, email, phone, ip , price , sellerId, sellerDocId} = req.body;
 
-  if (!name || !surname || !email || !phone || !ip || !price) {
+  if (!name || !surname || !email || !phone || !ip || !price || !sellerId || !sellerDocId) {
     return res.status(400).send({ error: 'Missing required fields' });
   }
 
@@ -24,17 +33,17 @@ app.post('/', async (req, res) => {
 
   const request = {
     locale: Iyzipay.LOCALE.TR,
-    conversationId: '123401789',
+    conversationId: sellerId,
     price: formattedPrice, // Actual price
     paidPrice: formattedPrice, // Price with tax/fees
     currency: Iyzipay.CURRENCY.TRY,
     installment: '1',
-    basketId: 'B67932',
+    basketId: sellerDocId,
     paymentChannel: Iyzipay.PAYMENT_CHANNEL.MOBILE,
     paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
     paymentCard: {
       cardHolderName: name,
-      cardNumber: '5528798000000008', // TEST card
+      cardNumber: '5528790000000008', // TEST card
       expireMonth: '12',
       expireYear: '2030',
       cvc: '123',
