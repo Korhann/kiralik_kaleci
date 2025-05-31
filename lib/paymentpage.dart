@@ -303,7 +303,7 @@ class _PaymentPageState extends State<PaymentPage> {
       setState(() {
         isPaymentLoading = true;
       });
-      final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api'),
+      final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api/checkout-form'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': buyerName,
@@ -313,6 +313,7 @@ class _PaymentPageState extends State<PaymentPage> {
         'price': buyerPrice.toString(),
         'ip': buyerIpNo,
         'sellerId': widget.sellerUid,
+        'buyerId': widget.buyerUid,
         'sellerDocId': widget.sellerDocId 
       }),
     );
@@ -502,7 +503,6 @@ class _PaymentPageState extends State<PaymentPage> {
       } else {
         buyerPrice = sellerData['sellerDetails']['sellerPrice'];
       }
-      print('Buyer price: $buyerPrice');
     } catch (e){
       print('Error getting price $e');
     }
