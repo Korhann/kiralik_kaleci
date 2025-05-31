@@ -67,6 +67,7 @@ dependencies:
   "iyzipay": 0.0.1+15
   network_info_plus: ^6.1.4
   firebase_ai: ^2.0.0
+  webview_flutter: ^4.13.0
 
   
 dev_dependencies:

@@ -11,6 +11,7 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:http/http.dart' as http;
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentPage extends StatefulWidget {
   final String? sellerUid;
@@ -50,7 +51,6 @@ class _PaymentPageState extends State<PaymentPage> {
   late int buyerPrice;
   late String buyerIpNo;
   late String buyerPhoneNo;
-
 
   @override
   void initState() {
@@ -318,6 +318,18 @@ class _PaymentPageState extends State<PaymentPage> {
       }),
     );
       if (response.statusCode == 200) {
+        // request paymentPageUrl diye değer döndürüyor
+        final data = jsonDecode(response.body);
+        final paymentPageUrl = data['paymentPageUrl'];
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Scaffold(
+              appBar: AppBar(title: Text('Ödeme')),
+              body: WebPage(paymentPageUrl: paymentPageUrl)
+            ),
+          ),
+        );
       await updatePaymentStatus();
       setState(() {
         isPaymentLoading = false;
@@ -516,5 +528,41 @@ class _PaymentPageState extends State<PaymentPage> {
     } catch (e) {
       print('Error getting phone no $e');
     }
+  }
+}
+
+//todo: yarın domain al ve iyzipay.js e kendi domain bilgini gir
+class WebPage extends StatefulWidget {
+  final paymentPageUrl;
+  const WebPage({super.key, required this.paymentPageUrl});
+
+  @override
+  State<WebPage> createState() => _WebPageState();
+}
+class _WebPageState extends State<WebPage> {
+  late final WebViewController controller;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted) 
+      ..setBackgroundColor(const Color(0x00000000)) 
+      ..setNavigationDelegate( 
+        NavigationDelegate(
+          // Called when a new page starts loading
+          onPageStarted: (url) {},
+          // Called when the page finishes loading
+          onPageFinished: (url) {},
+        ),
+      )
+    ..loadRequest(Uri.parse(widget.paymentPageUrl)); 
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: WebViewWidget(controller: controller),
+    );
   }
 }
