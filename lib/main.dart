@@ -95,20 +95,24 @@ void setupNotificationListener() {
           case "payment":
             if (ModalRoute.of(context)?.settings.name != "/paymentPage") {
               String sellerUid = data?['sellerUid'] ?? '';
+              String buyerUid = data?['buyerUid'] ?? '';
               String selectedDay = data?['selectedDay'] ?? '';
               String selectedHour = data?['selectedHour'] ?? '';
               String selectedField = data?['selectedField'] ?? '';
-              String docId = data?['docId'] ?? '';
+              String sellerDocId = data?['sellerDocId'] ?? '';
+              String buyerDocId = data?['buyerDocId'] ?? '';
 
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => PaymentPage(
                     sellerUid: sellerUid,
+                    buyerUid: buyerUid,
                     selectedDay: selectedDay,
                     selectedHour: selectedHour,
                     selectedField: selectedField,
-                    docId: docId,
+                    sellerDocId: sellerDocId,
+                    buyerDocId: buyerDocId,
                   ),
                 ),
               );

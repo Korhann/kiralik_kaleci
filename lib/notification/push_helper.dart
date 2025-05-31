@@ -35,7 +35,8 @@ class PushHelper {
     required String selectedDay,
     required String selectedHour,
     required String selectedField,
-    required String docId
+    required String buyerDocId,
+    required String sellerDocId
   }) async{
     final userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(buyerUid).get();
     final userData = userSnapshot.data();
@@ -53,7 +54,8 @@ class PushHelper {
             'selectedDay':selectedDay,
             'selectedHour':selectedHour,
             'selectedField':selectedField,
-            'docId' : docId
+            'buyerDocId': buyerDocId,
+            'sellerDocId' : sellerDocId,
           }
         );
       }

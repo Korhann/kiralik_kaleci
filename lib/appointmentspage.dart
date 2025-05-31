@@ -57,6 +57,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   List<Map<String, dynamic>> appointments = [];
   List<String>? docs;
   Color paymentColor = Colors.green;
+  // notification göndermek için
+  late String sellerUid;
+  late String sellerDocId;
 
   late Future<void> fetchAppts;
 
@@ -298,8 +301,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
       if (documentSnapshot.exists) {
         Map<String, dynamic>? appointmentData = documentSnapshot.data();
-        if (appointmentData != null &&
-            appointmentData.containsKey('appointmentDetails')) {
+        if (appointmentData != null && appointmentData.containsKey('appointmentDetails')) {
           String buyerUid = appointmentData['appointmentDetails']['buyerUid'];
           String buyerDocId = appointmentData['appointmentDetails']['buyerDocId'];
 
@@ -315,14 +317,19 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               .doc(buyerDocId)
               .update({'appointmentDetails.status': 'approved'});
 
+          
+
           // alıcı ödeme yapması için bildirim gönder
+          //todo: sellerUid ve sellerDocId yi göndermem lazım verification kontrolü için (manuel)
           await PushHelper.sendPushPayment(
               sellerUid: currentuser,
               buyerUid: buyerUid,
               selectedDay: day,
               selectedHour: hour,
               selectedField: field,
-              docId: buyerDocId);
+              buyerDocId: buyerDocId,
+              sellerDocId: docId
+            );
         } else {
           print('appointment details does not exist');
         }
@@ -862,7 +869,6 @@ bool isNightHour(String startTime) {
 }
 
 bool isStartTimePast(DateTime now, String startTime, bool isNightHour) {
-  print('start time is $startTime');
   final nowInMinutes = now.hour * 60 + now.minute;
 
   final parts = startTime.split(':');
@@ -872,9 +878,6 @@ bool isStartTimePast(DateTime now, String startTime, bool isNightHour) {
 
   // Gece saati ise ertesi günmüş gibi davranıyor
   if (isNightHour) return false;
-
-  print('Current time in minutes: $nowInMinutes');
-  print('Appointment start time in minutes: $startInMinutes');
 
   return nowInMinutes >= startInMinutes;
 }
@@ -946,14 +949,14 @@ class paymentButton extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>PaymentPage (
+            builder: (context) =>PaymentPage(
               sellerUid:appointmentDetails['selleruid'],
               sellerDocId: appointmentDetails['sellerDocId'],
               buyerUid: currentUser,
               selectedDay:appointmentDetails['day'],
               selectedHour:appointmentDetails['hour'],
               selectedField:appointmentDetails['field'],
-              docId: docId,
+              buyerDocId: docId,
             ),
           ),
         );

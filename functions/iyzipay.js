@@ -7,20 +7,10 @@ const app = express();
 app.use(express.json());
 
 const iyzipay = new Iyzipay({
-  apiKey: 'sandbox-uqMvvyPPj6r8KBDPXclVAGoJksUA0els',
-  secretKey: 'sandbox-sS6Pr2ejBlxrbE7Uc2TD2lL9CvBQ51ZC',
-  uri: 'https://sandbox-api.iyzipay.com'
+  apiKey: 'qcEfRXmHiUVZyO76OH7U3FT6MR6gBi2p',
+  secretKey: 'NddUCV45JbJVWqaUX3UlIq30rZtjJIMV',
+  uri: 'https://api.iyzipay.com'
 });
-
-/*
-  You can add custom variables such as userId and appointmentId to the conversationId or basketId fields.
-  Iyzico's panel will show conversationId and basketId in the transaction details.
-  Example usage:
-    - conversationId: `${userId}_${appointmentId}`
-    - basketId: `${appointmentId}`
-  Make sure to set these values in your POST body and use them in the request object.
-*/
-
 
 app.post('/', async (req, res) => {
   const { name, surname, email, phone, ip , price , sellerId, sellerDocId} = req.body;

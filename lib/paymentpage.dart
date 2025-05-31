@@ -19,7 +19,7 @@ class PaymentPage extends StatefulWidget {
   final String? selectedDay;
   final String? selectedHour;
   final String? selectedField;
-  final String? docId;
+  final String? buyerDocId;
   const PaymentPage({
     super.key,
     this.sellerUid,
@@ -28,7 +28,7 @@ class PaymentPage extends StatefulWidget {
     this.selectedDay,
     this.selectedHour,
     this.selectedField,
-    this.docId
+    this.buyerDocId
   });
 
   @override
@@ -57,8 +57,6 @@ class _PaymentPageState extends State<PaymentPage> {
     // TODO: implement initState
     super.initState();
     getPaymentInformation();
-    print(widget.sellerUid);
-    print(widget.sellerDocId);
   }
 
   @override
@@ -344,7 +342,7 @@ class _PaymentPageState extends State<PaymentPage> {
       .collection('Users')
       .doc(currentuser)
       .collection('appointmentbuyer')
-      .doc(widget.docId)
+      .doc(widget.buyerDocId)
       .update({
         'appointmentDetails.paymentStatus' : 'done'
       });
@@ -359,12 +357,12 @@ class _PaymentPageState extends State<PaymentPage> {
       .collection('Users')
       .doc(currentuser)
       .collection('appointmentbuyer')
-      .doc(widget.docId);
+      .doc(widget.buyerDocId);
 
       final snapshot = await documentReference.get();
       final day = snapshot['appointmentDetails']['day'] ?? '';
       final startTime = snapshot['appointmentDetails']['startTime'];
-      await CheckDaysPastUser.isPast(day, widget.docId!,startTime);
+      await CheckDaysPastUser.isPast(day, widget.buyerDocId!,startTime);
     } catch (e) {
       print('Error checking hour $e');
     }
@@ -399,7 +397,7 @@ class _PaymentPageState extends State<PaymentPage> {
       .collection('Users')
       .doc(currentuser)
       .collection('appointmentbuyer')
-      .doc(widget.docId);
+      .doc(widget.buyerDocId);
 
       final snapshot = await documentReference.get();
       final isPastDay = snapshot['appointmentDetails']['isPastDay'] ?? false;
@@ -449,7 +447,7 @@ class _PaymentPageState extends State<PaymentPage> {
       .collection('Users')
       .doc(currentuser)
       .collection('appointmentbuyer')
-      .doc(widget.docId)
+      .doc(widget.buyerDocId)
       .update({
         'appointmentDetails.paymentStatus' : 'taken'
       });
@@ -463,7 +461,7 @@ class _PaymentPageState extends State<PaymentPage> {
       .collection('Users')
       .doc(currentuser)
       .collection('appointmentbuyer')
-      .doc(widget.docId)
+      .doc(widget.buyerDocId)
       .update({
         'appointmentDetails.isPastDay' : 'true'
       });
