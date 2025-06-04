@@ -1570,6 +1570,12 @@ class priceField extends StatelessWidget {
                   validator: (price) {
                     if (price == null || price.isEmpty) {
                       return  "Fiyat bilgisi girmelisiniz!";
+                    } 
+                    final value = int.tryParse(price);
+                    if (value == null) {
+                      return 'Fiyat bilgisi girmelisiniz';
+                    } if (value < 250) {
+                      return "Fiyat 250 TL'den az olamaz!";
                     } else {
                       return null;
                     }
@@ -1609,7 +1615,15 @@ class priceFieldAfterMidnight extends StatelessWidget {
                   validator: (price) {
                     if (price == null || price.isEmpty) {
                       return  "Fiyat bilgisi girmelisiniz!";
-                    } else {
+                    } 
+                    final value = int.tryParse(price);
+                    if (value == null) {
+                      return "Geçerli bir sayı giriniz!";
+                    }
+                    if (value < 250) {
+                      return "Fiyat 250 TL'den az olamaz!";
+                    }
+                    else {
                       return null;
                     }
                   },

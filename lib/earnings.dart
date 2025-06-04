@@ -99,6 +99,7 @@ class _EarningsPageState extends State<EarningsPage> {
     }
     setState(() {
       balance = total.toInt();
+      print('balance is $balance');
     });
     } catch (e) {
       print('error getting price $e');

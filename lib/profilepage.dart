@@ -10,6 +10,7 @@ import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/approvedfields.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/policiespage.dart';
 import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
@@ -44,6 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     saveUserType('user');
     userorseller = false;
+    PushHelper.updateOneSignal();
   }
 
   @override

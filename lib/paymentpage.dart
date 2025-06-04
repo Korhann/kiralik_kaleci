@@ -52,6 +52,8 @@ class _PaymentPageState extends State<PaymentPage> {
   late String buyerIpNo;
   late String buyerPhoneNo;
 
+  late String token;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -164,6 +166,7 @@ class _PaymentPageState extends State<PaymentPage> {
                   bool isPast = await checkIfHourPast();
                   if (hourTaken == false && isPast == false) {
                     bool isSuccess = await _processPayment();
+                    print('is success here $isSuccess');
                     await sendNotificationToSeller();
                     if (isSuccess) {
                       await _markHourTaken();
@@ -297,13 +300,15 @@ class _PaymentPageState extends State<PaymentPage> {
       }
     );
   }
+
   //todo: sandbox ta fiyatı 1.20 olarak gösteriyor, normalde de öyle mi diye sor
-  Future<bool> _processPayment() async {
-    try {
-      setState(() {
-        isPaymentLoading = true;
-      });
-      final response = await http.post(Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api/checkout-form'),
+  Future<bool> _processPayment() async { 
+  try {
+    setState(() {
+      isPaymentLoading = true;
+    });
+    final response = await http.post(
+      Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api/checkout-form'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': buyerName,
@@ -314,42 +319,67 @@ class _PaymentPageState extends State<PaymentPage> {
         'ip': buyerIpNo,
         'sellerId': widget.sellerUid,
         'buyerId': widget.buyerUid,
-        'sellerDocId': widget.sellerDocId 
+        'sellerDocId': widget.sellerDocId,
+        'buyerDocId': widget.buyerDocId, 
       }),
     );
-      if (response.statusCode == 200) {
-        // request paymentPageUrl diye değer döndürüyor
-        final data = jsonDecode(response.body);
-        final paymentPageUrl = data['paymentPageUrl'];
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Scaffold(
-              appBar: AppBar(title: Text('Ödeme')),
-              body: WebPage(paymentPageUrl: paymentPageUrl)
-            ),
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final paymentPageUrl = data['paymentPageUrl'];
+      final token = data['token'];
+      print('token is not $token');
+      print('url payment page is $paymentPageUrl');
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: Text('Ödeme')),
+            body: WebPage(paymentPageUrl: paymentPageUrl, token: token),
           ),
-        );
-      await updatePaymentStatus();
-      setState(() {
-        isPaymentLoading = false;
-      });
-      return true;
-      } else {
-        print('Payment error: ${response.body}');
+        ),
+      );
+      if (result == true) {
+        //bool isPaid = await waitForPaymentStatus(widget.buyerDocId!);
+        //todo : sonradan güvenli bir şekilde iyzipay de yap
+        bool isPaid = await updatePaymentStatus();
         setState(() {
           isPaymentLoading = false;
         });
-        return false;
+        return isPaid;
       }
-    } catch (e) {
-      print('Payment not succesfull $e');
+    } else {
+      print('Payment error: ${response.body}');
+      setState(() {
+        isPaymentLoading = false;
+      });
+      return false;
     }
-    return false;
+  } catch (e) {
+    print('Payment not succesfull $e');
   }
+  return false;
+}
 
+// Firestore'da paymentStatus 'done' olana kadar bekle
+Future<bool> waitForPaymentStatus(String docId) async {
+  for (int i = 0; i < 10; i++) { // 10 defa dene, 2 saniye arayla
+    await Future.delayed(Duration(seconds: 2));
+    final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentuser)
+      .collection('appointmentbuyer')
+      .doc(docId)
+      .get();
+    final status = doc['appointmentDetails']['paymentStatus'];
+    if (status == 'done') {
+      return true;
+    }
+  }
+  return false;
+}
 
-  Future<void> updatePaymentStatus() async {
+  //todo: bunu kullanıcaksan sonradan iyzipay.js ile update et(daha güvenilir)
+  Future<bool> updatePaymentStatus() async {
     try {
       await _firestore
       .collection('Users')
@@ -359,8 +389,10 @@ class _PaymentPageState extends State<PaymentPage> {
       .update({
         'appointmentDetails.paymentStatus' : 'done'
       });
+      return true;
     } catch (e) {
       print('Error updating payment status $e');
+      return false;
     }
   }
 
@@ -524,41 +556,76 @@ class _PaymentPageState extends State<PaymentPage> {
       DocumentSnapshot snapshot = await _firestore.collection('Users').doc(currentuser).get();
       var data = snapshot.data() as Map<String,dynamic>;
       buyerPhoneNo = data['phoneNo'];
-      print(buyerPhoneNo);
     } catch (e) {
       print('Error getting phone no $e');
     }
   }
 }
 
-//todo: yarın domain al ve iyzipay.js e kendi domain bilgini gir
+
 class WebPage extends StatefulWidget {
-  final paymentPageUrl;
-  const WebPage({super.key, required this.paymentPageUrl});
+  final String paymentPageUrl;
+  final String token;
+  const WebPage({super.key, required this.paymentPageUrl, required this.token});
 
   @override
   State<WebPage> createState() => _WebPageState();
 }
+
 class _WebPageState extends State<WebPage> {
   late final WebViewController controller;
+  final callbackUrl = "https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api/iyzico-callback";
+  bool _isPopped = false; 
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted) 
-      ..setBackgroundColor(const Color(0x00000000)) 
-      ..setNavigationDelegate( 
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
         NavigationDelegate(
-          // Called when a new page starts loading
-          onPageStarted: (url) {},
-          // Called when the page finishes loading
-          onPageFinished: (url) {},
+          onPageStarted: (url) async {
+            print('onPageStarted: $url');
+          },
+          onPageFinished: (url) async {
+            print('onPageFinished: $url');
+            if (_isPopped) return;
+            if (url.startsWith(callbackUrl)) {
+              final uri = Uri.parse(url);
+              Navigator.pop(context, true);
+              if (widget.token.isNotEmpty) {
+                final response = await http.post(
+                  Uri.parse('https://europe-west2-kiralikkaleci-21f26.cloudfunctions.net/api/check-payment'),
+                  headers: {'Content-Type': 'application/json'},
+                  body: jsonEncode({'token': widget.token}),
+                );
+                if (response.statusCode == 200) {
+                  final result = jsonDecode(response.body);
+                  if (result['status'] == 'success') {
+                    _isPopped = true;
+                    if (mounted) {
+                      Navigator.pop(context, true);
+                    }
+                  } else {
+                    _isPopped = true;
+                    Navigator.pop(context, false);
+                  }
+                } else {
+                  _isPopped = true;
+                  Navigator.pop(context, false);
+                }
+              } else {
+                _isPopped = true;
+                Navigator.pop(context, false);
+              }
+            }
+          },
         ),
       )
-    ..loadRequest(Uri.parse(widget.paymentPageUrl)); 
+      ..loadRequest(Uri.parse(widget.paymentPageUrl));
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

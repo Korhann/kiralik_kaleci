@@ -7,6 +7,7 @@ import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/mainpage.dart';
+import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/settingsMenu.dart';
@@ -40,6 +41,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
     super.initState();
     getUserDetails();
     saveUserType('seller');
+    PushHelper.updateOneSignal();
     userorseller = true;
   }
 
