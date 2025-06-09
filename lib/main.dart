@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'appointmentspage.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +41,19 @@ void main() async {
   OneSignal.initialize("de08ba6c-7f05-4304-90ac-a3c3c1f6b94d");
   await PushHelper.updateOneSignal();
 
-// The promptForPushNotificationsWithUserResponse function will show the iOS or Android push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
+  // firebase crashlytics
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    FirebaseCrashlytics.instance.setUserIdentifier(FirebaseAuth.instance.currentUser?.uid ?? 'anonymous');
+  };
+
+  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  // The promptForPushNotificationsWithUserResponse function will show the iOS or Android push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
   OneSignal.Notifications.requestPermission(true);
 
   setupNotificationListener();

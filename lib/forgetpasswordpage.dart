@@ -4,6 +4,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class ForgetPassword extends StatefulWidget {
   const ForgetPassword({super.key});
@@ -45,8 +46,8 @@ class _ForgetPasswordState extends State<ForgetPassword> {
         SnackBar(content: Text('Email gönderildi')),
       );
       }
-    } catch (e) {
-      print('Error $e');
+    } catch (e, stack) {
+      reportErrorToCrashlytics(e, stack, reason: 'password reset failed');
     }
   }
 

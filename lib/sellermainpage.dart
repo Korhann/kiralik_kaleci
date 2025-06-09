@@ -10,6 +10,7 @@ import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/sellerdirectmessages.dart';
 import 'package:kiralik_kaleci/sellerprofilepage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SellerMainPage extends StatefulWidget {
@@ -157,8 +158,8 @@ class SellerMainPageState extends State<SellerMainPage> {
 
       _listeners.add(subscription);
     }
-  } catch (e) {
-    print('Error is $e');
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(e, stack, reason: 'Message counter failed');
   }
 }
 

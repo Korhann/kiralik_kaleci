@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/signuppage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:kiralik_kaleci/userorseller.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 
 //TODO: ANİMASYON EKLENECEK !!!
@@ -59,6 +60,12 @@ class _LogInState extends State<LogIn> {
         });
         print('Girdiğiniz bilgiler geçersiz');
       }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'Login in failed',
+      );
     }
   }
 
@@ -74,9 +81,10 @@ class _LogInState extends State<LogIn> {
       );
 
       return await _auth.signInWithCredential(credential);
-    } catch (error) {
-      return null;
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(e, stack, reason: 'Google sign in failed');
     }
+    return null;
   }
 
   void forgetPassword() {
@@ -279,7 +287,6 @@ class _LogInState extends State<LogIn> {
                       PlatformElevatedButton(
                         onPressed: () async{
                           if (formkey.currentState!.validate()) {
-                            // await Firebaseanalytics().firebasePaymentNotification('sjfl', 'sfls');
                             await signInUser();
                           }
                         },

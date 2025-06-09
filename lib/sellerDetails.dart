@@ -13,6 +13,7 @@ import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({
@@ -55,8 +56,6 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   bool isFavorited = false;
   final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
   bool isEmpty = false;
-
-  //Stream<QuerySnapshot<Map<String, dynamic>>>? userStream;
   late Future<void> _daysNameFuture;
 
   @override
@@ -68,19 +67,27 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
 
   Future<void> _checkIfFavorited() async {
     final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserUid != null && currentUserUid.isNotEmpty) {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(currentUserUid)
-          .collection('favourites')
-          .where('sellerUid', isEqualTo: widget.sellerUid)
-          .get();
+    try {
+      if (currentUserUid != null && currentUserUid.isNotEmpty) {
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentUserUid)
+            .collection('favourites')
+            .where('sellerUid', isEqualTo: widget.sellerUid)
+            .get();
 
-      if (mounted) {
-        setState(() {
-        isFavorited = snapshot.docs.isNotEmpty;
-      });
+        if (mounted) {
+          setState(() {
+            isFavorited = snapshot.docs.isNotEmpty;
+          });
+        }
       }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'sellerDetails _checkIfFavorited error for user $currentUserUid',
+      );
     }
   }
 
@@ -402,136 +409,99 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
   }
 
   //todo: Burayada saate göre geçme mantığını uygula
-  Future<void> _getDaysName(String userId) async{
-  DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(userId).get();
+   Future<void> _getDaysName(String userId) async {
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(userId).get();
 
-  if (snapshot.exists) {
-    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-    if (data.isNotEmpty && data.containsKey('sellerDetails')) {
-      Map<String, dynamic> sellerDetails = data['sellerDetails'];
-      if (sellerDetails.containsKey('selectedHoursByDay')) {
-        Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
+      if (snapshot.exists) {
+        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+        if (data.isNotEmpty && data.containsKey('sellerDetails')) {
+          Map<String, dynamic> sellerDetails = data['sellerDetails'];
+          if (sellerDetails.containsKey('selectedHoursByDay')) {
+            Map<String, dynamic> selectedHoursByDay = sellerDetails['selectedHoursByDay'];
 
-        List<String> userDays = orderedDays.where((day) {
-          return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
-        }).toList();
+            List<String> userDays = orderedDays.where((day) {
+              return selectedHoursByDay.containsKey(day) && selectedHoursByDay[day].isNotEmpty;
+            }).toList();
 
-        if (mounted) {
-          setState(() {
-          days.clear();
-          days.addAll(userDays);
-          hoursByDay.clear(); // Clean up for another user
-          hourColors.clear(); // Reset hourColors for new data
-        });
+            if (mounted) {
+              setState(() {
+                days.clear();
+                days.addAll(userDays);
+                hoursByDay.clear(); // Clean up for another user
+                hourColors.clear(); // Reset hourColors for new data
+              });
+            }
+          }
         }
-
-        // Get the current day
-        // final now = DateTime.now().toUtc().add(const Duration(hours: 3));
-        // final int currentDayIndex = now.weekday - 1; // 0 pazartesi, 6 pazar
-        
-        // for (int i = 0; i < orderedDays.length; i++) {
-        //   final day = orderedDays[i];
-        //   if (!selectedHoursByDay.containsKey(day)) continue;
-
-        //   List<dynamic> hourList = selectedHoursByDay[day] as List;
-        //   List<String> hourTitles = [];
-        //   for (var hour in hourList) {
-        //     Map<String, dynamic> hourMap = hour as Map<String, dynamic>;
-        //     String title = hourMap['title'];
-        //     bool istaken = hourMap['istaken'];
-        //     String? takenby = hourMap['takenby'];
-        //     String startTime = title.split('-')[0].toString();
-
-        //     // Determine the color based on istaken and whether the day is past
-        //     List<String> titles = ['00:00-01:00','01:00-02:00','02:00-03:00'];
-        //     bool contains = titles.contains(title);
-        //     String dayHourKey = '$day $title';
-        //     bool isPastDay = i < currentDayIndex;
-        //     bool sameDay = i == currentDayIndex;
-
-
-        //     if (isPastDay) {
-        //       // kesinlikle geçmiş olarak işaretle
-        //       await markPastDayAsTaken(userId: userId, day: day, title: title);
-        //     } else if (sameDay && !contains) {
-        //       // saate göre geçme methodu yap
-        //       final isPastHour = isStartTimePast(now, startTime);
-        //       if (isPastHour) {
-        //         await markSingleHourAsTaken(userId: userId, day: day, title: title);
-        //       }
-        //     }
-
-        //     // duruma göre renk belirliyor
-        //     if (istaken) {
-        //       if (takenby == currentUserUid) {
-        //         hourColors[dayHourKey] = Colors.green;
-        //       } else {
-        //         hourColors[dayHourKey] = Colors.grey.shade600;  
-        //       }
-        //     } else {
-        //       hourColors[dayHourKey] = Colors.cyan;
-        //     }
-        //     hourTitles.add(title);
-        //   }
-        
-        // if (mounted) {
-        //   setState(() {
-        //     hoursByDay[day] = hourTitles;
-        //   });
-        // }
-        // }
       }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'sellerDetails _getDaysName error for user $userId',
+      );
     }
   }
-}
 // TODO: Kontrol et geçmiş saatler ilk açılınca renk değiştiriyor mu diye
 Future<void> markPastDayAsTaken({required String userId,required String day,required String title}) async {
+  try {
+    final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+    List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
+    bool needsUpdate = false;
+    List<dynamic> updatedData = data.map((hour) {
+      if (hour['istaken'] == false) {
+        needsUpdate = true;
+        return {
+          'title': hour['title'],
+          'istaken': true,
+          'takenby': 'empty'
+        };
+      } else {
+        return hour;
+      }
+    }).toList();
 
-  final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-  List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
-  bool needsUpdate = false;
-  List<dynamic> updatedData = data.map((hour) {
-    if (hour['istaken'] == false) {
-      needsUpdate = true;
-      return {
-        'title': hour['title'],
-        'istaken': true,
-        'takenby': 'empty'
-      };
-    } else {
-      return hour;
+    if (needsUpdate) {
+      await FirebaseFirestore.instance.collection('Users').doc(userId).update({
+        'sellerDetails.selectedHoursByDay.$day': updatedData
+      });
     }
-  }).toList();
-
-  if (needsUpdate) {
-    await FirebaseFirestore.instance.collection('Users').doc(userId).update({
-    'sellerDetails.selectedHoursByDay.$day': updatedData
-  });
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(
+      e,
+      stack,
+      reason: 'sellerDetails markPastDayAsTaken error for user $userId',
+    );
   }
 }
 }
 
 Future<void> markSingleHourAsTaken({required String userId, required String day, required String title}) async {
   try {
-  final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-  List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
+    final userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+    List<dynamic> data = userDoc.data()?['sellerDetails']['selectedHoursByDay'][day] ?? [];
 
-  List<dynamic> updatedData = data.map((hour) {
-    if (hour['title'] == title && hour['istaken'] == false) {
-      return {
-        'title': hour['title'],
-        'istaken': true,
-        'takenby': 'empty',
-      };
-    }
-    return hour;
-  }).toList();
+    List<dynamic> updatedData = data.map((hour) {
+      if (hour['title'] == title && hour['istaken'] == false) {
+        return {
+          'title': hour['title'],
+          'istaken': true,
+          'takenby': 'empty',
+        };
+      }
+      return hour;
+    }).toList();
 
-  await FirebaseFirestore.instance.collection('Users').doc(userId).update({
-    'sellerDetails.selectedHoursByDay.$day': updatedData,
-  });
-  } catch (e) {
-    print('Error getting the hour $e');
+    await FirebaseFirestore.instance.collection('Users').doc(userId).update({
+      'sellerDetails.selectedHoursByDay.$day': updatedData,
+    });
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(
+      e,
+      stack,
+      reason: 'sellerDetails markSingleHourAsTaken error for user $userId',
+    );
   }
 }
 
@@ -714,7 +684,8 @@ class _showImageState extends State<showImage> {
 
   void _toggleFavorite(Map<String, dynamic> sellerDetails, String sellerUid) async {
     final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserUid != null && currentUserUid.isNotEmpty) {
+    try {
+      if (currentUserUid != null && currentUserUid.isNotEmpty) {
       if (_isFavorited) {
         // Remove from favorites
         QuerySnapshot snapshot = await FirebaseFirestore.instance
@@ -741,6 +712,9 @@ class _showImageState extends State<showImage> {
           _isFavorited = true;
         });
       }
+    }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(e, stack, reason: 'SellerDetails _toggleFavorite error for user $currentUserUid');
     }
   }
 }

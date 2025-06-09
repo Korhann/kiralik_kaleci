@@ -10,6 +10,7 @@ import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
 
@@ -42,20 +43,21 @@ class _GetUserDataState extends State<GetUserData> {
   Future<void> getUserStream() async {
     try {
       _userStream = _firestore
-          .collection("Users")
-          .where('sellerDetails', isNotEqualTo: null)
-          .snapshots();
+        .collection("Users")
+        .where('sellerDetails', isNotEqualTo: null)
+        .snapshots();
       if (mounted) {
         setState(() {
           isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stack) {
       if (mounted) {
         setState(() {
           isLoading = true;
         });
       }
+      await reportErrorToCrashlytics(e, stack, reason: 'Search page getUserStream error for the user ${FirebaseAuth.instance.currentUser!.uid}');
     }
   }
 
@@ -129,22 +131,29 @@ class _GetUserDataState extends State<GetUserData> {
   }
 
   void _navigateToAppsPage() async {
-    await Navigator.push(
+    try {
+      await Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => AppointmentsPage(whereFrom: 'homePage')));
+    } catch (e, stack) {
+      reportErrorToCrashlytics(e, stack, reason: 'failed navigation to appsPage');
+    }
   }
 
-  void _handleCardTap(BuildContext context, Map<String, dynamic> sellerDetails,
-      String sellerUid) {
-    sharedValues.sellerUid = sellerUid;
-    Navigator.push(
+  void _handleCardTap(BuildContext context, Map<String, dynamic> sellerDetails,String sellerUid) {
+    try {
+      sharedValues.sellerUid = sellerUid;
+      Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => SellerDetailsPage(
             sellerDetails: sellerDetails, sellerUid: sellerUid, wherFrom: '',),
       ),
     );
+    } catch (e, stack) {
+      reportErrorToCrashlytics(e, stack, reason: 'Search page card tap error ${FirebaseAuth.instance.currentUser!.uid}');
+    }
   }
 
   void runFilters(final filter) {
@@ -188,8 +197,8 @@ class _GetUserDataState extends State<GetUserData> {
     } else if (maxFilter != null) {
       query = query.where('sellerDetails.sellerPrice',isLessThanOrEqualTo: maxFilter!);
     }
-    } catch (e) {
-      print('Error with the filtering $e');
+    } catch (e, stack) {
+      reportErrorToCrashlytics(e, stack, reason: 'apply filter error ${FirebaseAuth.instance.currentUser!.uid}');
     }
 
     setState(() {

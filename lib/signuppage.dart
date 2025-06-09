@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
@@ -7,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/loginpage.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:kiralik_kaleci/userorseller.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'styles/colors.dart';
 import 'mainpage.dart';
 
@@ -63,8 +65,8 @@ class _SignUpState extends State<SignUp> {
           _emailInUse = true;
         });
       }
-    } catch (e) {
-      print(e);
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(e, stack, reason: 'Sign up failed');
     }
   }
 

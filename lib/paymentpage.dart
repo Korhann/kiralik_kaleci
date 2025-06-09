@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
@@ -10,6 +11,7 @@ import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:http/http.dart' as http;
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -301,7 +303,6 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-  //todo: sandbox ta fiyatı 1.20 olarak gösteriyor, normalde de öyle mi diye sor
   Future<bool> _processPayment() async { 
   try {
     setState(() {
@@ -348,14 +349,13 @@ class _PaymentPageState extends State<PaymentPage> {
         return isPaid;
       }
     } else {
-      print('Payment error: ${response.body}');
       setState(() {
         isPaymentLoading = false;
       });
       return false;
     }
-  } catch (e) {
-    print('Payment not succesfull $e');
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(e, stack, reason:'Payment failed for buyerId: ${widget.buyerUid}, buyerDocId: ${widget.buyerDocId}');
   }
   return false;
 }

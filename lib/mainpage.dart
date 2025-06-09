@@ -11,6 +11,7 @@ import 'package:kiralik_kaleci/directmessages.dart';
 import 'package:kiralik_kaleci/homepage.dart';
 import 'package:kiralik_kaleci/profilepage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
@@ -59,7 +60,6 @@ Widget build(BuildContext context) {
       if (snapshot.hasData) {
         // kullanıcı giriş yaptı
         return Scaffold(
-          
           resizeToAvoidBottomInset: true,
           body: screens()[_currentIndex],
           bottomNavigationBar: BottomNavyBar(
@@ -185,8 +185,8 @@ Widget build(BuildContext context) {
 
       _listeners.add(subscription);
     }
-  } catch (e) {
-    print('Error is $e');
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(e, stack, reason: 'Message counter failed');
   }
 }
 

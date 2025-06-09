@@ -13,6 +13,7 @@ import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class ApptRequest extends StatefulWidget {
   final String sellerUid;
@@ -231,6 +232,7 @@ class _ApptRequestState extends State<ApptRequest> {
   }
 
   Future<void> markHourAsTaken(String day, String hourTitle) async {
+    try {
     DocumentReference userRef = FirebaseFirestore.instance.collection("Users").doc(widget.sellerUid);
 
     // Get the existing document
@@ -261,6 +263,9 @@ class _ApptRequestState extends State<ApptRequest> {
           }
         }
       }
+    }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(e, stack, reason: 'apptRequest markHourAsTaken error for sellerUid: ${widget.sellerUid}');
     }
   }
 
@@ -303,8 +308,12 @@ class _ApptRequestState extends State<ApptRequest> {
       'appointmentDetails': appointmentDetails
     });
     return buyerDocRef.id;
-    } catch (e){
-      print('Error appointment buyer $e');
+    } catch (e, stack){
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'apptRequest appointmentBuyer error for sellerUid: ${widget.sellerUid}',
+      );
       return '';
     }
   }
@@ -360,8 +369,12 @@ class _ApptRequestState extends State<ApptRequest> {
     .collection('appointmentbuyer')
     .doc(buyerDocId)
     .update({'appointmentDetails.sellerDocId' : sellerDocRef.id});
-  } catch (e) {
-    print('Error seller appointment $e');
+  } catch (e,stack) {
+    await reportErrorToCrashlytics(
+      e,
+      stack,
+      reason: 'apptRequest appointmentSeller error for sellerUid: ${widget.sellerUid}',
+    );
   }
   } 
 
@@ -374,8 +387,12 @@ class _ApptRequestState extends State<ApptRequest> {
       if (mounted) {
         Showalert(context: context, text: 'Randevu talebi gönderilmiştir').showSuccessAlert();
       }
-    } catch (e) {
-      print('Error sending notification $e');
+    } catch (e,stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'apptRequest sendRequest error for sellerUid: ${widget.sellerUid}',
+      );
       if (mounted){
         Showalert(context: context, text: 'Ooops...').showErrorAlert();
       }
