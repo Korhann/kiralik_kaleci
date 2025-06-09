@@ -11,6 +11,7 @@ import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'globals.dart';
 
 //todo: Saat 00:00 ı geçmiş olarak alıyor aynı gün içindeyse
@@ -88,8 +89,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     for (final doc in querySnapshot.docs) {
       doc.reference.update({'appointmentDetails.isSeen':true});
     }
-    } catch (e) {
-      print('Error seen buyer $e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'appointmentspage markSeenAsTrueUser error for user $currentuser',
+      );
     }
   }
 
@@ -105,8 +110,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     for (final doc in querySnapshot.docs) {
       doc.reference.update({'appointmentDetails.isSeen':true});
     }
-    } catch (e) {
-      print('Error seen seller');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'appointmentspage markSeenAsTrueSeller error for user $currentuser',
+      );
     }
   }
 
@@ -340,8 +349,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       setState(() {
         appointments[index]['appointmentDetails']['status'] = 'approved';
       });
-    } catch (e) {
-      print('Error approving appointment: $e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'appointmentspage approveAppointment error for user $currentuser, docId: $docId',
+      );
     }
   }
 
@@ -386,8 +399,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           appointments[index]['appointmentDetails']['status'] = 'rejected';
         });
       }
-    } catch (e) {
-      print('Error rejecting appointment: $e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'appointmentspage rejectAppointment error for user $currentuser, docId: $docId',
+      );
     }
   }
 

@@ -10,6 +10,7 @@ import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -65,37 +66,60 @@ class _FilterPageState extends State<FilterPage> {
 
   // if i dont run fetch cities first there is no element
   Future<void> runMethods() async {
-    await setPrefs();
-    await fetchCities();
-    await loadPrefs();
-    onCitySelected('İstanbul');
+    try {
+      await setPrefs();
+      await fetchCities();
+      await loadPrefs();
+      await onCitySelected('İstanbul');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'filterpage runMethods error',
+      );
+    }
   }
 
-  Future<void> setPrefs() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selectedCity', 'İstanbul');
+  Future<void> setPrefs() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('selectedCity', 'İstanbul');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'filterpage setPrefs error',
+      );
+    }
   }
 
   void clearAllFilters() async {
-    // to clear the shared prefs
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('selectedCity');
-    await prefs.remove('selectedDistrict');
-    await prefs.remove('selectedField');
-    setState(() {
-      nameFilter = null;
-      cityFilter = null;
-      districtFilter = null;
-      fieldFilter = null;
-      minFilter = null;
-      maxFilter = null;
-      _nameController.clear();
-      _cityController.clear();
-      _districtController.clear();
-      _minPriceController.clear();
-      _maxPriceController.clear();
-      clearDays();
-    });
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove('selectedCity');
+      await prefs.remove('selectedDistrict');
+      await prefs.remove('selectedField');
+      setState(() {
+        nameFilter = null;
+        cityFilter = null;
+        districtFilter = null;
+        fieldFilter = null;
+        minFilter = null;
+        maxFilter = null;
+        _nameController.clear();
+        _cityController.clear();
+        _districtController.clear();
+        _minPriceController.clear();
+        _maxPriceController.clear();
+        clearDays();
+      });
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'filterpage clearAllFilters error',
+      );
+    }
   }
 
   void clearDays() {
@@ -369,44 +393,59 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Future<void> fetchCities() async {
-    var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
-    if (response.statusCode == 200) {
-      final List<dynamic> citiesData = jsonDecode(response.body)['data'];
-      List<String> cityNames = citiesData.map((city) => city['name'].toString()).toList();
-      if (mounted) {
-        setState(() {
-          cities = cityNames;
-          cityData = citiesData;
-        });
+    try {
+      var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
+      if (response.statusCode == 200) {
+        final List<dynamic> citiesData = jsonDecode(response.body)['data'];
+        List<String> cityNames = citiesData.map((city) => city['name'].toString()).toList();
+        if (mounted) {
+          setState(() {
+            cities = cityNames;
+            cityData = citiesData;
+          });
+        }
+      } else {
+        if (kDebugMode) {
+          print(response.reasonPhrase);
+        }
       }
-    } else {
-      if (kDebugMode) {
-        print(response.reasonPhrase);
-      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'filterpage fetchCities error',
+      );
     }
   }
 
   Future<void> onCitySelected(String selectedCityFilter) async {
-    print(selectedCityFilter);
-    final city = cityData.firstWhere((city) => city['name'] == selectedCityFilter);
-    if (city != null) {
-      final districtsData = city['districts'];
-      if (districtsData != null) {
-        final List<String> districtNames = (districtsData as List<dynamic>).map((district) => district['name'].toString())
-          .toList();
+    try {
+      print(selectedCityFilter);
+      final city = cityData.firstWhere((city) => city['name'] == selectedCityFilter);
+      if (city != null) {
+        final districtsData = city['districts'];
+        if (districtsData != null) {
+          final List<String> districtNames = (districtsData as List<dynamic>).map((district) => district['name'].toString())
+            .toList();
 
-        setState(() {
-          cityFilter = selectedCityFilter;
-          districts = districtNames;
-        });
+          setState(() {
+            cityFilter = selectedCityFilter;
+            districts = districtNames;
+          });
+        }
       }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'filterpage onCitySelected error',
+      );
     }
   }
 
   Future<void> fetchFields(String selectedDistrict) async {
-    var localDb = await Hive.openBox<FootballField>('football_fields');
-
     try {
+      var localDb = await Hive.openBox<FootballField>('football_fields');
       var field = localDb.values.firstWhere(
         (f) => f.city == cityFilter && f.district == selectedDistrict,
       );
@@ -414,12 +453,16 @@ class _FilterPageState extends State<FilterPage> {
         fields = field.fieldName.toSet().toList();
         fieldFilter = null;
 
-        // Retain the fieldFilter if it is valid for the new fields
         if (!fields.contains(fieldFilter)) {
           fieldFilter = null;
         }
       });
-    } catch (e) {
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'filterpage fetchFields error',
+      );
       setState(() {
         districtFilter = selectedDistrict;
         fields = [];
@@ -430,7 +473,8 @@ class _FilterPageState extends State<FilterPage> {
 
   // to show the user the selected data
   Future<void> loadPrefs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
 
     String? savedCity = prefs.getString('selectedCity');
     String? savedDistrict = prefs.getString('selectedDistrict');
@@ -455,6 +499,13 @@ class _FilterPageState extends State<FilterPage> {
       districtFilter = savedDistrict;
       fieldFilter = savedField; // Set fieldFilter only after fields are fetched
     });
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'filterpage loadPrefs error',
+      );
+    }
   }
 
   void updatePriceFilters(int min, int max) {

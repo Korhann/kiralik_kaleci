@@ -5,6 +5,7 @@ import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'direct2messagepage.dart';
@@ -85,15 +86,23 @@ class _DirectMessagesState extends State<DirectMessages> {
   ).asyncMap((futureList) => futureList);
 }
 
-Future<void> addParticipantIdToPrefs(String participantId) async {
-  final prefs = await SharedPreferences.getInstance();
-  List<String> ids = prefs.getStringList('ids') ?? [];
+  Future<void> addParticipantIdToPrefs(String participantId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      List<String> ids = prefs.getStringList('ids') ?? [];
 
-  if (!ids.contains(participantId)) {
-    ids.add(participantId);
-    await prefs.setStringList('ids', ids);
+      if (!ids.contains(participantId)) {
+        ids.add(participantId);
+        await prefs.setStringList('ids', ids);
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'directmessages addParticipantIdToPrefs error for participantId: $participantId',
+      );
+    }
   }
-}
 
 
   Future<int> getUnreadCount(String participantId) async {
@@ -102,7 +111,8 @@ Future<void> addParticipantIdToPrefs(String participantId) async {
 
     final currentUser = user.uid;
 
-  List<String> ids = [currentUser, participantId];
+    try {
+      List<String> ids = [currentUser, participantId];
   ids.sort();
   String chatRoomId = ids.join('_');
 
@@ -122,75 +132,106 @@ Future<void> addParticipantIdToPrefs(String participantId) async {
   } else {
     return data['from_msg'] ?? 0;
   }
-  }
-
-  Future<void> resetUnredMessages(String participantId) async{
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return Future.error('noMessagesReset'); // Or redirect to login
-
-    final currentUser = user.uid;
-
-    List<String> ids = [currentUser, participantId];
-    ids.sort();
-    String chatRoomId = ids.join('_');
-
-    DocumentSnapshot metaDoc = await FirebaseFirestore.instance
-    .collection('chat_rooms')
-    .doc(chatRoomId)
-    .collection('messages')
-    .doc('meta')
-    .get();
-    
-    Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
-    
-    if (data['senderId'] == currentUser) {
-      metaDoc.reference.update({
-        'to_msg': 0
-      });
-    } else {
-      metaDoc.reference.update({
-        'from_msg': 0
-      });
+    } catch (e,stack) {
+      await reportErrorToCrashlytics(e, stack,reason: 'directmessages getUnreadCount error for user $currentUser, participantId: $participantId');
+      return 0;
     }
   }
 
+  Future<void> resetUnredMessages(String participantId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return Future.error('noMessagesReset');
+    final currentUser = user.uid;
 
+    try {
+      List<String> ids = [currentUser, participantId];
+      ids.sort();
+      String chatRoomId = ids.join('_');
+
+      DocumentSnapshot metaDoc = await FirebaseFirestore.instance
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .doc('meta')
+          .get();
+
+      Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
+
+      if (data['senderId'] == currentUser) {
+        await metaDoc.reference.update({'to_msg': 0});
+      } else {
+        await metaDoc.reference.update({'from_msg': 0});
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'directmessages resetUnredMessages error for user $currentUser, participantId: $participantId',
+      );
+    }
+  }
 
   Future<String> _getLastMessage(String receiverId) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return Future.error('noLastMessage'); // Or redirect to login
-
+    if (user == null) return Future.error('noLastMessage');
     final currentUser = user.uid;
 
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collectionGroup('messages')
-        .where('senderId', whereIn: [currentUser, receiverId])
-        .where('receiverId', whereIn: [currentUser, receiverId])
-        .orderBy('timestamp', descending: true)
-        .limit(1)
-        .get();
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collectionGroup('messages')
+          .where('senderId', whereIn: [currentUser, receiverId])
+          .where('receiverId', whereIn: [currentUser, receiverId])
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
 
-    if (snapshot.docs.isNotEmpty) {
-      return snapshot.docs.first['lastMessage'];
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first['lastMessage'];
+      }
+      return "";
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'directmessages _getLastMessage error for user $currentUser, receiverId: $receiverId',
+      );
+      return "";
     }
-    return "";
   }
 
   Future<String> _getReceiverName(String userId) async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-    if (snapshot.exists) {
-      return snapshot['fullName'] ?? 'Unknown';
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+      if (snapshot.exists) {
+        return snapshot['fullName'] ?? 'Unknown';
+      }
+      return 'Unknown';
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'directmessages _getReceiverName error for userId: $userId',
+      );
+      return 'Unknown';
     }
-    return 'Unknown';
   }
 
   Future<String?> _getReceiverImage(String userId) async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-    if (snapshot.exists && snapshot['sellerDetails']?['imageUrls'] != null) {
-      List<dynamic> images = snapshot['sellerDetails']['imageUrls'];
-      return images.isNotEmpty ? images.first : null;
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+      if (snapshot.exists && snapshot['sellerDetails']?['imageUrls'] != null) {
+        List<dynamic> images = snapshot['sellerDetails']['imageUrls'];
+        return images.isNotEmpty ? images.first : null;
+      }
+      return null;
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'directmessages _getReceiverImage error for userId: $userId',
+      );
+      return null;
     }
-    return null;
   }
 
   @override

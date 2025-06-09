@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +17,7 @@ import 'package:kiralik_kaleci/settingsMenu.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/userorseller.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -43,9 +43,17 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    saveUserType('user');
-    userorseller = false;
-    PushHelper.updateOneSignal();
+    try {
+      saveUserType('user');
+      userorseller = false;
+      PushHelper.updateOneSignal();
+    } catch (e, stack) {
+      reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'profilepage initState error',
+      );
+    }
   }
 
   @override
@@ -488,24 +496,28 @@ class _BeSellerOrUserState extends State<BeSellerOrUser> {
                             // satıcı sayfasına geç
                             case 1:
                               try {
-                                if (await InternetConnection().hasInternetAccess) {
-                                userorseller = true;
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const SellerMainPage(index: 2,)
-                                  )
-                                );
-                              break;
-                                } else {
-                                  Showalert(context: context, text: 'Ooops...').showErrorAlert();
-                                  setState(() {
-                                    index = 0;
-                                  });
-                                }
-                              } catch (e) {
-                                print('Error switching to seller $e');
-                              }
+                      if (await InternetConnection().hasInternetAccess) {
+                        userorseller = true;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SellerMainPage(index: 2,)
+                          )
+                        );
+                        break;
+                      } else {
+                        Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                        setState(() {
+                          index = 0;
+                        });
+                      }
+                    } catch (e, stack) {
+                      await reportErrorToCrashlytics(
+                        e,
+                        stack,
+                        reason: 'profilepage BeSellerOrUser onToggle error',
+                      );
+                    }
                           }
                         },
                       ),

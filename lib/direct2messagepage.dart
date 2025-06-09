@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/chat_services.dart';
 import 'package:kiralik_kaleci/styles/chatBubble.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class Direct2Message extends StatefulWidget {
   final String receiverId;
@@ -29,9 +30,13 @@ class _Direct2MessageState extends State<Direct2Message> {
   }
 
   void sendMessage() async {
-    if (_messageController.text.isNotEmpty) {
+    try {
+      if (_messageController.text.isNotEmpty) {
       await _chatService.sendMessage(widget.receiverId, _messageController.text);
       _messageController.clear();
+    }
+    } catch (e, stack) {
+      reportErrorToCrashlytics(e, stack, reason: 'direct2messages send message error ${widget.receiverId}');
     }
   }
 

@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class FavouritesPage extends StatefulWidget {
   const FavouritesPage({super.key});
@@ -30,15 +31,26 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   Future<void> _fetchFavorites() async {
     final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserUid != null && currentUserUid.isNotEmpty) {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(currentUserUid)
-          .collection('favourites')
-          .get();
+    try {
+      if (currentUserUid != null && currentUserUid.isNotEmpty) {
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentUserUid)
+            .collection('favourites')
+            .get();
 
+        setState(() {
+          favourites = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+          isLoading = false;
+        });
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'favouritespage _fetchFavorites error for user $currentUserUid',
+      );
       setState(() {
-        favourites = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
         isLoading = false;
       });
     }
