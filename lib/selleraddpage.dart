@@ -7,7 +7,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,6 +20,7 @@ import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 
 class SellerAddPage extends StatefulWidget {
@@ -549,54 +549,68 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
 
   Future<void> fetchFields(String selectedDistrict) async {
-  var localDb = await Hive.openBox<FootballField>('football_fields');
-  
-  try {
-    // looking if the selectedDistrict is in the districts
-    var field = localDb.values.firstWhere((f) => f.district == selectedDistrict);
-  setState(() {
-    // adds what is in that specific district
-    fields = field.fieldName;
-    selectedField = null;
-  });
-  } catch (e) {
-    if (mounted) {
+    try {
+      var localDb = await Hive.openBox<FootballField>('football_fields');
+      var field = localDb.values.firstWhere((f) => f.district == selectedDistrict);
       setState(() {
-      fields = [];
-      selectedField = null;
-    });
-    }
+        fields = field.fieldName;
+        selectedField = null;
+      });
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage fetchFields error for district $selectedDistrict',
+      );
+      if (mounted) {
+        setState(() {
+          fields = [];
+          selectedField = null;
+        });
+      }
     }
   }
 
   Future<void> fetchCities() async {
-    //todo: Burada tüm şehirleri almak yerine İstanbulu alabilirsin
-    var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
-    if (response.statusCode == 200) {
-      final List<dynamic> citiesData = jsonDecode(response.body)['data'];
-      List<String> cityNames = citiesData.map((city) => city['name'].toString()).toList();
-      if (mounted) {
-        setState(() {
-          cities = cityNames;
-          cityData = citiesData;
-        });
+    try {
+      var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
+      if (response.statusCode == 200) {
+        final List<dynamic> citiesData = jsonDecode(response.body)['data'];
+        List<String> cityNames = citiesData.map((city) => city['name'].toString()).toList();
+        if (mounted) {
+          setState(() {
+            cities = cityNames;
+            cityData = citiesData;
+          });
+        }
+      } else {
+        if (kDebugMode) {
+          print(response.reasonPhrase);
+        }
       }
-    } else {
-      if (kDebugMode) {
-        print(response.reasonPhrase);
-      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage fetchCities error',
+      );
     }
   }
 
   // checks if the seller is currently has an active ad
   Future<bool> checkIfUserIsAlreadySeller() async {
-  final documentSnapshot = await FirebaseFirestore.instance.collection('Users').doc(currentUser).get();
-  userisSeller = documentSnapshot.data()?['sellerDetails'] != null;
-  if (userisSeller) {
-    return true;
-  } else {
-    return false;
-  }
+    try {
+      final documentSnapshot = await FirebaseFirestore.instance.collection('Users').doc(currentUser).get();
+      userisSeller = documentSnapshot.data()?['sellerDetails'] != null;
+      return userisSeller;
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage checkIfUserIsAlreadySeller error for user $currentUser',
+      );
+      return false;
+    }
   }
 
   Widget buildButton() {
@@ -643,143 +657,144 @@ class _SellerAddPageState extends State<SellerAddPage> {
   }
 
   Future<bool> _insertSellerDetails(BuildContext context) async {
-  bool hasSelectedAnyHour = _AmenitiesState.selectedHoursByDay.values.any((list) => list.isNotEmpty);
-  if (_formKey.currentState!.validate() && hasSelectedAnyHour && selectedFields.isNotEmpty) {
-
-    // Show loading dialog    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(
-            color: Colors.green,
-            backgroundColor: Colors.grey,
-          ),
-        );
-      }
-    );
-
-    try {
-      String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-      if (userId.isNotEmpty) {
-        List<String> imageUrls = await _uploadImagesToStorage();
-
-        Map<String, dynamic> formattedData = {};
-        _AmenitiesState.selectedHoursByDay.forEach((day, selectedHours) {
-          if (selectedHours.isNotEmpty) {
-            formattedData[day] = selectedHours.map((hour) => {
-                  'title': hour.title,
-                  'istaken': false,
-                  'takenby': 'empty'
-                }).toList();
-          } 
-        });
-
-        int? price = int.tryParse(sellerPrice.text);
-        int? priceAfterMidnight = int.tryParse(sellerPriceAfterMidnight.text);
-
-        Map<String, dynamic> sellerDetails = {
-          "sellerFullName": sellerFullName.text,
-          "sellerPrice": price,
-          'sellerPriceMidnight': priceAfterMidnight,
-          "city": selectedCity,
-          "district": selectedDistrict ?? districtFromDb,
-          'fields': selectedFields,
-          "imageUrls": imageUrls,
-          'chosenDays': formattedData.keys.toList(),
-          "selectedHoursByDay": formattedData,
-        };
-
-        await FirebaseFirestore.instance
-            .collection("Users")
-            .doc(userId)
-            .update({"sellerDetails": sellerDetails});
-
-        setState(() {
-          _AmenitiesState.selectedHoursByDay.clear();
-        });
-
-        // yükleme ekranından çık
-        Navigator.of(context).pop();
-        
-        // saat seçme ui ını yenilemesi için pushreplacement
-        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SellerSuccessPage()));
-
-      }
-      return true;
-    } catch (e) {
-      Navigator.of(context).pop(); // Close the loading dialog if an error occurs
-      Showalert(context: context, text: 'Ooops...').showErrorAlert();
-      return false;
-    }
-  } else {
-    Showalert(context: context, text: 'Tüm alanları doldurduğunuza emin misiniz?').showErrorAlert();
-    return false;
-  }
-}   
-
-  Future<List<String>> _uploadImagesToStorage() async {
-  List<String> imageUrls = [];
-
-  // Loop through each image file and upload to Firebase Storage
-  if (imageFileList.isNotEmpty) {
-    for (XFile imageFile in imageFileList) {
-    try {
-      // kullanıcının seçtiği resim olucaksa bu kod
-      File file = File(imageFile.path);
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      Reference ref = FirebaseStorage.instance.ref().child('images/$fileName.jpg');
-      UploadTask uploadTask = ref.putFile(file);
-      TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-      String imageUrl = await taskSnapshot.ref.getDownloadURL();
-
-      imageUrls.add(imageUrl);
-    } catch (e) {
-      print("Error uploading image: $e");
-      }
-    }
-  } else {
-    // değilse default bir image yükle
-    File defaultImage = await getDefaultImageFile();
-    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference ref = FirebaseStorage.instance.ref().child('images/default_$fileName.jpg');
-    UploadTask uploadTask = ref.putFile(defaultImage);
-    TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-    String defaultImageUrl = await taskSnapshot.ref.getDownloadURL();
-    imageUrls.add(defaultImageUrl);
-  }
-
-  return imageUrls;
-}
-  // default resim dosyası path almak için
-  Future<File> getDefaultImageFile() async {
-  final byteData = await rootBundle.load('lib/images/imageDefault.jpg');
-  final tempDir = await getTemporaryDirectory();
-  final tempFile = File('${tempDir.path}/imageDefault.jpg');
-  await tempFile.writeAsBytes(byteData.buffer.asUint8List());
-  return tempFile; // ✅ No need to compress it again
-  }
-
-
-  Future<File> testCompressAndGetFile(File file, String targetPath) async {
-    var result = await FlutterImageCompress.compressAndGetFile(
-        file.absolute.path, targetPath,
-        quality: 88,
-        rotate: 180,
+    bool hasSelectedAnyHour = _AmenitiesState.selectedHoursByDay.values.any((list) => list.isNotEmpty);
+    if (_formKey.currentState!.validate() && hasSelectedAnyHour && selectedFields.isNotEmpty) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: Colors.green,
+              backgroundColor: Colors.grey,
+            ),
+          );
+        }
       );
 
-    // xfile ı file a çevir
-    File photoFile = File(result!.path);
-    return photoFile;
+      try {
+        String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+        if (userId.isNotEmpty) {
+          List<String> imageUrls = await _uploadImagesToStorage();
+
+          Map<String, dynamic> formattedData = {};
+          _AmenitiesState.selectedHoursByDay.forEach((day, selectedHours) {
+            if (selectedHours.isNotEmpty) {
+              formattedData[day] = selectedHours.map((hour) => {
+                    'title': hour.title,
+                    'istaken': false,
+                    'takenby': 'empty'
+                  }).toList();
+            } 
+          });
+
+          int? price = int.tryParse(sellerPrice.text);
+          int? priceAfterMidnight = int.tryParse(sellerPriceAfterMidnight.text);
+
+          Map<String, dynamic> sellerDetails = {
+            "sellerFullName": sellerFullName.text,
+            "sellerPrice": price,
+            'sellerPriceMidnight': priceAfterMidnight,
+            "city": selectedCity,
+            "district": selectedDistrict ?? districtFromDb,
+            'fields': selectedFields,
+            "imageUrls": imageUrls,
+            'chosenDays': formattedData.keys.toList(),
+            "selectedHoursByDay": formattedData,
+          };
+
+          await FirebaseFirestore.instance
+              .collection("Users")
+              .doc(userId)
+              .update({"sellerDetails": sellerDetails});
+
+          setState(() {
+            _AmenitiesState.selectedHoursByDay.clear();
+          });
+
+          Navigator.of(context).pop();
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SellerSuccessPage()));
+        }
+        return true;
+      } catch (e, stack) {
+        Navigator.of(context).pop();
+        await reportErrorToCrashlytics(
+          e,
+          stack,
+          reason: 'selleraddpage _insertSellerDetails error for user $currentUser',
+        );
+        Showalert(context: context, text: 'Ooops...').showErrorAlert();
+        return false;
+      }
+    } else {
+      Showalert(context: context, text: 'Tüm alanları doldurduğunuza emin misiniz?').showErrorAlert();
+      return false;
+    }
   }
 
-  Future<String> getInitialName() async{
+  Future<List<String>> _uploadImagesToStorage() async {
+    List<String> imageUrls = [];
+    if (imageFileList.isNotEmpty) {
+      for (XFile imageFile in imageFileList) {
+        try {
+          File file = File(imageFile.path);
+          String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+          Reference ref = FirebaseStorage.instance.ref().child('images/$fileName.jpg');
+          UploadTask uploadTask = ref.putFile(file);
+          TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+          String imageUrl = await taskSnapshot.ref.getDownloadURL();
+          imageUrls.add(imageUrl);
+        } catch (e, stack) {
+          await reportErrorToCrashlytics(
+            e,
+            stack,
+            reason: 'selleraddpage _uploadImagesToStorage error',
+          );
+        }
+      }
+    } else {
+      try {
+        File defaultImage = await getDefaultImageFile();
+        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        Reference ref = FirebaseStorage.instance.ref().child('images/default_$fileName.jpg');
+        UploadTask uploadTask = ref.putFile(defaultImage);
+        TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+        String defaultImageUrl = await taskSnapshot.ref.getDownloadURL();
+        imageUrls.add(defaultImageUrl);
+      } catch (e, stack) {
+        await reportErrorToCrashlytics(
+          e,
+          stack,
+          reason: 'selleraddpage _uploadImagesToStorage default image error',
+        );
+      }
+    }
+    return imageUrls;
+  }
+
+  Future<File> getDefaultImageFile() async {
+    try {
+      final byteData = await rootBundle.load('lib/images/imageDefault.jpg');
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/imageDefault.jpg');
+      await tempFile.writeAsBytes(byteData.buffer.asUint8List());
+      return tempFile;
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getDefaultImageFile error',
+      );
+      rethrow;
+    }
+  }
+
+  Future<String> getInitialName() async {
     try {
       final doc = await FirebaseFirestore.instance
-      .collection('Users')
-      .doc(currentUser)
-      .get();
+        .collection('Users')
+        .doc(currentUser)
+        .get();
 
       if (doc.exists) {
         final data = doc.data();
@@ -789,31 +804,38 @@ class _SellerAddPageState extends State<SellerAddPage> {
           return initialName;
         }
       }
-    } catch (e) {
-      print('Error name $e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialName error for user $currentUser',
+      );
     }
     return '';
   }
 
-  Future<String> getInitialDistrict() async{
+  Future<String> getInitialDistrict() async {
     try {
       final doc = await FirebaseFirestore.instance
-      .collection('Users')
-      .doc(currentUser)
-      .get();
+        .collection('Users')
+        .doc(currentUser)
+        .get();
 
       if (doc.exists) {
         final data = doc.data();
         if (data != null) {
           initialDistrict = data['sellerDetails']['district'];
           selectedDistrict = initialDistrict;
-          print('real deal $selectedDistrict');
           fetchFields(initialDistrict.trim());
           return initialDistrict.trim();
         }
       }
-    } catch (e) {
-      print('Error name $e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialDistrict error for user $currentUser',
+      );
     }
     return '';
   }
@@ -821,9 +843,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
   Future<void> getInitialFields() async {
     try {
       final doc = await FirebaseFirestore.instance
-      .collection('Users')
-      .doc(currentUser)
-      .get();
+        .collection('Users')
+        .doc(currentUser)
+        .get();
 
       if (doc.exists) {
         final data = doc.data();
@@ -832,38 +854,45 @@ class _SellerAddPageState extends State<SellerAddPage> {
           setState(() {});
         }
       }
-    } catch (e) {
-      print('Error name $e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialFields error for user $currentUser',
+      );
     }
   }
 
   Future<Map<String, dynamic>> getInitialDayHours() async {
-  try {
-    final doc = await FirebaseFirestore.instance
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null && data['sellerDetails'] != null) {
+          final hoursDays = data['sellerDetails']['selectedHoursByDay'];
+          return Map<String, dynamic>.from(hoursDays);
+        }
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialDayHours error for user $currentUser',
+      );
+    }
+    return {};
+  }
+
+  Future<int> getInitialPrice() async {
+    try {
+      final doc = await FirebaseFirestore.instance
         .collection('Users')
         .doc(currentUser)
         .get();
-
-    if (doc.exists) {
-      final data = doc.data();
-      if (data != null && data['sellerDetails'] != null) {
-        final hoursDays = data['sellerDetails']['selectedHoursByDay'];
-        return Map<String, dynamic>.from(hoursDays);
-      }
-    }
-  } catch (e) {
-    print('Error initial days hours $e');
-  }
-  return {}; // fallback if no data
-}
-
-
-  Future<int> getInitialPrice() async{
-    try {
-      final doc = await FirebaseFirestore.instance
-      .collection('Users')
-      .doc(currentUser)
-      .get();
 
       if (doc.exists) {
         final data = doc.data();
@@ -873,17 +902,22 @@ class _SellerAddPageState extends State<SellerAddPage> {
           return initialPrice;
         }
       }
-    } catch (e) {
-      print('Error name $e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialPrice error for user $currentUser',
+      );
     }
     return 0;
   }
-  Future<int> getInitialPriceMidnight() async{
+
+  Future<int> getInitialPriceMidnight() async {
     try {
       final doc = await FirebaseFirestore.instance
-      .collection('Users')
-      .doc(currentUser)
-      .get();
+        .collection('Users')
+        .doc(currentUser)
+        .get();
 
       if (doc.exists) {
         final data = doc.data();
@@ -893,8 +927,12 @@ class _SellerAddPageState extends State<SellerAddPage> {
           return initialPriceMidnight;
         }
       }
-    } catch (e) {
-      print('Error name $e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialPriceMidnight error for user $currentUser',
+      );
     }
     return 0;
   }

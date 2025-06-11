@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 part 'approvedfield.g.dart';
 
 @HiveType(typeId: 1)
@@ -11,18 +12,26 @@ class ApprovedField {
   });
 
   static Future<void> approvedFields() async {
-    var localDb = await Hive.openBox<ApprovedField>('approved_fields');
+    try {
+      var localDb = await Hive.openBox<ApprovedField>('approved_fields');
 
-    await localDb.clear();
+      await localDb.clear();
 
-    final List<ApprovedField> fields = [
-      ApprovedField(
-        fields: ['Hasan Özaydın Halı Saha','Şampiyon Halı Saha']
-      )
-    ];
+      final List<ApprovedField> fields = [
+        ApprovedField(
+          fields: ['Hasan Özaydın Halı Saha','Şampiyon Halı Saha']
+        )
+      ];
 
-    for (var field in fields) {
-      await localDb.add(field);
+      for (var field in fields) {
+        await localDb.add(field);
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'approvedfield approvedFields error',
+      );
     }
   }
 }

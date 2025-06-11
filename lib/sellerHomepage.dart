@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class SellerHomePage extends StatefulWidget {
   const SellerHomePage({super.key});
@@ -76,6 +76,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
         break;
       case 'posts':
         page = SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUser, wherFrom: 'fromSomewhere');
+        break;
       case 'earnings':
         page = const EarningsPage();
         break;
@@ -83,18 +84,26 @@ class _SellerHomePageState extends State<SellerHomePage> {
         return; 
     }
 
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => page),
-    );
+    try {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => page),
+      );
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'sellerHomepage _navigateToPage error for user $currentUser, menuOption: $menuOption',
+      );
+    }
   }
 
-  Future<void> getUserDetails() async{
-    try{
+  Future<void> getUserDetails() async {
+    try {
       DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-      .collection('Users')
-      .doc(currentUser)
-      .get();
+        .collection('Users')
+        .doc(currentUser)
+        .get();
 
       if (documentSnapshot.exists) {
         Map<String,dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
@@ -102,11 +111,16 @@ class _SellerHomePageState extends State<SellerHomePage> {
           sellerDetails = data['sellerDetails'];
         }
       }
-    }catch (e) {
-      print('$e');
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'sellerHomepage getUserDetails error for user $currentUser',
+      );
     }
   }
 }
+
 
 class SellerQuickMenus extends StatelessWidget {
 

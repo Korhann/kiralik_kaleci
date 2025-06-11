@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/chat_services.dart';
 import 'package:kiralik_kaleci/styles/chatBubble.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 import 'sharedvalues.dart';
 
@@ -168,8 +169,12 @@ class _SellerMessagePageState extends State<SellerMessagePage> {
       } else {
         print("email bulunamadı");
       }
-    } catch (e) {
-      print("Hata $e");
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'sellermessagepage _getEmail error for uid $uid',
+      );
     }
   }
 }

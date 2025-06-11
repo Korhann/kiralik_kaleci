@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class SellerIbanPage extends StatefulWidget {
   const SellerIbanPage({super.key});
@@ -216,14 +217,13 @@ class SellerIbanPageState extends State<SellerIbanPage> {
     );
   }
 
-  Future<void> _updateIbanNo() async{
+  Future<void> _updateIbanNo() async {
     String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     if (userId.isNotEmpty) {
       String iban = _ibanController.text;
       String name = _nameController.text;
 
-      
       try {
         Map<String, dynamic> ibanDetails = {
           'ibanNo': iban,
@@ -231,19 +231,24 @@ class SellerIbanPageState extends State<SellerIbanPage> {
         };
 
         await FirebaseFirestore
-          .instance
-          .collection('Users')
-          .doc(userId)
-          .update({'ibanDetails': ibanDetails});
+            .instance
+            .collection('Users')
+            .doc(userId)
+            .update({'ibanDetails': ibanDetails});
 
         Showalert(context: context, text: 'İşlem başarılı bir şekilde gerçeklişmiştir').showSuccessAlert();
         _ibanController.clear();
         _nameController.clear();
 
-      } catch (e) {
+      } catch (e, stack) {
+        await reportErrorToCrashlytics(
+          e,
+          stack,
+          reason: 'selleribanpage _updateIbanNo error for user $userId',
+        );
         Showalert(context: context, text: 'Ooops...').showErrorAlert();
         print('Error $e');
-      } 
+      }
     }
   }
 }

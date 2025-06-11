@@ -7,6 +7,7 @@ import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({super.key});
@@ -218,10 +219,15 @@ class _ChangePasswordState extends State<ChangePassword> {
         await user.reauthenticateWithCredential(cred);
         await user.updatePassword(_newPasswordController.text.trim());
         isUpdated = true;
-      } catch (e) {
+      } catch (e,stack) {
         setState(() {
           _reauthErrorMessage = 'Geçerli bir şifre giriniz';
         });
+        await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'change password failed',
+      );
       }
     }
   }

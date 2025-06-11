@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class ChangeUserName extends StatefulWidget {
   const ChangeUserName({super.key});
@@ -155,8 +156,12 @@ class _ChangeUserNameState extends State<ChangeUserName> {
             .doc(currentuser)
             .update({'fullName': _newUsername.text.trim()});
         isUpdated = true;
-      } catch (e) {
-        print('Error updating username $e');
+      } catch (e, stack) {
+        await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'change username failed',
+      );
       }
     }
   }

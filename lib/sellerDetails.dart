@@ -14,6 +14,7 @@ import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
+import 'package:integration_test/integration_test.dart';
 
 class SellerDetailsPage extends StatefulWidget {
   const SellerDetailsPage({

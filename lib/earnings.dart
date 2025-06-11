@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class EarningsPage extends StatefulWidget {
   const EarningsPage({super.key});
@@ -18,7 +19,7 @@ class _EarningsPageState extends State<EarningsPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
+    super.initState();
     _getBalance();
   }
 
@@ -75,34 +76,36 @@ class _EarningsPageState extends State<EarningsPage> {
   
   Future<void> _getBalance() async {
     try {
-    String currentuser = FirebaseAuth.instance.currentUser!.uid;
-    QuerySnapshot<Map<String,dynamic>> querySnapshot = await firestore.collection('Users')
-    .doc(currentuser)
-    .collection('appointmentseller')
-    .where('appointmentDetails.verificationState', isEqualTo: 'verified')
-    .get();
+      String currentuser = FirebaseAuth.instance.currentUser!.uid;
+      QuerySnapshot<Map<String,dynamic>> querySnapshot = await firestore.collection('Users')
+        .doc(currentuser)
+        .collection('appointmentseller')
+        .where('appointmentDetails.verificationState', isEqualTo: 'verified')
+        .get();
 
-
-
-    num total = 0;
-    for (var doc in querySnapshot.docs) {
-      final data = doc.data();
-      final appointmentDetails = data['appointmentDetails'];
-      if (appointmentDetails != null) {
-        final price = appointmentDetails['price'];
-        if (price is int || price is double) {
-          total += price;
-        } else if (price is String) {
-          total += num.tryParse(price) ?? 0;
+      num total = 0;
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        final appointmentDetails = data['appointmentDetails'];
+        if (appointmentDetails != null) {
+          final price = appointmentDetails['price'];
+          if (price is int || price is double) {
+            total += price;
+          } else if (price is String) {
+            total += num.tryParse(price) ?? 0;
+          }
         }
       }
-    }
-    setState(() {
-      balance = total.toInt();
-      print('balance is $balance');
-    });
-    } catch (e) {
-      print('error getting price $e');
+      setState(() {
+        balance = total.toInt();
+        print('balance is $balance');
+      });
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'earnings _getBalance error',
+      );
     }
   }
 }

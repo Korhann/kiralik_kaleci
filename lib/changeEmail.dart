@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class ChangeEmail extends StatefulWidget {
   const ChangeEmail({super.key});
@@ -202,9 +203,13 @@ class _ChangeEmailState extends State<ChangeEmail> {
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
     String email = _emailController.text.trim();
     String password = _currentPasswordController.text.trim();
-    if (user != null && user.email != null) {
-      final cred = EmailAuthProvider.credential(
-          email: user.email.toString(), password: password);
+
+    if (user == null && user!.email == null) {
+      setState(() {
+        _reauthErrorMessage = 'Kullanıcı oturumu açılmadı';
+      });
+    } else {
+      final cred = EmailAuthProvider.credential(email: user.email.toString(), password: password);
       try {
         await user.reauthenticateWithCredential(cred);
         // bu yeni güncellenen mail
@@ -215,19 +220,20 @@ class _ChangeEmailState extends State<ChangeEmail> {
             .doc(currentuser)
             .update({'email': email});
         isUpdated = true;
-      } catch (e) {
+      } catch (e, stack) {
         setState(() {
           _reauthErrorMessage = 'Geçerli bir mail giriniz';
         });
-        print("Error updating email: $e");
+        await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'approvedfield approvedFields error',
+      );
       }
-    } else {
-      setState(() {
-        _reauthErrorMessage = 'Kullanıcı oturumu açılmadı';
-      });
+    } 
     }
   }
-}
+
 
 class newEmail extends StatelessWidget {
   const newEmail({super.key});
