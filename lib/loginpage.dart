@@ -21,6 +21,7 @@ class LogIn extends StatefulWidget {
 }
 
 class _LogInState extends State<LogIn> {
+
   // text style for header
   final style = const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black);
   final hintstyle =const TextStyle(fontSize: 20, fontWeight: FontWeight.normal);
@@ -136,6 +137,7 @@ class _LogInState extends State<LogIn> {
                         width: width,  
                         child: TextFormField(
                           keyboardType: TextInputType.emailAddress,
+                          key: Key('login_email_key'),
                           controller: emailController,
                           style: const TextStyle(color: Colors.black, fontSize: 20),
                           decoration: GlobalStyles.inputDecoration1(hintText: 'Email',showError: _showErrorEmail),
@@ -174,6 +176,7 @@ class _LogInState extends State<LogIn> {
                           keyboardType: TextInputType.text,
                           obscureText: _obsecureText,
                           controller: passwordController,
+                          key: Key('login_password_key'),
                           style: const TextStyle(color: Colors.black, fontSize: 20),
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -292,8 +295,8 @@ class _LogInState extends State<LogIn> {
                         },
                         child: Text(
                           "Giriş Yap",
-                          style: GoogleFonts.inter(
-                              textStyle: style, color: Colors.black),
+                          style: GoogleFonts.inter(textStyle: style, color: Colors.black),
+                          key: Key('login_enter_key'),
                         ),
                         material: (_,__) => MaterialElevatedButtonData(
                           style: GlobalStyles.buttonPrimary(context)

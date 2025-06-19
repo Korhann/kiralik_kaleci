@@ -137,6 +137,7 @@ class _SignUpState extends State<SignUp> {
                             width: width,
                             child: TextFormField(
                                 controller: fullNameController,
+                                key: Key('signup_name'),
                                 style: const TextStyle(color: Colors.black, fontSize: 20),
                                 decoration: GlobalStyles.inputDecoration1(
                                     hintText: 'Ad Soyad', showError: _showErrorName),
@@ -173,6 +174,7 @@ class _SignUpState extends State<SignUp> {
                             width: width,
                             child: TextFormField(
                                 controller: emailController,
+                                key: Key('signup_email'),
                                 keyboardType: TextInputType.emailAddress,
                                 style: const TextStyle(color: Colors.black, fontSize: 20),
                                 decoration: GlobalStyles.inputDecoration1(
@@ -214,6 +216,7 @@ class _SignUpState extends State<SignUp> {
                             width: width,
                             child: TextFormField(
                                 controller: phoneController,
+                                key: Key('signup_phone'),
                                 inputFormatters: [LengthLimitingTextInputFormatter(10)],
                                 keyboardType: TextInputType.phone,
                                 style: const TextStyle(color: Colors.black, fontSize: 20),
@@ -257,6 +260,7 @@ class _SignUpState extends State<SignUp> {
                             width: width,
                             child: TextFormField(
                               controller: passwordController,
+                              key: Key('signup_password'),
                               style: const TextStyle(color: Colors.black, fontSize: 20),
                               decoration: GlobalStyles.inputDecoration1(
                                   hintText: 'Parola', showError: _showErrorPassword),
@@ -319,8 +323,8 @@ class _SignUpState extends State<SignUp> {
                             child: Focus(
                               child: TextFormField(
                                 controller: confirmPasswordController,
-                                style:
-                                    const TextStyle(color: Colors.black, fontSize: 20),
+                                key: Key('signup_password_again'),
+                                style: const TextStyle(color: Colors.black, fontSize: 20),
                                 decoration: GlobalStyles.inputDecoration1(
                                     hintText: 'Parola Tekrar',
                                     showError: _showErrorRePassword),
@@ -400,17 +404,18 @@ class _SignUpState extends State<SignUp> {
                           const SizedBox(height: 50.0),
               
                           PlatformElevatedButton(
+                            key: Key('signup_button'),
                             onPressed: () async {
                               if (formkey.currentState!.validate()) {
                                 await signUpUser();
                               }
                             },
-                            child: PlatformText("Kayıt Ol",
-                                style: GoogleFonts.inter(
-                                    color: Colors.black, textStyle: style)),
-                            material: (_, __) => MaterialElevatedButtonData(
+                            child: PlatformText(
+                              "Kayıt Ol",
+                              style: GoogleFonts.inter(color: Colors.black, textStyle: style)),
+                              material: (_, __) => MaterialElevatedButtonData(
                                 style: GlobalStyles.buttonPrimary(context)),
-                            cupertino: (_, __) => CupertinoElevatedButtonData(),
+                              cupertino: (_, __) => CupertinoElevatedButtonData(),
                           ),
                         ],
                       ),

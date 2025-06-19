@@ -54,7 +54,29 @@ android {
             // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-}
+    flavorDimensions "env"
+
+        productFlavors {
+            dev {
+                dimension "env"
+                applicationId "com.example.kiralik_kaleci.dev"
+                versionNameSuffix "-dev"
+            }
+            stage {
+                dimension "env"
+                applicationId "com.example.kiralik_kaleci.stage"
+                versionNameSuffix "-stage"
+            }
+            prod {
+                dimension "env"
+                applicationId "com.example.kiralik_kaleci"
+            }
+        }
+    }
+
+
+
+
 
 flutter {
     source '../..' // Flutter module source

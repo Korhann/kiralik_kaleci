@@ -185,6 +185,9 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return MessagesShimmer();
           }
+          if (!snapshot.hasData) {
+            return MessagesShimmer();
+          }
           var conversations = snapshot.data!;
           return Scaffold(
           appBar: AppBar(

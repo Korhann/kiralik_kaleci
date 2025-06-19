@@ -774,7 +774,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
   Future<File> getDefaultImageFile() async {
     try {
-      final byteData = await rootBundle.load('lib/images/imageDefault.jpg');
+      final byteData = await rootBundle.load('lib/images/defImage.jpg');
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/imageDefault.jpg');
       await tempFile.writeAsBytes(byteData.buffer.asUint8List());
