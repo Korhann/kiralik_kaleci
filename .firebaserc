@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "kiralikkaleci-21f26"
-  }
+    "default": "kiralikkaleci-21f26",
+    "development": "kiralikkaleci-dev"
+  },
+  "targets": {},
+  "etags": {}
 }

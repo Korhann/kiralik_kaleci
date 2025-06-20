@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/direct2messagepage.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
-import 'sharedvalues.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SellerDirectMessages extends StatefulWidget {
   const SellerDirectMessages({super.key});
@@ -14,291 +17,228 @@ class SellerDirectMessages extends StatefulWidget {
 }
 
 class _SellerDirectMessagesState extends State<SellerDirectMessages> {
-  String uid = sharedValues.sellerUid;
-  List<String> messages = [];
-  List<String> receiverNames = [];
-  List<String> distinctReceiverIds = [];
-  String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  late String currentUser;
+  List<Map<String, dynamic>> conversations = [];
+
 
   @override
   void initState() {
     super.initState();
-    _getMessages();
+    currentUser = FirebaseAuth.instance.currentUser!.uid;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: sellerbackground,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: sellerbackground,
-        centerTitle: true,
-        title: Padding(
-          padding: const EdgeInsets.only(top: 30),
-          child: Text(
-            'Mesajlar',
-            style: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.white, // Changed text color to white
-            ),
-          ),
-        ),
-        iconTheme: const IconThemeData(
-          color: Colors.white
-        ),
-      ),
-      body: ListView.builder(
-        itemCount: receiverNames.length,
-        itemBuilder: (BuildContext context, int index) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () async {
-                  await _resetUnreadMessages(distinctReceiverIds[index]);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Direct2Message(
-                        receiverId: distinctReceiverIds[index],
-                      ),
-                    ),
-                  );
-                },
-                child: ListTile(
-                  leading: FutureBuilder(
-                    future: _getReceiverImage(distinctReceiverIds[index]),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircleAvatar(
-                          backgroundColor: Colors.grey,
-                          child: CircularProgressIndicator(),
-                        );
-                      } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-                        return const CircleAvatar(
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.error, color: Colors.white), // Set icon color to white
-                        );
-                      } else {
-                        return CircleAvatar(
-                          backgroundImage: NetworkImage(snapshot.data as String),
-                          radius: 25,
-                        );
-                      }
-                    },
-                  ),
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        receiverNames[index],
-                        style: GoogleFonts.inter(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white, // Changed text color to white
-                        ),
-                      ),
-                      Text(
-                        messages[index],
-                        style: const TextStyle(color: Colors.white70), // Changed message preview text color to white with 70% opacity
-                      ),
-                    ],
-                  ),
-                  trailing: StreamBuilder<int>(
-                    stream: _getUnreadMessagesStream(distinctReceiverIds[index]),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data! > 0) {
-                        return CircleAvatar(
-                          backgroundColor: Colors.red,
-                          radius: 12,
-                          child: Text(
-                            '${snapshot.data}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
-                      } else {
-                        return const SizedBox(); // Show nothing if there are no unread messages
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+  Stream<List<Map<String, dynamic>>> fetchConversations() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null){return const Stream.empty();}
 
-  Future<void> _getMessages() async {
-  try {
-    QuerySnapshot messagesSnapshot = await FirebaseFirestore.instance
-        .collectionGroup('messages')
-        .where('senderId', isEqualTo: currentUser)
-        .where('deletedBySender', isEqualTo: false)
-        .get();
+    final currentUser = user.uid;
+  Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
+      .collectionGroup('messages')
+      .where('senderId', isEqualTo: currentUser)
+      .snapshots();
 
-    QuerySnapshot receivedMessagesSnapshot = await FirebaseFirestore.instance
-        .collectionGroup('messages')
-        .where('receiverId', isEqualTo: currentUser)
-        .where('deletedByReceiver', isEqualTo: false)
-        .get();
+  Stream<QuerySnapshot> receivedStream = FirebaseFirestore.instance
+      .collectionGroup('messages')
+      .where('receiverId', isEqualTo: currentUser)
+      .snapshots();
 
-    Set<String> participantIds = {};
-    for (var doc in messagesSnapshot.docs) {
-      participantIds.add(doc['receiverId'] as String);
-    }
-    for (var doc in receivedMessagesSnapshot.docs) {
-      participantIds.add(doc['senderId'] as String);
-    }
+  return Rx.combineLatest2(
+    sentStream,
+    receivedStream,
+    (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) async { 
+      Set<String> participantIds = {};
 
-    for (String participantId in participantIds) {
-      QuerySnapshot latestMessageSnapshot = await FirebaseFirestore.instance
-          .collectionGroup('messages')
-          .where('senderId', isEqualTo: currentUser)
-          .where('receiverId', isEqualTo: participantId)
-          .orderBy('timestamp', descending: true)
-          .limit(1)
-          .get();
-
-      if (latestMessageSnapshot.docs.isEmpty) {
-        latestMessageSnapshot = await FirebaseFirestore.instance
-            .collectionGroup('messages')
-            .where('senderId', isEqualTo: participantId)
-            .where('receiverId', isEqualTo: currentUser)
-            .orderBy('timestamp', descending: true)
-            .limit(1)
-            .get();
+      for (var doc in sentSnap.docs) {
+        participantIds.add(doc['receiverId']);
       }
 
-      if (latestMessageSnapshot.docs.isNotEmpty) {
-        DocumentSnapshot latestMessageDoc = latestMessageSnapshot.docs.first;
-        Map<String, dynamic> data = latestMessageDoc.data() as Map<String, dynamic>;
+      for (var doc in receivedSnap.docs) {
+        participantIds.add(doc['senderId']);
+      }
 
-        String message = data['lastMessage'];
+      List<Map<String, dynamic>> tempConversations = [];
 
-        // Fetch the updated username
-        String receiverId = currentUser == data['senderId'] ? data['receiverId'] : data['senderId'];
-        String receiverName = await _getUpdatedName(receiverId);
+
+      for (String participantId in participantIds) {
         
-        setState(() {
-          messages.add(message);
-          receiverNames.add(receiverName);
-          distinctReceiverIds.add(participantId);
+        String lastMessage = await _getLastMessage(participantId);
+        String receiverName = await _getReceiverName(participantId);
+        String? imageUrl = await _getReceiverImage(participantId);
+        int unreadCount = await getUnreadCount(participantId);
+        await addParticipantToPrefs(participantId);
+
+        tempConversations.add({
+          'receiverId': participantId,
+          'receiverName': receiverName,
+          'lastMessage': lastMessage,
+          'imageUrl': imageUrl,
+          'unread': unreadCount
         });
       }
-    }
-  } catch (e) {
-    print("Error fetching messages: $e");
+      return tempConversations;
+    },
+  ).asyncMap((futureList) => futureList);
+}
+
+  Future<void> addParticipantToPrefs(String participantId) async {
+  final prefs = await SharedPreferences.getInstance();
+  List<String> ids = prefs.getStringList('ids') ?? [];
+
+  if (!ids.contains(participantId)) {
+    ids.add(participantId);
+    await prefs.setStringList('ids', ids);
   }
 }
 
-  Future<String?> _getReceiverImage(String receiverId) async {
-    try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection("Users")
-          .doc(receiverId)
-          .get();
 
-      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+  Future<String> _getLastMessage(String receiverId) async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collectionGroup('messages')
+        .where('senderId', whereIn: [currentUser, receiverId])
+        .where('receiverId', whereIn: [currentUser, receiverId])
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .get();
 
-      if (data.isNotEmpty && data.containsKey('sellerDetails') && data['sellerDetails'].containsKey('imageUrls')) {
-        List<dynamic> imageUrls = data['sellerDetails']['imageUrls'];
-        if (imageUrls.isNotEmpty) {
-          return imageUrls.first;
-        }
-      }
-    } catch (e) {
-      print("Error fetching receiver image: $e");
+    if (snapshot.docs.isNotEmpty) {
+      return snapshot.docs.first['lastMessage'];
+    }
+    return "";
+  }
+
+  Future<String> _getReceiverName(String userId) async {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+    if (snapshot.exists) {
+      return snapshot['fullName'] ?? 'Unknown';
+    }
+    return 'Unknown';
+  }
+
+  Future<String?> _getReceiverImage(String userId) async {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+    if (snapshot.exists && snapshot['sellerDetails']?['imageUrls'] != null) {
+      List<dynamic> images = snapshot['sellerDetails']['imageUrls'];
+      return images.isNotEmpty ? images.first : null;
     }
     return null;
   }
 
-  Stream<int> _getUnreadMessagesStream(String receiverId) {
-    try {
-      String docPath;
+  Future<int> getUnreadCount(String participantId) async {
+  final prefs = await SharedPreferences.getInstance();
+  List<String> ids = [currentUser, participantId];
+  ids.sort();
+  String chatRoomId = ids.join('_');
 
-      if (currentUser.compareTo(receiverId) < 0) {
-        docPath = '${currentUser}_$receiverId';
-      } else {
-        docPath = '${receiverId}_$currentUser';
-      }
+  DocumentSnapshot metaDoc = await FirebaseFirestore.instance
+    .collection('chat_rooms')
+    .doc(chatRoomId)
+    .collection('messages')
+    .doc('meta')
+    .get();
 
-      return FirebaseFirestore.instance
-          .collection('chat_rooms')
-          .doc(docPath)
-          .collection('messages')
-          .doc('messageDoc')
-          .snapshots()
-          .map((snapshot) {
-        if (snapshot.exists && snapshot.data() != null) {
-          Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-          if (data['receiverId'] == currentUser) {
-            return data['from_msg'] ?? 0;
-          } else if (data['senderId'] == currentUser) {
-            return data['to_msg'] ?? 0;
-          }
-        }
-        return 0;
-      });
-    } catch (e) {
-      print("Error fetching unread messages stream: $e");
-      return Stream.value(0);
-    }
+  if (!metaDoc.exists) return 0;
+
+  Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
+
+  if (data['senderId'] == currentUser) {
+    //await prefs.setInt('unread_messages', data['to_msg']);
+    //print(prefs.getInt('unread_messages'));
+    return data['to_msg'] ?? 0;
+  } else {
+    // await prefs.setInt('unread_messages', data['from_msg']);
+    // print(prefs.getInt('unread_messages'));
+    return data['from_msg'] ?? 0;
   }
+} 
 
-  Future<void> _resetUnreadMessages(String receiverId) async {
-    try {
-      String docPath;
-
-      if (currentUser.compareTo(receiverId) < 0) {
-        docPath = '${currentUser}_$receiverId';
-      } else {
-        docPath = '${receiverId}_$currentUser';
-      }
-
-      DocumentReference messageDocRef = FirebaseFirestore.instance
-          .collection('chat_rooms')
-          .doc(docPath)
-          .collection('messages')
-          .doc('messageDoc');
-
-      DocumentSnapshot messageDocSnapshot = await messageDocRef.get();
-
-      if (messageDocSnapshot.exists && messageDocSnapshot.data() != null) {
-        Map<String, dynamic> data = messageDocSnapshot.data() as Map<String, dynamic>;
-
-        if (data['receiverId'] == currentUser) {
-          await messageDocRef.update({'from_msg': 0});
-        } else if (data['senderId'] == currentUser) {
-          await messageDocRef.update({'to_msg': 0});
-        }
-      }
-    } catch (e) {
-      print("Error resetting unread messages: $e");
-    }
-  }
   
-  Future<String> _getUpdatedName(String userId) async {
-  try {
-    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+  Future<void> resetUnredMessages(String participantId) async{
+    List<String> ids = [currentUser, participantId];
+    ids.sort();
+    String chatRoomId = ids.join('_');
 
-    if (userSnapshot.exists) {
-      Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>;
-      return userData['fullName'] ?? 'Unknown';
+    DocumentSnapshot metaDoc = await FirebaseFirestore.instance
+    .collection('chat_rooms')
+    .doc(chatRoomId)
+    .collection('messages')
+    .doc('meta')
+    .get();
+    
+    Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
+    if (data['senderId'] == currentUser) {
+      metaDoc.reference.update({
+        'to_msg': 0
+      });
     } else {
-      return 'Unknown';
+      metaDoc.reference.update({
+        'from_msg': 0
+      });
     }
-  } catch (e) {
-    print("Error fetching user name: $e");
-    return 'Unknown';
   }
-}
+
+  @override
+  Widget build(BuildContext context) {
+    return ConnectivityWrapper(
+      child: StreamBuilder(
+        stream: fetchConversations(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return MessagesShimmer();
+          }
+          if (!snapshot.hasData) {
+            return MessagesShimmer();
+          }
+          var conversations = snapshot.data!;
+          return Scaffold(
+          appBar: AppBar(
+        automaticallyImplyLeading: false,
+        // title: Text('Mesajlar', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20, color: Colors.white)),
+        title: GlobalStyles.textStyle(text: 'Mesajlar', context: context, size: 20, fontWeight: FontWeight.w700, color: Colors.white),
+        backgroundColor: sellerbackground,
+        centerTitle: true,
+      ),
+      backgroundColor: sellerbackground,
+      body: ListView.builder(
+        itemCount: conversations.length,
+        itemBuilder: (context, index) {
+          var conversation = conversations[index];
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
+              child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
+            ),
+            title: Text(conversation['receiverName'], style: TextStyle(color: Colors.white)),
+            subtitle: Row(
+                  children: [
+                    Text(conversation['lastMessage'], style: TextStyle(color: Colors.white)),
+                    const Spacer(),
+                    if (conversation['unread'] > 0) 
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${conversation['unread']}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      )
+                  ]
+                ),
+            onTap: () async{
+              await resetUnredMessages(conversation['receiverId']);
+              Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+        }
+      ),
+    );
+  }
 }
