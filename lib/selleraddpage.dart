@@ -1612,9 +1612,11 @@ class priceField extends StatelessWidget {
                     final value = int.tryParse(price);
                     if (value == null) {
                       return 'Fiyat bilgisi girmelisiniz';
-                    } if (value < 250) {
-                      return "Fiyat 250 TL'den az olamaz!";
-                    } else {
+                    }
+                    // if (value < 250) {
+                    //   return "Fiyat 250 TL'den az olamaz!";
+                    // } 
+                    else {
                       return null;
                     }
                   },

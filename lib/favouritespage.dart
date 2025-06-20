@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class FavouritesPage extends StatefulWidget {
@@ -80,7 +81,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : favourites.isEmpty
-              ? const Center(child: Text('Henüz favori eklenmedi.'))
+          ? Center(child: GlobalStyles.textStyle(text: 'Henüz favori eklenmedi', context:context, size: 25, fontWeight: FontWeight.bold, color: Colors.black))
               : Column(
                 children: [
                   showFavouritesText(),
