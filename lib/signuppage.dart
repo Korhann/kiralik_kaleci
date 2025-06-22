@@ -121,7 +121,7 @@ class _SignUpState extends State<SignUp> {
                       child: Column(
                         children: [
                           const SizedBox(height: 60),
-                          PlatformText(
+                          Text(
                             "Kayıt Ol",
                             style: GoogleFonts.inter(
                                 fontSize: 25,
