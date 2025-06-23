@@ -57,8 +57,11 @@ class _Direct2MessageState extends State<Direct2Message> {
           // Messages List
           Expanded(child: _buildMessageList()),
               
-          // Message Input Field
-          _buildMessageInput(),
+          // Message Input Field wrapped in SafeArea
+          SafeArea(
+            top: false,
+            child: _buildMessageInput(),
+          ),
           const SizedBox(height: 20),
         ],
       ),

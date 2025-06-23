@@ -34,6 +34,7 @@ class SellerMainPageState extends State<SellerMainPage> {
   @override
   void initState() {
     super.initState();
+    // this does not log in sometimes
     _authStream = FirebaseAuth.instance.authStateChanges();
     _currentIndex = widget.index;
     listenToUnreadCount();
@@ -52,7 +53,7 @@ class SellerMainPageState extends State<SellerMainPage> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: _authStream,
+      stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context,snapshot) {
         if (snapshot.hasData) {
         

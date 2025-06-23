@@ -16,7 +16,6 @@ class DirectMessages extends StatefulWidget {
   @override
   State<DirectMessages> createState() => _DirectMessagesState();
 }
-//TODO: Error mesajı access denied bu sayfa hakkında olabilir
 
 class _DirectMessagesState extends State<DirectMessages> {
 
@@ -34,11 +33,98 @@ class _DirectMessagesState extends State<DirectMessages> {
     super.dispose();
   }
 
-  Stream<List<Map<String, dynamic>>> fetchConversations() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null){return const Stream.empty();}
+//   Stream<List<Map<String, dynamic>>> fetchConversations() {
+//     final user = FirebaseAuth.instance.currentUser;
+//     if (user == null){return const Stream.empty();}
 
-    final currentUser = user.uid;
+//     final currentUser = user.uid;
+//     Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
+//       .collectionGroup('messages')
+//       .where('senderId', isEqualTo: currentUser)
+//       .snapshots();
+    
+
+//     Stream<QuerySnapshot> receivedStream = FirebaseFirestore.instance
+//       .collectionGroup('messages')
+//       .where('receiverId', isEqualTo: currentUser)
+//       .snapshots();
+
+//     return Rx.combineLatest2(
+//     sentStream,
+//     receivedStream,
+//     (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) async {  
+//       Set<String> participantIds = {};
+
+//       for (var doc in sentSnap.docs) {
+//         participantIds.add(doc['receiverId']);
+//       }
+
+//       for (var doc in receivedSnap.docs) {
+//         participantIds.add(doc['senderId']);
+//       }
+
+//       List<Map<String, dynamic>> tempConversations = [];
+
+//       for (String participantId in participantIds) {        
+//         String lastMessage = await _getLastMessage(participantId);
+//         String receiverName = await _getReceiverName(participantId);
+//         String? imageUrl = await _getReceiverImage(participantId);
+//         int unreadCount = await getUnreadCount(participantId);
+//         await addParticipantIdToPrefs(participantId);
+
+//         tempConversations.add({
+//           'receiverId': participantId,
+//           'receiverName': receiverName,
+//           'lastMessage': lastMessage,
+//           'imageUrl': imageUrl,
+//           'unread': unreadCount
+//         });
+//       }
+//       return tempConversations;
+//     },
+//   ).asyncMap((futureList) => futureList);
+// }
+
+  // Future<void> addParticipantIdToPrefs(String participantId) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     List<String> ids = prefs.getStringList('ids') ?? [];
+
+  //     if (!ids.contains(participantId)) {
+  //       ids.add(participantId);
+  //       await prefs.setStringList('ids', ids);
+  //     }
+  //   } catch (e, stack) {
+  //     await reportErrorToCrashlytics(
+  //       e,
+  //       stack,
+  //       reason: 'directmessages addParticipantIdToPrefs error for participantId: $participantId',
+  //     );
+  //   }
+  // }
+
+
+
+Future<Map<String, dynamic>> fetchConversationData(String participantId) async {
+  String lastMessage = await _getLastMessage(participantId);
+  String receiverName = await _getReceiverName(participantId);
+  String? imageUrl = await _getReceiverImage(participantId);
+  int unreadCount = await getUnreadCount(participantId);
+  // Optionally, add to SharedPreferences here if needed, but avoid if possible
+  return {
+    'receiverId': participantId,
+    'receiverName': receiverName,
+    'lastMessage': lastMessage,
+    'imageUrl': imageUrl,
+    'unread': unreadCount,
+  };
+}
+
+  Stream<List<String>> fetchParticipantIds() {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return const Stream.empty();
+
+  final currentUser = user.uid;
   Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
       .collectionGroup('messages')
       .where('senderId', isEqualTo: currentUser)
@@ -52,59 +138,18 @@ class _DirectMessagesState extends State<DirectMessages> {
   return Rx.combineLatest2(
     sentStream,
     receivedStream,
-    (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) async {  
+    (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) {
       Set<String> participantIds = {};
-
       for (var doc in sentSnap.docs) {
         participantIds.add(doc['receiverId']);
       }
-
       for (var doc in receivedSnap.docs) {
         participantIds.add(doc['senderId']);
       }
-
-      List<Map<String, dynamic>> tempConversations = [];
-
-
-      for (String participantId in participantIds) {        
-        String lastMessage = await _getLastMessage(participantId);
-        String receiverName = await _getReceiverName(participantId);
-        String? imageUrl = await _getReceiverImage(participantId);
-        int unreadCount = await getUnreadCount(participantId);
-        await addParticipantIdToPrefs(participantId);
-
-        tempConversations.add({
-          'receiverId': participantId,
-          'receiverName': receiverName,
-          'lastMessage': lastMessage,
-          'imageUrl': imageUrl,
-          'unread': unreadCount
-        });
-      }
-      return tempConversations;
+      return participantIds.toList();
     },
-  ).asyncMap((futureList) => futureList);
+  );
 }
-
-  Future<void> addParticipantIdToPrefs(String participantId) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      List<String> ids = prefs.getStringList('ids') ?? [];
-
-      if (!ids.contains(participantId)) {
-        ids.add(participantId);
-        await prefs.setStringList('ids', ids);
-      }
-    } catch (e, stack) {
-      await reportErrorToCrashlytics(
-        e,
-        stack,
-        reason: 'directmessages addParticipantIdToPrefs error for participantId: $participantId',
-      );
-    }
-  }
-
-
   Future<int> getUnreadCount(String participantId) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return Future.error('noUnreadCount'); // Or redirect to login
@@ -113,8 +158,8 @@ class _DirectMessagesState extends State<DirectMessages> {
 
     try {
       List<String> ids = [currentUser, participantId];
-  ids.sort();
-  String chatRoomId = ids.join('_');
+      ids.sort();
+      String chatRoomId = ids.join('_');
 
   DocumentSnapshot metaDoc = await FirebaseFirestore.instance
     .collection('chat_rooms')
@@ -235,23 +280,30 @@ class _DirectMessagesState extends State<DirectMessages> {
   }
 
   @override
-Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
   return ConnectivityWrapper(
-    child: StreamBuilder<List<Map<String, dynamic>>>(
-      stream: fetchConversations(),
+    child: StreamBuilder<List<String>>(
+      stream: fetchParticipantIds(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return MessagesShimmer();
         }
-        var conversations = snapshot.data!;
-        //final width = MediaQuery.sizeOf(context).width;
-
+        if (!snapshot.hasData) {
+          return Text('Henüz bir mesajınız bulunmuyor');
+        }
+        var participantIds = snapshot.data!;
         return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
             title: Padding(
               padding: const EdgeInsets.only(top: 30),
-              child: GlobalStyles.textStyle(text: 'Mesajlar', context: context, size: 20, fontWeight: FontWeight.w700, color: Colors.black),
+              child: GlobalStyles.textStyle(
+                text: 'Mesajlar',
+                context: context,
+                size: 20,
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
+              ),
             ),
             backgroundColor: background,
             centerTitle: true,
@@ -261,45 +313,62 @@ Widget build(BuildContext context) {
             builder: (context, constraints) {
               final width = constraints.maxWidth;
               return ListView.builder(
-              itemCount: conversations.length,
-              itemBuilder: (context, index) {
-                var conversation = conversations[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    radius: MediaQuery.of(context).size.width * 0.055,
-                    backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
-                    child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
-                  ),
-                   title: Text(conversation['receiverName'], style: TextStyle(fontSize: width * 0.045)),
-                  subtitle: Row(
-                    children: [
-                      Text(conversation['lastMessage'], style: TextStyle(fontSize: width * 0.04)),
-                      const Spacer(),
-                      if (conversation['unread'] > 0) 
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${conversation['unread']}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        )
-                    ]
-                  ),
-                  onTap: () async{
-                    await resetUnredMessages(conversation['receiverId']);
-                    Navigator.push(
-                      context, MaterialPageRoute(
-                        builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
+                itemCount: participantIds.length,
+                itemBuilder: (context, index) {
+                  final participantId = participantIds[index];
+                  return FutureBuilder<Map<String, dynamic>>(
+                    future: fetchConversationData(participantId),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        // todo: change the message shimmer
+                        return ListTile(
+                          title: const SizedBox(),
+                        );
+                      }
+                      var conversation = snapshot.data!;
+                      return ListTile(
+                        leading: CircleAvatar(
+                          radius: MediaQuery.of(context).size.width * 0.055,
+                          backgroundImage: conversation['imageUrl'] != null
+                              ? NetworkImage(conversation['imageUrl'])
+                              : null,
+                          child: conversation['imageUrl'] == null
+                              ? const Icon(Icons.person)
+                              : null,
+                        ),
+                        title: Text(conversation['receiverName'], style: TextStyle(fontSize: width * 0.045)),
+                        subtitle: Row(
+                          children: [
+                            Text(conversation['lastMessage'], style: TextStyle(fontSize: width * 0.04)),
+                            const Spacer(),
+                            if (conversation['unread'] > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${conversation['unread']}',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              )
+                          ],
+                        ),
+                        onTap: () async {
+                          await resetUnredMessages(conversation['receiverId']);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
             },
           ),
         );

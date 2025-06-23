@@ -73,7 +73,7 @@ class _GetUserDataState extends State<GetUserData> {
         stream: _userStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text("Bağlantı hatası"));
+            return const SellerGridShimmer();
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const SellerGridShimmer();

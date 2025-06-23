@@ -369,7 +369,7 @@ class _LogInState extends State<LogIn> {
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (context) => SignUp()));
                             },
-                            child: PlatformText(
+                            child: Text(
                               "Kayıt Ol",
                               style: GoogleFonts.inter(
                                   decoration: TextDecoration.underline,

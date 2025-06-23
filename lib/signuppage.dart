@@ -410,7 +410,7 @@ class _SignUpState extends State<SignUp> {
                                 await signUpUser();
                               }
                             },
-                            child: PlatformText(
+                            child: Text(
                               "Kayıt Ol",
                               style: GoogleFonts.inter(color: Colors.black, textStyle: style)),
                               material: (_, __) => MaterialElevatedButtonData(

@@ -185,7 +185,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: height * 0.65
+                  minHeight: height * 0.60
                 ),
                 child: SingleChildScrollView(
                   child: Container(

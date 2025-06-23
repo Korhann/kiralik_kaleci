@@ -35,6 +35,7 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    // this does not login sometimes
     _authStream = FirebaseAuth.instance.authStateChanges();
     _currentIndex = widget.index;
     listenToUnreadCount();
@@ -55,7 +56,7 @@ Widget build(BuildContext context) {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   return StreamBuilder<User?>(
-    stream: _authStream,
+    stream: FirebaseAuth.instance.authStateChanges(),
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         // kullanıcı giriş yaptı

@@ -1,0 +1,5 @@
+Yapılacaklar
+
+1- Uygulamanın performansına bakılacak
+2- Devicepreview den ios ta dene
+

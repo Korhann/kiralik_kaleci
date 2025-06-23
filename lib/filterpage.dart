@@ -420,7 +420,6 @@ class _FilterPageState extends State<FilterPage> {
 
   Future<void> onCitySelected(String selectedCityFilter) async {
     try {
-      print(selectedCityFilter);
       final city = cityData.firstWhere((city) => city['name'] == selectedCityFilter);
       if (city != null) {
         final districtsData = city['districts'];

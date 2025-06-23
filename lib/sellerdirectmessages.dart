@@ -7,7 +7,6 @@ import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SellerDirectMessages extends StatefulWidget {
   const SellerDirectMessages({super.key});
@@ -18,8 +17,6 @@ class SellerDirectMessages extends StatefulWidget {
 
 class _SellerDirectMessagesState extends State<SellerDirectMessages> {
   late String currentUser;
-  List<Map<String, dynamic>> conversations = [];
-
 
   @override
   void initState() {
@@ -27,69 +24,51 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
     currentUser = FirebaseAuth.instance.currentUser!.uid;
   }
 
-  Stream<List<Map<String, dynamic>>> fetchConversations() {
+  Stream<List<String>> fetchParticipantIds() {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null){return const Stream.empty();}
+    if (user == null) return const Stream.empty();
 
     final currentUser = user.uid;
-  Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
-      .collectionGroup('messages')
-      .where('senderId', isEqualTo: currentUser)
-      .snapshots();
+    Stream<QuerySnapshot> sentStream = FirebaseFirestore.instance
+        .collectionGroup('messages')
+        .where('senderId', isEqualTo: currentUser)
+        .snapshots();
 
-  Stream<QuerySnapshot> receivedStream = FirebaseFirestore.instance
-      .collectionGroup('messages')
-      .where('receiverId', isEqualTo: currentUser)
-      .snapshots();
+    Stream<QuerySnapshot> receivedStream = FirebaseFirestore.instance
+        .collectionGroup('messages')
+        .where('receiverId', isEqualTo: currentUser)
+        .snapshots();
 
-  return Rx.combineLatest2(
-    sentStream,
-    receivedStream,
-    (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) async { 
-      Set<String> participantIds = {};
-
-      for (var doc in sentSnap.docs) {
-        participantIds.add(doc['receiverId']);
-      }
-
-      for (var doc in receivedSnap.docs) {
-        participantIds.add(doc['senderId']);
-      }
-
-      List<Map<String, dynamic>> tempConversations = [];
-
-
-      for (String participantId in participantIds) {
-        
-        String lastMessage = await _getLastMessage(participantId);
-        String receiverName = await _getReceiverName(participantId);
-        String? imageUrl = await _getReceiverImage(participantId);
-        int unreadCount = await getUnreadCount(participantId);
-        await addParticipantToPrefs(participantId);
-
-        tempConversations.add({
-          'receiverId': participantId,
-          'receiverName': receiverName,
-          'lastMessage': lastMessage,
-          'imageUrl': imageUrl,
-          'unread': unreadCount
-        });
-      }
-      return tempConversations;
-    },
-  ).asyncMap((futureList) => futureList);
-}
-
-  Future<void> addParticipantToPrefs(String participantId) async {
-  final prefs = await SharedPreferences.getInstance();
-  List<String> ids = prefs.getStringList('ids') ?? [];
-
-  if (!ids.contains(participantId)) {
-    ids.add(participantId);
-    await prefs.setStringList('ids', ids);
+    return Rx.combineLatest2(
+      sentStream,
+      receivedStream,
+      (QuerySnapshot sentSnap, QuerySnapshot receivedSnap) {
+        Set<String> participantIds = {};
+        for (var doc in sentSnap.docs) {
+          participantIds.add(doc['receiverId']);
+        }
+        for (var doc in receivedSnap.docs) {
+          participantIds.add(doc['senderId']);
+        }
+        return participantIds.toList();
+      },
+    );
   }
-}
 
+  Future<Map<String, dynamic>> fetchConversationData(String participantId) async {
+    String lastMessage = await _getLastMessage(participantId);
+    String receiverName = await _getReceiverName(participantId);
+    String? imageUrl = await _getReceiverImage(participantId);
+    int unreadCount = await getUnreadCount(participantId);
+    // Optionally, add to SharedPreferences here if needed, but avoid if possible
+    return {
+      'receiverId': participantId,
+      'receiverName': receiverName,
+      'lastMessage': lastMessage,
+      'imageUrl': imageUrl,
+      'unread': unreadCount
+    };
+  }
 
   Future<String> _getLastMessage(String receiverId) async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
@@ -124,120 +103,133 @@ class _SellerDirectMessagesState extends State<SellerDirectMessages> {
   }
 
   Future<int> getUnreadCount(String participantId) async {
-  final prefs = await SharedPreferences.getInstance();
-  List<String> ids = [currentUser, participantId];
-  ids.sort();
-  String chatRoomId = ids.join('_');
-
-  DocumentSnapshot metaDoc = await FirebaseFirestore.instance
-    .collection('chat_rooms')
-    .doc(chatRoomId)
-    .collection('messages')
-    .doc('meta')
-    .get();
-
-  if (!metaDoc.exists) return 0;
-
-  Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
-
-  if (data['senderId'] == currentUser) {
-    //await prefs.setInt('unread_messages', data['to_msg']);
-    //print(prefs.getInt('unread_messages'));
-    return data['to_msg'] ?? 0;
-  } else {
-    // await prefs.setInt('unread_messages', data['from_msg']);
-    // print(prefs.getInt('unread_messages'));
-    return data['from_msg'] ?? 0;
-  }
-} 
-
-  
-  Future<void> resetUnredMessages(String participantId) async{
     List<String> ids = [currentUser, participantId];
     ids.sort();
     String chatRoomId = ids.join('_');
 
     DocumentSnapshot metaDoc = await FirebaseFirestore.instance
-    .collection('chat_rooms')
-    .doc(chatRoomId)
-    .collection('messages')
-    .doc('meta')
-    .get();
-    
+        .collection('chat_rooms')
+        .doc(chatRoomId)
+        .collection('messages')
+        .doc('meta')
+        .get();
+
+    if (!metaDoc.exists) return 0;
+
+    Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
+
+    if (data['senderId'] == currentUser) {
+      return data['to_msg'] ?? 0;
+    } else {
+      return data['from_msg'] ?? 0;
+    }
+  }
+
+  Future<void> resetUnredMessages(String participantId) async {
+    List<String> ids = [currentUser, participantId];
+    ids.sort();
+    String chatRoomId = ids.join('_');
+
+    DocumentSnapshot metaDoc = await FirebaseFirestore.instance
+        .collection('chat_rooms')
+        .doc(chatRoomId)
+        .collection('messages')
+        .doc('meta')
+        .get();
+
     Map<String, dynamic> data = metaDoc.data() as Map<String, dynamic>;
     if (data['senderId'] == currentUser) {
-      metaDoc.reference.update({
-        'to_msg': 0
-      });
+      metaDoc.reference.update({'to_msg': 0});
     } else {
-      metaDoc.reference.update({
-        'from_msg': 0
-      });
+      metaDoc.reference.update({'from_msg': 0});
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return ConnectivityWrapper(
-      child: StreamBuilder(
-        stream: fetchConversations(),
+      child: StreamBuilder<List<String>>(
+        stream: fetchParticipantIds(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return MessagesShimmer();
           }
-          if (!snapshot.hasData) {
-            return MessagesShimmer();
+          if (!snapshot.hasData){
+            return Text('Henüz bir mesajınız bulunmuyor');
           }
-          var conversations = snapshot.data!;
+          var participantIds = snapshot.data!;
+          if (participantIds.isEmpty) {
+            return const Center(child: Text('Henüz bir mesajınız bulunmuyor', style: TextStyle(color: Colors.white)));
+          }
           return Scaffold(
-          appBar: AppBar(
-        automaticallyImplyLeading: false,
-        // title: Text('Mesajlar', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20, color: Colors.white)),
-        title: GlobalStyles.textStyle(text: 'Mesajlar', context: context, size: 20, fontWeight: FontWeight.w700, color: Colors.white),
-        backgroundColor: sellerbackground,
-        centerTitle: true,
-      ),
-      backgroundColor: sellerbackground,
-      body: ListView.builder(
-        itemCount: conversations.length,
-        itemBuilder: (context, index) {
-          var conversation = conversations[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: conversation['imageUrl'] != null ? NetworkImage(conversation['imageUrl']) : null,
-              child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              title: GlobalStyles.textStyle(
+                text: 'Mesajlar',
+                context: context,
+                size: 20,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+              backgroundColor: sellerbackground,
+              centerTitle: true,
             ),
-            title: Text(conversation['receiverName'], style: TextStyle(color: Colors.white)),
-            subtitle: Row(
-                  children: [
-                    Text(conversation['lastMessage'], style: TextStyle(color: Colors.white)),
-                    const Spacer(),
-                    if (conversation['unread'] > 0) 
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${conversation['unread']}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      )
-                  ]
-                ),
-            onTap: () async{
-              await resetUnredMessages(conversation['receiverId']);
-              Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
-                ),
-              );
-            },
+            backgroundColor: sellerbackground,
+            body: ListView.builder(
+              itemCount: participantIds.length,
+              itemBuilder: (context, index) {
+                final participantId = participantIds[index];
+                return FutureBuilder<Map<String, dynamic>>(
+                  future: fetchConversationData(participantId),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return ListTile(
+                        title: const SizedBox(),
+                      );
+                    }
+                    var conversation = snapshot.data!;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: conversation['imageUrl'] != null
+                            ? NetworkImage(conversation['imageUrl'])
+                            : null,
+                        child: conversation['imageUrl'] == null ? const Icon(Icons.person) : null,
+                      ),
+                      title: Text(conversation['receiverName'], style: const TextStyle(color: Colors.white)),
+                      subtitle: Row(
+                        children: [
+                          Text(conversation['lastMessage'], style: const TextStyle(color: Colors.white)),
+                          const Spacer(),
+                          if (conversation['unread'] > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '${conversation['unread']}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            )
+                        ],
+                      ),
+                      onTap: () async {
+                        await resetUnredMessages(conversation['receiverId']);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Direct2Message(receiverId: conversation['receiverId']),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
           );
         },
-      ),
-    );
-        }
       ),
     );
   }
