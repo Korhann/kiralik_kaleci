@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/simple/list_notifier.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/SellerGridItem.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
@@ -14,7 +15,6 @@ import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
 
-//TODO: BURADA LAZY LOADING KULLANILACAK
 
 class GetUserData extends StatefulWidget {
   const GetUserData({super.key});
@@ -27,17 +27,70 @@ class _GetUserDataState extends State<GetUserData> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _userStream;
 
-  String? nameFilter, cityFilter, districtFilter, fieldFilter;
-  List<String> daysFilter = [];
+  String? nameFilter, cityFilter, districtFilter, fieldFilter, daysFilter;
   int? minFilter = 0, maxFilter = 0;
 
   bool isLoading = true;
-  
+
+  // for the lazy loading of the gridview
+  final ScrollController _scrollController = ScrollController();
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> sellers = [];
+  bool hasMore = true;
+  DocumentSnapshot? lastDoc;
+  static const int batchSize = 10;
+  late Query<Map<String,dynamic>> globalquery;
+
+  bool queryGiven = false;
+
+
   @override
   void initState() {
     super.initState();
     getUserStream();
+    _fetchSellers();
+    _scrollController.addListener(_onScroll);
     userorseller = false;
+    
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchSellers() async {
+    if (isLoading || !hasMore) return;
+    setState(() => isLoading = true);
+
+    // if query is changed in apply filters, does not enter here
+    if (!queryGiven) {
+      globalquery = _firestore
+      .collection("Users")
+      .where('sellerDetails', isNotEqualTo: null)
+      .orderBy('sellerDetails.sellerFullName')
+      .limit(batchSize);
+    }
+
+    if (lastDoc != null) {
+      globalquery = globalquery.startAfterDocument(lastDoc!);
+    }
+
+    final snapshot = await globalquery.get();
+    if (snapshot.docs.isNotEmpty) {
+      lastDoc = snapshot.docs.last;
+      sellers.addAll(snapshot.docs);
+    }
+    if (snapshot.docs.length < batchSize) {
+      hasMore = false;
+    }
+    setState(() => isLoading = false);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      _fetchSellers();
+    }
   }
 
   Future<void> getUserStream() async {
@@ -63,69 +116,51 @@ class _GetUserDataState extends State<GetUserData> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return Expanded(child: SellerGridShimmer());
-    }
+  final width = MediaQuery.sizeOf(context).width;
+  final height = MediaQuery.sizeOf(context).height;
+  final bannerHeight = width * 0.3;
 
-    return Scaffold(
-      backgroundColor: background,
-      body: StreamBuilder(
-        stream: _userStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const SellerGridShimmer();
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SellerGridShimmer();
-          }
-          var docs = snapshot.data!.docs.where((doc) => doc.data().containsKey('sellerDetails')).toList();
-
-          final width = MediaQuery.sizeOf(context).width;
-          final height = MediaQuery.sizeOf(context).height;
-          final bannerHeight = width * 0.3;
-
-          return MediaQuery.removePadding(
-            context: context,
-            removeTop: true,
-            removeBottom: true,
-            removeLeft: true,
-            removeRight: true,
-            child: Column(
-              children: [
-                _HeaderSection(
-                  onFilterTap: _navigateToFilterPage,
-                  onNotificationTap: _navigateToAppsPage,
-                  width: width,
-                  height: height,
-                ),
-
-                // BANNER BÖLÜMÜ
-                //TODO: REMOVE THE AUTO PADDING HERE
-                ImageSliderDemo(width: width, height: bannerHeight),
-
-                const SizedBox(height: 10),
-
-                Expanded(
-                  child: docs.isEmpty
-                      ? _EmptyState()
-                      : _SellerGrid(
-                          docs: docs,
-                          onCardTap: _handleCardTap,
-                          isLoading: isLoading
-                        ),
-                ),
-              ],
-            ),
-          );
-        },
+  return Scaffold(
+    backgroundColor: background,
+    body: MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      removeBottom: true,
+      removeLeft: true,
+      removeRight: true,
+      child: Column(
+        children: [
+          _HeaderSection(
+            onFilterTap: _navigateToFilterPage,
+            onNotificationTap: _navigateToAppsPage,
+            width: width,
+            height: height,
+          ),
+          ImageSliderDemo(width: width, height: bannerHeight),
+          const SizedBox(height: 10),
+          Expanded(
+            child: isLoading && sellers.isEmpty
+                ? SellerGridShimmer()
+                : sellers.isEmpty
+                    ? _EmptyState()
+                    : _SellerGrid(
+                        docs: sellers,
+                        onCardTap: _handleCardTap,
+                        isLoading: isLoading,
+                        scrollController: _scrollController,
+                        hasMore: hasMore,
+                      ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _navigateToFilterPage() async {
     final filters = await Navigator.push(
       context,
-      _createRoute(FilterPage(daysFilter: daysFilter)),
+      _createRoute(FilterPage(selectedDay: daysFilter)),
     );
     runFilters(filters);
   }
@@ -162,7 +197,7 @@ class _GetUserDataState extends State<GetUserData> {
         nameFilter = filter['nameFilter'];
         cityFilter = filter['cityFilter'];
         districtFilter = filter['districtFilter'];
-        daysFilter = filter['daysFilter'] ?? [''];
+        daysFilter = filter['daysFilter'];
         fieldFilter = filter['fieldFilter'];
         minFilter = filter['minFilter'];
         maxFilter = filter['maxFilter'];
@@ -171,40 +206,53 @@ class _GetUserDataState extends State<GetUserData> {
     }
   }
 
-  void applyFilter() {
-    Query<Map<String, dynamic>> query = _firestore.collection('Users');
+  void applyFilter() async{
+  Query<Map<String, dynamic>> query = _firestore.collection('Users');
 
-    try {
-      if (nameFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
-    }
-    if (cityFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.city', isEqualTo: cityFilter);
-    }
-    if (districtFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.district', isEqualTo: districtFilter);
-    }
-    if (fieldFilter?.isNotEmpty == true) {
-      query = query.where('sellerDetails.fields', arrayContains: fieldFilter);
-    }
-    if (daysFilter.isNotEmpty) {
-      query = query.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
-    }
-    if (minFilter != null && maxFilter != null) {
-      query = query.where('sellerDetails.sellerPrice',isGreaterThanOrEqualTo: minFilter!).where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
-    } else if (minFilter != null) {
-      query = query.where('sellerDetails.sellerPrice',isGreaterThanOrEqualTo: minFilter!);
-    } else if (maxFilter != null) {
-      query = query.where('sellerDetails.sellerPrice',isLessThanOrEqualTo: maxFilter!);
-    }
-    } catch (e, stack) {
-      reportErrorToCrashlytics(e, stack, reason: 'apply filter error ${FirebaseAuth.instance.currentUser!.uid}');
-    }
-
-    setState(() {
-      _userStream = query.snapshots();
-    });
+  try {
+    if (nameFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
   }
+  if (cityFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.city', isEqualTo: cityFilter);
+  }
+  if (districtFilter!.isNotEmpty) {
+    query = query.where('sellerDetails.district', isEqualTo: districtFilter);
+  }
+  // if both selected use querytags
+  if (districtFilter!.isNotEmpty && daysFilter!.isNotEmpty) {
+    String queryTag = '${fieldFilter}_$daysFilter';
+    query = query.where('sellerDetails.queryTags', arrayContains: queryTag);
+  }
+  if (fieldFilter!.isNotEmpty && daysFilter!.isEmpty) {
+    query = query.where('sellerDetails.fields', arrayContains: fieldFilter);
+  }
+  if (daysFilter!.isNotEmpty && fieldFilter!.isEmpty) {
+    query = query.where('sellerDetails.chosenDays', arrayContains: daysFilter);
+  }
+  if (minFilter != null && maxFilter != null) {
+    query = query.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter!).where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
+  } else if (minFilter != null) {
+    query = query.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter!);
+  } else if (maxFilter != null) {
+    query = query.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
+  }
+
+  query = query.orderBy('sellerDetails.sellerFullName').limit(batchSize);  
+
+  setState(() {
+    globalquery = query;
+    sellers.clear();
+    lastDoc = null;
+    hasMore = true;
+    isLoading = false;
+    queryGiven = true;
+  });
+  _fetchSellers();
+  } catch (e, stack) {
+    reportErrorToCrashlytics(e, stack, reason: 'Searchpage filters error ${FirebaseAuth.instance.currentUser!.uid}');
+  }
+}
 
   Route _createRoute(Widget child) {
     return PageRouteBuilder(
@@ -356,11 +404,15 @@ class _SellerGrid extends StatelessWidget {
   final List<QueryDocumentSnapshot<Map<String, dynamic>>> docs;
   final Function(BuildContext, Map<String, dynamic>, String) onCardTap;
   final bool isLoading;
+  final ScrollController? scrollController;
+  final bool hasMore;
 
   const _SellerGrid({
     required this.docs,
     required this.onCardTap,
     required this.isLoading,
+    required this.scrollController,
+    required this.hasMore
   });
 
   @override
@@ -371,6 +423,7 @@ class _SellerGrid extends StatelessWidget {
         int crossAxisCount = width > 600 ? 3 : 2; 
 
         return GridView.builder(
+          controller: scrollController,
           padding: EdgeInsets.zero,
           physics: const ScrollPhysics(),
           shrinkWrap: true,

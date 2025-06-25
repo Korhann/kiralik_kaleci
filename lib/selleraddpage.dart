@@ -30,7 +30,7 @@ class SellerAddPage extends StatefulWidget {
   State<SellerAddPage> createState() => _SellerAddPageState();
 }
 
-//TODO: DAY HOURS NASIL ÇALIŞTIĞINI ANLA
+//TODO: gün ve sahaları beraber bir array'e yükle 
 
 class _SellerAddPageState extends State<SellerAddPage> {
 
@@ -102,24 +102,48 @@ class _SellerAddPageState extends State<SellerAddPage> {
     sellerCheckFuture = checkIfUserIsAlreadySeller();
   }
 
+//   Future<void> initData() async {
+//   await fetchCities(); 
+//   onCitySelected('İstanbul');
+//   await getInitialName();
+//   await getInitialPrice();
+//   await getInitialPriceMidnight();
+//   districtFromDb = await getInitialDistrict();
+//   setState(() {
+//     selectedDistrict = districtFromDb;
+//   });
+//   await getInitialFields();
+//   await getInitialDayHours();
+//   FootballField.storeFields();
+//   userorseller = true;
+//   setState(() {
+//   isLoading = false;
+//   });
+
+// }
+  
   Future<void> initData() async {
-  await fetchCities(); 
-  onCitySelected('İstanbul');
-  await getInitialName();
-  await getInitialPrice();
-  await getInitialPriceMidnight();
-  districtFromDb = await getInitialDistrict();
+  await fetchCities(); // This is needed first for cityData
+  onCitySelected('İstanbul'); // This can be called after cities are fetched
+
+  // Fetch all Firestore data in parallel
+  final results = await Future.wait([
+    getInitialName(),
+    getInitialPrice(),
+    getInitialPriceMidnight(),
+    getInitialDistrict(),
+    getInitialFields(),
+    getInitialDayHours(),
+  ]);
+
+  districtFromDb = results[3] as String;
   setState(() {
     selectedDistrict = districtFromDb;
-  });
-  await getInitialFields();
-  await getInitialDayHours();
-  FootballField.storeFields();
-  userorseller = true;
-  setState(() {
-  isLoading = false;
+    isLoading = false;
   });
 
+  FootballField.storeFields();
+  userorseller = true;
 }
 
   @override
@@ -673,6 +697,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
       );
 
       try {
+
         String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
         if (userId.isNotEmpty) {
           List<String> imageUrls = await _uploadImagesToStorage();
@@ -687,6 +712,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
                   }).toList();
             } 
           });
+          List<String> dayNames = formattedData.keys.toList();
+          // for easier querying (Hasan Özaydın_Cuma), combines fields with days
+          List<String> querytags = await filterTags(selectedFields,dayNames);
 
           int? price = int.tryParse(sellerPrice.text);
           int? priceAfterMidnight = int.tryParse(sellerPriceAfterMidnight.text);
@@ -700,6 +728,7 @@ class _SellerAddPageState extends State<SellerAddPage> {
             'fields': selectedFields,
             "imageUrls": imageUrls,
             'chosenDays': formattedData.keys.toList(),
+            'queryTags' : querytags,
             "selectedHoursByDay": formattedData,
           };
 
@@ -729,6 +758,20 @@ class _SellerAddPageState extends State<SellerAddPage> {
     } else {
       Showalert(context: context, text: 'Tüm alanları doldurduğunuza emin misiniz?').showErrorAlert();
       return false;
+    }
+  }
+
+  Future<List<String>> filterTags(Set<String> selectedFields,List<String> days) async {
+    List<String> filtertags = [];
+    if (selectedFields.isNotEmpty && days.isNotEmpty) {
+      for (var field in selectedFields) {
+        for (var day in days) {
+          filtertags.add('${field}_$day');
+        }
+      } 
+      return filtertags;
+    } else {
+      return [];
     }
   }
 
@@ -1366,83 +1409,72 @@ class DistrictDropDown extends StatelessWidget {
   final String? selectedDistrict;
   final List<String> districts;
   final ValueChanged<String?> onDistrictSelected;
-  final Set<String> ?multFields;
-  bool isInitial;
+  final Set<String>? multFields;
+  final bool isInitial;
   final String districtFromDb;
 
-  DistrictDropDown({
+  const DistrictDropDown({
     super.key,
     required this.selectedDistrict,
     required this.districts,
     required this.onDistrictSelected,
     required this.multFields,
     required this.isInitial,
-    required this.districtFromDb
+    required this.districtFromDb,
   });
-
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DropdownButtonFormField<String>(
-  value: (selectedDistrict != null && districts.contains(selectedDistrict))
-      ? selectedDistrict
-      : (districtFromDb.isNotEmpty && districts.contains(districtFromDb))
-          ? districtFromDb
-          : null, // 👈 fallback to null if it's not in the list
-  items: districts.map((district) {
-    return DropdownMenuItem<String>(
-      value: district,
-      child: Text(
-        district,
-        style: GoogleFonts.inter(color: Colors.black),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<String>(
+            value: (selectedDistrict != null && districts.contains(selectedDistrict)) ? selectedDistrict
+                : (districtFromDb.isNotEmpty && districts.contains(districtFromDb))
+                ? districtFromDb
+                : null,
+            items: districts.map((district) {
+              return DropdownMenuItem<String>(
+                value: district,
+                child: Text(
+                  district,
+                  style: GoogleFonts.inter(color: Colors.black),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              onDistrictSelected(value);
+              multFields?.clear();
+            },
+            isExpanded: true,
+            hint: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text('İlçe seçin'),
+            ),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              errorStyle: const TextStyle(height: 0),
+            ),
+            validator: (value) {
+              if (value == null) return '';
+              return null;
+            },
+          ),
+          const SizedBox(height: 2),
+        ],
       ),
     );
-  }).toList(),
-  onChanged: (value) {
-    onDistrictSelected(value);
-    isInitial = false;
-    multFields?.clear();
-  },
-  isExpanded: true,
-  hint: const Padding(
-    padding: EdgeInsets.symmetric(horizontal: 10),
-    child: Text('İlçe seçin'),
-  ),
-  decoration: InputDecoration(
-    contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: BorderSide.none,
-    ),
-    filled: true,
-    fillColor: Colors.white,
-    errorStyle: const TextStyle(height: 0),
-  ),
-  validator: (value) {
-    if (value == null) return '';
-    return null;
-  },
-),
-
-                      const SizedBox(height: 2),
-                      // if (selectedDistrict == null || districtFromDb.isEmpty)
-                      //   Padding(
-                      //     padding: const EdgeInsets.only(top: 5, left: 10),
-                      //     child: Text(
-                      //       'Lütfen bir ilçe seçin',
-                      //       style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
-                      //     ),
-                      //   ),
-                    ],
-                  ),
-                );
   }
 }
+
 class FieldsDropDown extends StatelessWidget {
   final Set<String> multFields;
   final List<String> fields;
@@ -1484,6 +1516,7 @@ class FieldsDropDown extends StatelessWidget {
                                 _setState(() { // First, update the modal UI
                                 if (isSelected == true) {
                                   multFields.add(e);
+                                  print(multFields);
                                 } else {
                                   multFields.remove(e);
                                 }

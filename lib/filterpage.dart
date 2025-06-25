@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:kiralik_kaleci/connectivity.dart';
 import 'package:kiralik_kaleci/connectivityWithBackButton.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/responsiveTexts.dart';
@@ -14,14 +13,9 @@ import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
-//todo: Filter page takes too long to load
-
 class FilterPage extends StatefulWidget {
-  final List<String> daysFilter;
-  const FilterPage({
-    super.key,
-    required this.daysFilter
-  });
+  final String? selectedDay;
+  const FilterPage({super.key, required this.selectedDay});
 
   @override
   State<FilterPage> createState() => _FilterPageState();
@@ -36,6 +30,7 @@ class _FilterPageState extends State<FilterPage> {
   static String? fieldFilter;
   static int? minFilter;
   static int? maxFilter;
+  String? selectedDay;
 
   static final TextEditingController _nameController = TextEditingController();
   static final TextEditingController _cityController = TextEditingController();
@@ -57,14 +52,11 @@ class _FilterPageState extends State<FilterPage> {
   @override
   void initState() {
     super.initState();
-    // todo: halısahayı boş bırakınca hatayı veriyor kalkınca çöz
     _runMethods = runMethods();
-    days = widget.daysFilter;
-    // çok zaman aldığı için runMethods ta çalıştırmıyorum
     FootballField.storeFields();
+    selectedDay = widget.selectedDay;
   }
 
-  // if i dont run fetch cities first there is no element
   Future<void> runMethods() async {
     try {
       await setPrefs();
@@ -112,6 +104,7 @@ class _FilterPageState extends State<FilterPage> {
         _minPriceController.clear();
         _maxPriceController.clear();
         clearDays();
+        selectedDay = null;
       });
     } catch (e, stack) {
       await reportErrorToCrashlytics(
@@ -125,6 +118,7 @@ class _FilterPageState extends State<FilterPage> {
   void clearDays() {
     setState(() {
       days.clear();
+      selectedDay = null;
     });
   }
 
@@ -159,236 +153,219 @@ class _FilterPageState extends State<FilterPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return FilterPageShimmer();
           }
-        return Scaffold(
-        resizeToAvoidBottomInset: true,
-        backgroundColor: background,
-        // appBar: AppBar(
-        //   backgroundColor: background,
-        //   leading: IconButton(
-        //       onPressed: () {
-        //         if (isCleared) {
-        //           Navigator.pop(
-        //             context, {
-        //             'nameFilter': nameFilter,
-        //             'cityFilter': cityFilter,
-        //             'districtFilter': districtFilter,
-        //             'fieldFilter': fieldFilter,
-        //             'minFilter': minFilter,
-        //             'maxFilter': maxFilter
-        //           });
-        //         } else {
-        //           Navigator.of(context).pop();
-        //         }
-        //       },
-        //       icon: const Icon(Icons.arrow_back, color: Colors.black)),
-        // ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: height*0.040),
-                Stack(
+          return Scaffold(
+            resizeToAvoidBottomInset: true,
+            backgroundColor: background,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Align(
-                      alignment: Alignment.center,
+                    SizedBox(height: height * 0.040),
+                    Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Filtreler',
+                            style: GoogleFonts.roboto(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: clearFilters(ontap: () {
+                            clearAllFilters();
+                            setState(() {
+                              isCleared = true;
+                            });
+                          }),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Column(
+                      children: [
+                        NameInputField(
+                          controller: _nameController,
+                          onChanged: (value) {
+                            setState(() {
+                              nameFilter = value;
+                            });
+                          },
+                          width: width,
+                          height: height,
+                        ),
+                        const SizedBox(height: 8),
+                        DistrictDropdown(
+                          selectedDistrict: districtFilter,
+                          districts: districts,
+                          onDistrictSelected: (value) async {
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
+                            await prefs.setString('selectedDistrict', value!);
+                            setState(() {
+                              districtFilter = value;
+                              fetchFields(value);
+                              fieldFilter = null;
+                            });
+                          },
+                          onClear: () async {
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
+                            await prefs.remove('selectedDistrict');
+                            SharedPreferences prefs2 = await SharedPreferences.getInstance();
+                            await prefs2.remove('selectedField');
+                            setState(() {
+                              districtFilter = null;
+                              fieldFilter = null;
+                              fields.clear();
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        FieldDropdown(
+                          selectedField: fieldFilter,
+                          fields: fields,
+                          onFieldSelected: (value) async {
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
+                            await prefs.setString('selectedField', value!);
+                            setState(() {
+                              fieldFilter = value;
+                            });
+                          },
+                          onClear: () async {
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
+                            await prefs.remove('selectedField');
+                            setState(() {
+                              fieldFilter = null;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: height * 0.040),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15),
                       child: Text(
-                        'Filtreler',
+                        'Gün Seçiniz',
                         style: GoogleFonts.roboto(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontWeight: FontWeight.normal,
                             color: Colors.black),
-                          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                        textScaler: textScaler,
                       ),
                     ),
-                    Align(
-                        alignment: Alignment.centerRight,
-                        child: clearFilters(ontap: () {
-                          clearAllFilters();
-                          setState(() {
-                            isCleared = true;
-                          });
-                        }
-                      )
-                    )
+                    SizedBox(height: height * 0.020),
+                    DayPickerFirst(
+                      selectedDay: selectedDay,
+                      onDaySelected: (day) {
+                        setState(() {
+                          if (selectedDay == day) {
+                            selectedDay = null;
+                            days.clear();
+                          } else {
+                            selectedDay = day;
+                            days
+                            ..clear()
+                            ..add(day);
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    DayPickerSecond(
+                      selectedDay: selectedDay,
+                      onDaySelected: (day) {
+                        setState(() {
+                          if (selectedDay == day) {
+                            selectedDay = null;
+                            days.clear();
+                          } else {
+                            selectedDay = day;
+                            days
+                            ..clear()
+                            ..add(day);
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    dayPickerThird(
+                      selectedDay: selectedDay,
+                      onDaySelected: (day) {
+                        setState(() {
+                          if (selectedDay == day) {
+                            selectedDay = null;
+                            days.clear();
+                          } else {
+                            selectedDay = day;
+                            days
+                            ..clear()
+                            ..add(day);
+                          }
+                        });
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15),
+                      child: Text(
+                        'Fiyat Aralığı',
+                        style: GoogleFonts.roboto(
+                            fontSize: 18,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black),
+                        textScaler: textScaler,
+                      ),
+                    ),
+                    SizedBox(height: height * 0.020),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                      child: PriceRanger(
+                        minPriceController: _minPriceController,
+                        maxPriceController: _maxPriceController,
+                        onPriceChanged: updatePriceFilters,
+                        width: width,
+                        height: height,
+                      ),
+                    ),
+                    SizedBox(height: height * 0.050),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(
+                            context,
+                            {
+                              'nameFilter': nameFilter,
+                              'cityFilter': cityFilter,
+                              'districtFilter': districtFilter,
+                              'fieldFilter': fieldFilter,
+                              'daysFilter': selectedDay,
+                              'minFilter': minFilter,
+                              'maxFilter': maxFilter
+                            },
+                          );
+                        },
+                        style: GlobalStyles.buttonPrimary(context),
+                        child: Text(
+                          'Filtrele',
+                          style: GoogleFonts.roboto(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                          textScaler: textScaler,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30)
                   ],
                 ),
-                const SizedBox(height: 10),
-                
-                Column(
-                  children: [
-                    NameInputField(
-                      controller: _nameController,
-                      onChanged: (value) {
-                        setState(() {
-                          nameFilter = value;
-                        });
-                      },
-                      width: width,
-                      height: height
-                    ),
-                    const SizedBox(height: 8),
-      
-                    // CityDropdown(
-                    //   selectedCity: cityFilter,
-                    //   cities: cities,
-                    //   onCitySelected: (value) async {
-                    //     SharedPreferences prefs = await SharedPreferences.getInstance();
-                    //     await prefs.setString('selectedCity', value!);
-                    //     setState(() {
-                    //       cityFilter = value;
-                    //       districtFilter = null;
-                    //       fieldFilter = null;
-                    //       districts.clear();
-                    //       fields.clear();
-                    //       onCitySelected(value);
-                    //     });
-                    //   },
-                    //   onClear: () async {
-                    //     SharedPreferences prefs = await SharedPreferences.getInstance();
-                    //     await prefs.remove('selectedCity');
-                    //     setState(() {
-                    //       cityFilter = null;
-                    //       districtFilter = null;
-                    //       fieldFilter = null;
-                    //     });
-                    //   },
-                    // ),
-
-                    //const SizedBox(height: 8),
-      
-                    DistrictDropdown(
-                      selectedDistrict: districtFilter,
-                      districts: districts,
-                      onDistrictSelected: (value) async {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('selectedDistrict', value!);
-                        setState(() {
-                          districtFilter = value;
-                          fetchFields(value);
-                          fieldFilter = null;
-                        });
-                      },
-                      onClear: () async {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.remove('selectedDistrict');
-                        SharedPreferences prefs2 = await SharedPreferences.getInstance();
-                        await prefs2.remove('selectedField');
-                        setState(() {
-                          districtFilter = null;
-                          fieldFilter = null;
-                          fields.clear();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 8),
-      
-                    FieldDropdown(
-                      selectedField: fieldFilter,
-                      fields: fields,
-                      onFieldSelected: (value) async {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('selectedField', value!);
-                        setState(() {
-                          fieldFilter = value;
-                        });
-                      },
-                      onClear: () async {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.remove('selectedField');
-                        setState(() {
-                          fieldFilter = null;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-      
-                SizedBox(height: height*0.040),
-                Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: Text(
-                    'Gün Seçiniz',
-                    style: GoogleFonts.roboto(
-                        fontSize: 18,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black
-                      ),
-                      textScaler: textScaler,
-                  ),
-                ),
-                SizedBox(height: height*0.020),
-      
-                DayPickerFirst(days: days),
-      
-                const SizedBox(height: 10),
-      
-                DayPickerSecond(days: days),
-      
-                const SizedBox(height: 10),
-                
-                dayPickerThird(days: days),
-      
-      
-                Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: Text(
-                    'Fiyat Aralığı',
-                    style: GoogleFonts.roboto(
-                        fontSize: 18,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black
-                      ),
-                      textScaler: textScaler,
-                  ),
-                ),
-      
-                SizedBox(height: height*0.020),
-      
-                Padding(
-                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-                  child: PriceRanger(
-                    minPriceController: _minPriceController,
-                    maxPriceController: _maxPriceController,
-                    onPriceChanged: updatePriceFilters,
-                    width: width,
-                    height: height,
-                  ),
-                ),
-      
-                SizedBox(height: height*0.050),
-                Center(
-                  child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(
-                          context, {
-                          'nameFilter': nameFilter,
-                          'cityFilter': cityFilter,
-                          'districtFilter': districtFilter,
-                          'fieldFilter': fieldFilter,
-                          'daysFilter': days,
-                          'minFilter': minFilter,
-                          'maxFilter': maxFilter
-                        });
-                      },
-                      style: GlobalStyles.buttonPrimary(context),
-                      child: Text(
-                        'Filtrele',
-                        style: GoogleFonts.roboto(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                            textScaler: textScaler,
-                      )),
-                ),
-                const SizedBox(height: 30)
-              ],
+              ),
             ),
-          ),
-        ),
-      );
-        }
-      )
+          );
+        },
+      ),
     );
   }
 
@@ -425,7 +402,7 @@ class _FilterPageState extends State<FilterPage> {
         final districtsData = city['districts'];
         if (districtsData != null) {
           final List<String> districtNames = (districtsData as List<dynamic>).map((district) => district['name'].toString())
-            .toList();
+              .toList();
 
           setState(() {
             cityFilter = selectedCityFilter;
@@ -447,21 +424,21 @@ class _FilterPageState extends State<FilterPage> {
       var localDb = await Hive.openBox<FootballField>('football_fields');
       var field = localDb.values.firstWhere(
         (f) => f.city == cityFilter && f.district == selectedDistrict,
+        
       );
       setState(() {
-        fields = field.fieldName.toSet().toList();
+        fields = field != null ? field.fieldName.toSet().toList() : [];
         fieldFilter = null;
-
         if (!fields.contains(fieldFilter)) {
           fieldFilter = null;
         }
       });
     } catch (e, stack) {
-      await reportErrorToCrashlytics(
-        e,
-        stack,
-        reason: 'filterpage fetchFields error',
-      );
+      // await reportErrorToCrashlytics(
+      //   e,
+      //   stack,
+      //   reason: 'filterpage fetchFields error',
+      // );
       setState(() {
         districtFilter = selectedDistrict;
         fields = [];
@@ -470,34 +447,31 @@ class _FilterPageState extends State<FilterPage> {
     }
   }
 
-  // to show the user the selected data
   Future<void> loadPrefs() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    String? savedCity = prefs.getString('selectedCity');
-    String? savedDistrict = prefs.getString('selectedDistrict');
-    String? savedField = prefs.getString('selectedField');
+      String? savedCity = prefs.getString('selectedCity');
+      String? savedDistrict = prefs.getString('selectedDistrict');
+      String? savedField = prefs.getString('selectedField');
 
-    if (savedCity != null) {
-      // Load districts based on the saved city
-      await onCitySelected(savedCity);
-    }
+      if (savedCity != null) {
+        await onCitySelected(savedCity);
+      }
 
-    setState(() {
-      cityFilter = savedCity;
-      districtFilter = savedDistrict;
-    });
+      setState(() {
+        cityFilter = savedCity;
+        districtFilter = savedDistrict;
+      });
 
-    if (savedDistrict != null) {
-      // Fetch fields for the saved district
-      await fetchFields(savedDistrict);
-    }
+      if (savedDistrict != null) {
+        await fetchFields(savedDistrict);
+      }
 
-    setState(() {
-      districtFilter = savedDistrict;
-      fieldFilter = savedField; // Set fieldFilter only after fields are fetched
-    });
+      setState(() {
+        districtFilter = savedDistrict;
+        fieldFilter = savedField;
+      });
     } catch (e, stack) {
       await reportErrorToCrashlytics(
         e,
@@ -508,11 +482,11 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   void updatePriceFilters(int min, int max) {
-  setState(() {
-    minFilter = min;
-    maxFilter = max;
-  });
-}
+    setState(() {
+      minFilter = min;
+      maxFilter = max;
+    });
+  }
 }
 
 class clearFilters extends StatelessWidget {
@@ -570,69 +544,6 @@ class NameInputField extends StatelessWidget {
               ),
               style: const TextStyle(decoration: TextDecoration.none, color: Colors.black, fontWeight: FontWeight.normal),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class CityDropdown extends StatelessWidget {
-  final String? selectedCity;
-  final List<String> cities;
-  final ValueChanged<String?> onCitySelected;
-  final VoidCallback onClear;
-
-  const CityDropdown({
-    required this.selectedCity,
-    required this.cities,
-    required this.onCitySelected,
-    required this.onClear,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          height: 45,
-          width: MediaQuery.sizeOf(context).width,
-          color: Colors.white,
-          child: Stack(
-            children: [
-              DropdownButton<String>(
-                isExpanded: true,
-                value: selectedCity,
-                items: cities
-                    .map((city) => DropdownMenuItem<String>(
-                          value: city,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(city,
-                                style: GoogleFonts.inter(color: Colors.black)),
-                          ),
-                        )).toList(),
-                onChanged: onCitySelected,
-                hint: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text('Şehir Seçin', style: GoogleFonts.inter()),
-                ),
-                underline: const SizedBox(),
-              ),
-              if (selectedCity != null)
-                Positioned(
-                  right: 10,
-                  top: 0,
-                  bottom: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.grey),
-                    onPressed: onClear,
-                  ),
-                ),
-            ],
           ),
         ),
       ),
@@ -770,17 +681,11 @@ class FieldDropdown extends StatelessWidget {
   }
 }
 
+class DayPickerFirst extends StatelessWidget {
+  final String? selectedDay;
+  final ValueChanged<String> onDaySelected;
+  const DayPickerFirst({super.key, required this.selectedDay, required this.onDaySelected});
 
-class DayPickerFirst extends StatefulWidget {
-  final List<String> days;
-
-  const DayPickerFirst({super.key, required this.days});
-
-  @override
-  State<DayPickerFirst> createState() => _DayPickerFirstState();
-}
-
-class _DayPickerFirstState extends State<DayPickerFirst> {
   @override
   Widget build(BuildContext context) {
     double w = MediaQuery.sizeOf(context).width;
@@ -807,53 +712,29 @@ class _DayPickerFirstState extends State<DayPickerFirst> {
   }
 
   Widget _dayButton(String day) {
-  final Size screenSize = MediaQuery.sizeOf(context);
-  bool isPressed = widget.days.contains(day);
+    bool isPressed = selectedDay == day;
 
-  double buttonWidth = screenSize.width * 0.30; // ~28% of screen width
-  double buttonHeight = screenSize.height * 0.055; // ~5.5% of screen height
-
-  return SizedBox(
-    width: buttonWidth,
-    height: buttonHeight,
-    child: ElevatedButton(
+    return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: isPressed ? green : Colors.white,
+        foregroundColor: isPressed ? Colors.white : Colors.black
       ),
-      onPressed: () => toggleDay(day),
-      child: Text(
-        day,
-        style: GoogleFonts.roboto(
-          color: Colors.black,
-        ),
-        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-      ),
-    ),
-  );
-}
-
-
-  void toggleDay(String day) {
-    setState(() {
-      if (widget.days.contains(day)) {
-        widget.days.remove(day);
-      } else {
-        widget.days.add(day);
-      }
-    });
+      onPressed: () => onDaySelected(day),
+      child: Text(day),
+    );
   }
 }
 
+class DayPickerSecond extends StatelessWidget {
+  final String? selectedDay;
+  final ValueChanged<String> onDaySelected;
 
-class DayPickerSecond extends StatefulWidget {
-  final List<String> days;
-  const DayPickerSecond({required this.days, super.key});
+  const DayPickerSecond({
+    super.key,
+    required this.selectedDay,
+    required this.onDaySelected,
+  });
 
-  @override
-  State<DayPickerSecond> createState() => DayPickerSecondState();
-}
-
-class DayPickerSecondState extends State<DayPickerSecond> {
   @override
   Widget build(BuildContext context) {
     double w = MediaQuery.sizeOf(context).width;
@@ -878,108 +759,70 @@ class DayPickerSecondState extends State<DayPickerSecond> {
       ),
     );
   }
+
   Widget _dayButton(String day) {
-  final Size screenSize = MediaQuery.sizeOf(context);
-  bool isPressed = widget.days.contains(day);
+    bool isPressed = selectedDay == day;
 
-  double buttonWidth = screenSize.width * 0.30; // ~28% of screen width
-  double buttonHeight = screenSize.height * 0.055; // ~5.5% of screen height
-
-  return SizedBox(
-    width: buttonWidth,
-    height: buttonHeight,
-    child: ElevatedButton(
+    return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: isPressed ? green : Colors.white,
+        foregroundColor: isPressed ? Colors.white : Colors.black
       ),
-      onPressed: () => toggleDay(day),
-      child: Text(
-        day,
-        style: GoogleFonts.roboto(
-          color: Colors.black,
-        ),
-        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-      ),
-    ),
-  );
-}
-
-  void toggleDay(String day) {
-    setState(() {
-      if (widget.days.contains(day)) {
-        widget.days.remove(day);
-      } else {
-        widget.days.add(day);
-      }
-    });
+      onPressed: () => onDaySelected(day),
+      child: Text(day),
+    );
   }
 }
 
-class dayPickerThird extends StatefulWidget {
-  final List<String> days;
-  const dayPickerThird({required this.days, super.key});
+class dayPickerThird extends StatelessWidget {
+  final String? selectedDay;
+  final ValueChanged<String> onDaySelected;
 
-  @override
-  State<dayPickerThird> createState() => _dayPickerThirdState();
-}
+  const dayPickerThird({
+    super.key,
+    required this.selectedDay,
+    required this.onDaySelected,
+  });
 
-class _dayPickerThirdState extends State<dayPickerThird> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _dayButton('Pazar'),
-            ],
+    double w = MediaQuery.sizeOf(context).width;
+    return SizedBox(
+      width: w,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _dayButton('Pazar')
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
   Widget _dayButton(String day) {
-  final Size screenSize = MediaQuery.sizeOf(context);
-  bool isPressed = widget.days.contains(day);
+    bool isPressed = selectedDay == day;
 
-  double buttonWidth = screenSize.width * 0.30; // ~28% of screen width
-  double buttonHeight = screenSize.height * 0.055; // ~5.5% of screen height
-
-  return SizedBox(
-    width: buttonWidth,
-    height: buttonHeight,
-    child: ElevatedButton(
+    return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: isPressed ? green : Colors.white,
+        foregroundColor: isPressed ? Colors.white : Colors.black
       ),
-      onPressed: () => toggleDay(day),
-      child: Text(
-        day,
-        style: GoogleFonts.roboto(
-          color: Colors.black,
-        ),
-        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-      ),
-    ),
-  );
-}
-  void toggleDay(String day) {
-    setState(() {
-      if (widget.days.contains(day)) {
-        widget.days.remove(day);
-      } else {
-        widget.days.add(day);
-      }
-    });
+      onPressed: () => onDaySelected(day),
+      child: Text(day),
+    );
   }
 }
 
 class PriceRanger extends StatefulWidget {
   final TextEditingController minPriceController;
   final TextEditingController maxPriceController;
-  final Function(int, int) onPriceChanged; // Callback to send values back
+  final Function(int, int) onPriceChanged;
   final double height;
   final double width;
 
@@ -1000,19 +843,12 @@ class _PriceRangerState extends State<PriceRanger> {
   int? minFilter;
   int? maxFilter;
 
-  @override
-  void initState() {
-    super.initState();
-    // minFilter = int.tryParse(widget.minPriceController.text);
-    // maxFilter = int.tryParse(widget.maxPriceController.text);
-  }
-
   void updateMinFilter(String value) {
-  setState(() {
-    minFilter = value.isEmpty ? null : int.tryParse(value);
-    widget.onPriceChanged(minFilter ?? 0, maxFilter ?? 999999); 
-  });
-}
+    setState(() {
+      minFilter = value.isEmpty ? null : int.tryParse(value);
+      widget.onPriceChanged(minFilter ?? 0, maxFilter ?? 999999);
+    });
+  }
 
   void updateMaxFilter(String value) {
     setState(() {
@@ -1033,8 +869,8 @@ class _PriceRangerState extends State<PriceRanger> {
             borderRadius: BorderRadius.circular(10),
             child: Container(
               color: Colors.white,
-              height: widget.height*0.050,
-              width: widget.width*0.180,
+              height: widget.height * 0.050,
+              width: widget.width * 0.180,
               child: Center(
                 child: TextField(
                   controller: widget.minPriceController,
@@ -1044,13 +880,11 @@ class _PriceRangerState extends State<PriceRanger> {
                   decoration: const InputDecoration(
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.all(10),
-                      hintText: 'Min'
-                  ),
+                      hintText: 'Min'),
                   style: GoogleFonts.roboto(
-                      fontSize: widget.height>1024?20:15,
+                      fontSize: widget.height > 1024 ? 20 : 15,
                       fontWeight: FontWeight.normal,
-                      color: Colors.black
-                    ),
+                      color: Colors.black),
                 ),
               ),
             ),
@@ -1066,8 +900,8 @@ class _PriceRangerState extends State<PriceRanger> {
             borderRadius: BorderRadius.circular(10),
             child: Container(
               color: Colors.white,
-              height: widget.height*0.050,
-              width: widget.width*0.180,
+              height: widget.height * 0.050,
+              width: widget.width * 0.180,
               child: Center(
                 child: TextField(
                   controller: widget.maxPriceController,
@@ -1077,10 +911,9 @@ class _PriceRangerState extends State<PriceRanger> {
                   decoration: const InputDecoration(
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.all(10),
-                      hintText: 'Max'
-                  ),
+                      hintText: 'Max'),
                   style: GoogleFonts.roboto(
-                      fontSize: widget.height>1024?20:15,
+                      fontSize: widget.height > 1024 ? 20 : 15,
                       fontWeight: FontWeight.normal,
                       color: Colors.black),
                 ),
@@ -1092,6 +925,7 @@ class _PriceRangerState extends State<PriceRanger> {
     );
   }
 }
+
 class FilterPageShimmer extends StatelessWidget {
   const FilterPageShimmer({super.key});
 
@@ -1114,7 +948,7 @@ class FilterPageShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white, // Make sure background is white (or your custom light background color)
+      color: Colors.white,
       child: Shimmer.fromColors(
         baseColor: Colors.grey.shade300,
         highlightColor: Colors.grey.shade100,
@@ -1124,23 +958,23 @@ class FilterPageShimmer extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              shimmerContainer(height: 30, width: 120), // "Filtreler" title
+              shimmerContainer(height: 30, width: 120),
               const SizedBox(height: 30),
-              shimmerContainer(height: 50), // Name Input Field
-              shimmerContainer(height: 50), // City Dropdown
-              shimmerContainer(height: 50), // District Dropdown
-              shimmerContainer(height: 50), // Field Dropdown
+              shimmerContainer(height: 50),
+              shimmerContainer(height: 50),
+              shimmerContainer(height: 50),
+              shimmerContainer(height: 50),
               const SizedBox(height: 30),
-              shimmerContainer(height: 25, width: 140), // Gün Seçiniz
-              shimmerContainer(height: 40), // DayPicker 1
-              shimmerContainer(height: 40), // DayPicker 2
-              shimmerContainer(height: 40), // DayPicker 3
+              shimmerContainer(height: 25, width: 140),
+              shimmerContainer(height: 40),
+              shimmerContainer(height: 40),
+              shimmerContainer(height: 40),
               const SizedBox(height: 30),
-              shimmerContainer(height: 25, width: 140), // Fiyat Aralığı
-              shimmerContainer(height: 50), // Price Range
+              shimmerContainer(height: 25, width: 140),
+              shimmerContainer(height: 50),
               const SizedBox(height: 50),
               Center(
-                child: shimmerContainer(height: 50, width: 200), // Button
+                child: shimmerContainer(height: 50, width: 200),
               ),
             ],
           ),
