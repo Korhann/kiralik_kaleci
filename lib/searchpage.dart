@@ -208,8 +208,6 @@ class _GetUserDataState extends State<GetUserData> {
 
   void applyFilter() async{
   Query<Map<String, dynamic>> query = _firestore.collection('Users');
-  print('district filter $fieldFilter');
-  print('days fitler $daysFilter');
 
   try {
     if (nameFilter?.isNotEmpty == true) {
@@ -226,10 +224,11 @@ class _GetUserDataState extends State<GetUserData> {
     String queryTag = '${fieldFilter}_$daysFilter';
     query = query.where('sellerDetails.queryTags', arrayContains: queryTag);
   }
-  if (fieldFilter?.isNotEmpty == true && daysFilter?.isEmpty == true) {
+  if (fieldFilter?.isNotEmpty == true && daysFilter == null) {
     query = query.where('sellerDetails.fields', arrayContains: fieldFilter);
   }
-  if (daysFilter?.isNotEmpty == true && fieldFilter?.isEmpty == true) {
+  if (daysFilter?.isNotEmpty == true && fieldFilter == null) {
+    print('its now here');
     query = query.where('sellerDetails.chosenDays', arrayContains: daysFilter);
   }
   if (minFilter != null && maxFilter != null) {

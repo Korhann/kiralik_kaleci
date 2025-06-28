@@ -1,4 +1,6 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kiralik_kaleci/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +24,8 @@ void main() async {
   await initializeApp();
   String? userType = await getUserType();
 
-  runApp(MyApp(userType: userType));
+  // runApp(MyApp(userType: userType));
+  runApp(DevicePreview(builder: (context) => MyApp(userType: userType), enabled: !kReleaseMode));
 }
 
 Future<String?> getUserType() async {

@@ -1,6 +1,5 @@
 Yapılacaklar
 
-1- filterpage de halı saha yazısı sayfaya geri gelince gözükmüyor
-2- Uygulamanın performansına bakılacak
-3- Devicepreview den ios ta dene
+1- Uygulamanın performansına bakılacak
+2- Devicepreview den ios ta dene
 

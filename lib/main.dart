@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 import 'package:flutter/foundation.dart';
@@ -213,11 +214,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     
     return MaterialApp(
-      // locale: DevicePreview.locale(context),
-      // builder: DevicePreview.appBuilder,
-      // theme: ThemeData.light(),
-      // darkTheme: ThemeData.dark(),
-      // home: const MainPage(),
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      home: userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: 'Kalecim',
@@ -225,7 +226,7 @@ class MyApp extends StatelessWidget {
       // routes: {
       //   '/':(context) => const MainPage(),
       // },
-      home:  userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
+      //home:  userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
     );
   }
 }

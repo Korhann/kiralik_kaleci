@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "kiralikkaleci-21f26",
+    "default": "kiralikkaleci-dev",
     "development": "kiralikkaleci-dev"
   },
   "targets": {},

@@ -420,34 +420,28 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   Future<void> fetchFields(String selectedDistrict) async {
-    print(selectedDistrict);
-    print(cityFilter);
     try {
       var localDb = await Hive.openBox<FootballField>('football_fields');
       var field = localDb.values.firstWhere((f) => f.city == cityFilter && f.district == selectedDistrict);
-      print('here is this ${field.fieldName}');
       setState(() {
         // ignore: unnecessary_null_comparison
         fields = field != null ? field.fieldName.toSet().toList() : [];
-        //fieldFilter = null;
+        fieldFilter = null;
         if (!fields.contains(fieldFilter)) {
-          print('2');
           fieldFilter = null;
         }
       });
-      print('length of the fields are ${fields.length}');
     } catch (e, stack) {
-      // await reportErrorToCrashlytics(
-      //   e,
-      //   stack,
-      //   reason: 'filterpage fetchFields error',
-      // );
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'filterpage fetchFields error',
+      );
       setState(() {
         districtFilter = selectedDistrict;
         fields = [];
         fieldFilter = null;
       });
-      print('error getting it');
     }
   }
   
@@ -468,8 +462,6 @@ class _FilterPageState extends State<FilterPage> {
         cityFilter = savedCity;
         districtFilter = savedDistrict;
       });
-      print('saved district is $savedDistrict');
-      print('district filter is $districtFilter');
       if (savedDistrict != null) {
         await fetchFields(savedDistrict);
       } 
