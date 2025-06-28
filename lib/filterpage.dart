@@ -353,7 +353,7 @@ class _FilterPageState extends State<FilterPage> {
                           style: GoogleFonts.roboto(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                              color: Colors.black),
                           textScaler: textScaler,
                         ),
                       ),

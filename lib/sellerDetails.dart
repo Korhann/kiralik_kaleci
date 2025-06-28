@@ -356,7 +356,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
               Positioned(
                 bottom: height > 700 ? height*0.18: height*0.12,
                 right: 20,
-                child: ChatButton(sellerUid: widget.sellerUid, width: width,height: height,)
+                child: ChatButton(sellerUid: widget.sellerUid, width: width,height: height, currentUser: currentUserUid)
               )
             ],
             ),
@@ -366,7 +366,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
       ),
     );
   }
-  //todo: Olmazsa eski yerine geri al
+  
   void dayChecker(int i, int currentDayIndex, final now, String startTime, String dayHourKey, String takenby, String day, String title, List<String> hourTitles, bool isNightHour, bool istaken) {
     if (isNightHour) {
       // Mark as taken if istaken is true
@@ -1014,22 +1014,27 @@ class ChatButton extends StatelessWidget {
   final String sellerUid;
   final double width;
   final double height;
+  final String? currentUser;
   
   const ChatButton({
     super.key,
     required this.sellerUid,
     required this.width,
-    required this.height
+    required this.height,
+    required this.currentUser
   });
+
 
   @override
   Widget build(BuildContext context) {
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async{
         // Set shared state and navigate to the message page
         sharedValues.onTapped = true;
-        Navigator.push(
+        bool paymentMade = await isPaymentMade();
+        if (paymentMade) {
+          Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
@@ -1038,6 +1043,14 @@ class ChatButton extends StatelessWidget {
             },
           ),
         );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sohbet etmek için ödeme yapmanız gerek'),
+              backgroundColor: Colors.red,
+            )
+          );
+        }
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
@@ -1071,6 +1084,20 @@ class ChatButton extends StatelessWidget {
         ),
       ),
     );
+  }
+  Future<bool> isPaymentMade() async {
+    QuerySnapshot snapshots = await FirebaseFirestore.instance.collection('Users')
+    .doc(currentUser)
+    .collection('appointmentbuyer')
+    .where('appointmentDetails.selleruid', isEqualTo: sellerUid)
+    .where('appointmentDetails.paymentStatus', isEqualTo: 'done')
+    .get();
+
+    if (snapshots.docs.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }
 class PaymentButton extends StatelessWidget {

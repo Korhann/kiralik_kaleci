@@ -139,6 +139,7 @@ class _LogInState extends State<LogIn> {
                           keyboardType: TextInputType.emailAddress,
                           key: Key('login_email_key'),
                           controller: emailController,
+                          onChanged: (value) => clearErrors(),
                           style: const TextStyle(color: Colors.black, fontSize: 20),
                           decoration: GlobalStyles.inputDecoration1(hintText: 'Email',showError: _showErrorEmail),
                           validator: (value) {
@@ -176,6 +177,7 @@ class _LogInState extends State<LogIn> {
                           keyboardType: TextInputType.text,
                           obscureText: _obsecureText,
                           controller: passwordController,
+                          onChanged: (value) => clearErrors(),
                           key: Key('login_password_key'),
                           style: const TextStyle(color: Colors.black, fontSize: 20),
                           decoration: InputDecoration(
@@ -391,5 +393,11 @@ class _LogInState extends State<LogIn> {
         ),
       ),
     );
+  }
+  void clearErrors() {
+    setState(() {
+      _showErrorEmail = false;
+      _showErrorPassword = false;
+    });
   }
 }

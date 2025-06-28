@@ -96,14 +96,12 @@ class _ChangeUserNameState extends State<ChangeUserName> {
                         if (isUpdated) {
                           _newUsername.clear();
                           if (mounted) {
-                            Showalert(context: context, text: 'İşlem Başarılı')
-                                .showSuccessAlert();
+                            Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
                           }
                         }
                       } else {
                         if (mounted) {
-                          Showalert(context: context, text: 'Ooopps...')
-                              .showErrorAlert();
+                          Showalert(context: context, text: 'Ooopps...').showErrorAlert();
                         }
                       }
                     }

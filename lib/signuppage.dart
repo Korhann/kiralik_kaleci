@@ -39,6 +39,17 @@ class _SignUpState extends State<SignUp> {
   bool _showErrorRePassword = false;
   bool _emailInUse = false;
 
+  void clearErrors() {
+    setState(() {
+  _showErrorName = false;
+  _showErrorEmail = false;
+  _showErrorPhone = false;
+  _showErrorPassword = false;
+  _showErrorRePassword = false;
+  _emailInUse = false;
+    });
+  }
+
   Future signUpUser() async {
     String email = emailController.text;
     String password = passwordController.text;
@@ -139,8 +150,8 @@ class _SignUpState extends State<SignUp> {
                                 controller: fullNameController,
                                 key: Key('signup_name'),
                                 style: const TextStyle(color: Colors.black, fontSize: 20),
-                                decoration: GlobalStyles.inputDecoration1(
-                                    hintText: 'Ad Soyad', showError: _showErrorName),
+                                decoration: GlobalStyles.inputDecoration1(hintText: 'Ad Soyad', showError: _showErrorName),
+                                onChanged: (value) => clearErrors(),
                                 validator: (value) {
                                   final nameSurname = value?.trim();
                                   if (nameSurname!.isEmpty || !RegExp(r'^[a-z A-Z]+$').hasMatch(nameSurname)) {
@@ -177,8 +188,8 @@ class _SignUpState extends State<SignUp> {
                                 key: Key('signup_email'),
                                 keyboardType: TextInputType.emailAddress,
                                 style: const TextStyle(color: Colors.black, fontSize: 20),
-                                decoration: GlobalStyles.inputDecoration1(
-                                    hintText: 'Email', showError: _showErrorEmail),
+                                decoration: GlobalStyles.inputDecoration1(hintText: 'Email', showError: _showErrorEmail),
+                                onChanged: (value) => clearErrors(),
                                 validator: (value) {
                                   final email = value?.trim();
                                   if (email!.isEmpty ||!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email) ||_emailInUse) {
@@ -223,6 +234,7 @@ class _SignUpState extends State<SignUp> {
                                 decoration: GlobalStyles.inputDecorationPhone(
                                    showError: _showErrorPhone,
                                   ),
+                                  onChanged: (value) => clearErrors(),
                                 validator: (value) {
                                   if (value == null || value.isEmpty || value.length < 10) {
                                     setState(() {
@@ -264,6 +276,7 @@ class _SignUpState extends State<SignUp> {
                               style: const TextStyle(color: Colors.black, fontSize: 20),
                               decoration: GlobalStyles.inputDecoration1(
                                   hintText: 'Parola', showError: _showErrorPassword),
+                                  onChanged: (value) => clearErrors(),
                               validator: (value) {
                                 final password = value?.trim();
                                 if (password!.isEmpty ||
@@ -328,6 +341,7 @@ class _SignUpState extends State<SignUp> {
                                 decoration: GlobalStyles.inputDecoration1(
                                     hintText: 'Parola Tekrar',
                                     showError: _showErrorRePassword),
+                                    onChanged: (value) => clearErrors(),
                                 validator: (value) {
                                   final repassword = value?.trim();
                                   if (repassword!.isEmpty ||

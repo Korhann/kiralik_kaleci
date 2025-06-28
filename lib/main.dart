@@ -214,10 +214,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     
     return MaterialApp(
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
       home: userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
@@ -226,7 +222,6 @@ class MyApp extends StatelessWidget {
       // routes: {
       //   '/':(context) => const MainPage(),
       // },
-      //home:  userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
     );
   }
 }

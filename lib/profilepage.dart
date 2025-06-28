@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:kiralik_kaleci/addFields.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/approvedfields.dart';
 import 'package:kiralik_kaleci/favouritespage.dart';
@@ -168,7 +169,21 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   
                     Container(height: 1, color: Colors.black),
-                  
+
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => AddFields())
+                      );
+                      },
+                      child: OtherBars(
+                        text: 'Halı Saha Ekleyin',
+                        icons: Icon(Icons.add,size: MediaQuery.sizeOf(context).width * 0.06),
+                      ),
+                    ),
+
+                    Container(height: 1, color: Colors.black),
+
                     GestureDetector(
                       onTap: () {
                         Navigator.push(context,

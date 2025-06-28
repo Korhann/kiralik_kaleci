@@ -25,7 +25,7 @@ void main() async {
   String? userType = await getUserType();
 
   // runApp(MyApp(userType: userType));
-  runApp(DevicePreview(builder: (context) => MyApp(userType: userType), enabled: !kReleaseMode));
+  runApp(MyApp(userType:userType));
 }
 
 Future<String?> getUserType() async {

@@ -1,5 +1,6 @@
 Yapılacaklar
 
-1- Uygulamanın performansına bakılacak
-2- Devicepreview den ios ta dene
+- Alıcı ödeme yapmadan kaleciyle chat'leşemez
+- Eklemek istediğiniz halı sahalar yapılacak
+- login sıkıntısı yenilemeden ana sayfaya atmıyo kullancıyı
 

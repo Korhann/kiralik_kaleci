@@ -299,7 +299,6 @@ class _HeaderSection extends StatelessWidget {
             Icon(Icons.handshake, size: iconSize),
             const Spacer(),
       
-            //todo: Bunu class a çevir performans için :D
             GestureDetector(
               onTap: onNotificationTap,
               child: Stack(
