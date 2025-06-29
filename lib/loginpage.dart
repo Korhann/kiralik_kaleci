@@ -13,6 +13,36 @@ import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 //TODO: ANİMASYON EKLENECEK !!!
 
+// {
+//   "project_info": {
+//     "project_number": "385957866629",
+//     "project_id": "kiralikkaleci-dev",
+//     "storage_bucket": "kiralikkaleci-dev.firebasestorage.app"
+//   },
+//   "client": [
+//     {
+//       "client_info": {
+//         "mobilesdk_app_id": "1:385957866629:android:b7d2fff3334f8212474dec",
+//         "android_client_info": {
+//           "package_name": "com.example.kiralik_kaleci.dev"
+//         }
+//       },
+//       "oauth_client": [],
+//       "api_key": [
+//         {
+//           "current_key": "AIzaSyBm-CoPCBpSm9klzd5d7H9JEHBzZicKBrk"
+//         }
+//       ],
+//       "services": {
+//         "appinvite_service": {
+//           "other_platform_oauth_client": []
+//         }
+//       }
+//     }
+//   ],
+//   "configuration_version": "1"
+// }
+
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
 
@@ -328,33 +358,33 @@ class _LogInState extends State<LogIn> {
                 
                       const SizedBox(height: 20),
                 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          GestureDetector(
-                            onTap: () async {
-                              await signInWithGoogle();
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  height: 25,
-                                  width: 25,
-                                  child: Image.asset("lib/icons/google.png"),
-                                ),
-                                const SizedBox(width: 10),
-                                PlatformText(
-                                  "Google",
-                                  style: GoogleFonts.inter(color: Colors.black),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [
+                      //     GestureDetector(
+                      //       onTap: () async {
+                      //         await signInWithGoogle();
+                      //       },
+                      //       child: Row(
+                      //         mainAxisAlignment: MainAxisAlignment.center,
+                      //         children: [
+                      //           SizedBox(
+                      //             height: 25,
+                      //             width: 25,
+                      //             child: Image.asset("lib/icons/google.png"),
+                      //           ),
+                      //           const SizedBox(width: 10),
+                      //           PlatformText(
+                      //             "Google",
+                      //             style: GoogleFonts.inter(color: Colors.black),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                 
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 20),
                 
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

@@ -833,29 +833,30 @@ class _SellerAddPageState extends State<SellerAddPage> {
   }
 
   Future<String> getInitialName() async {
-    try {
-      final doc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentUser)
-        .get();
+  try {
+    final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
 
-      if (doc.exists) {
-        final data = doc.data();
-        if (data != null) {
-          initialName = data['sellerDetails']['sellerFullName'];
-          sellerFullName.text = initialName;
-          return initialName;
-        }
+    if (doc.exists) {
+      final data = doc.data();
+      final sellerDetails = data?['sellerDetails'];
+      if (sellerDetails != null && sellerDetails['sellerFullName'] != null) {
+        initialName = sellerDetails['sellerFullName'];
+        sellerFullName.text = initialName;
+        return initialName;
       }
-    } catch (e, stack) {
-      await reportErrorToCrashlytics(
-        e,
-        stack,
-        reason: 'selleraddpage getInitialName error for user $currentUser',
-      );
     }
-    return '';
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(
+      e,
+      stack,
+      reason: 'selleraddpage getInitialName error for user $currentUser',
+    );
   }
+  return '';
+}
 
   Future<String> getInitialDistrict() async {
     try {
@@ -866,8 +867,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
       if (doc.exists) {
         final data = doc.data();
-        if (data != null) {
-          initialDistrict = data['sellerDetails']['district'];
+        final sellerDetails = data?['sellerDetails'];
+        if (sellerDetails != null && sellerDetails['district'] != null) {
+          initialDistrict = sellerDetails['district'];
           selectedDistrict = initialDistrict;
           fetchFields(initialDistrict.trim());
           return initialDistrict.trim();
@@ -892,8 +894,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
       if (doc.exists) {
         final data = doc.data();
-        if (data != null) {
-          selectedFields = Set.from(data['sellerDetails']['fields']);
+        final sellerDetails = data?['sellerDetails'];
+        if (sellerDetails != null && sellerDetails['fields'] != null) {
+          selectedFields = Set.from(sellerDetails['fields']);
           setState(() {});
         }
       }
@@ -915,8 +918,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
       if (doc.exists) {
         final data = doc.data();
-        if (data != null && data['sellerDetails'] != null) {
-          final hoursDays = data['sellerDetails']['selectedHoursByDay'];
+        final sellerDetails = data?['sellerDetails'];
+        if (sellerDetails != null && sellerDetails['selectedHoursByDay'] != null) {
+          final hoursDays = sellerDetails['selectedHoursByDay'];
           return Map<String, dynamic>.from(hoursDays);
         }
       }
@@ -931,29 +935,30 @@ class _SellerAddPageState extends State<SellerAddPage> {
   }
 
   Future<int> getInitialPrice() async {
-    try {
-      final doc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentUser)
-        .get();
+  try {
+    final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
 
-      if (doc.exists) {
-        final data = doc.data();
-        if (data != null) {
-          initialPrice = data['sellerDetails']['sellerPrice'];
-          sellerPrice.text = initialPrice.toString();
-          return initialPrice;
-        }
+    if (doc.exists) {
+      final data = doc.data();
+      final sellerDetails = data?['sellerDetails'];
+      if (sellerDetails != null && sellerDetails['sellerPrice'] != null) {
+        initialPrice = sellerDetails['sellerPrice'];
+        sellerPrice.text = initialPrice.toString();
+        return initialPrice;
       }
-    } catch (e, stack) {
-      await reportErrorToCrashlytics(
-        e,
-        stack,
-        reason: 'selleraddpage getInitialPrice error for user $currentUser',
-      );
     }
-    return 0;
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(
+      e,
+      stack,
+      reason: 'selleraddpage getInitialPrice error for user $currentUser',
+    );
   }
+  return 0;
+}
 
   Future<int> getInitialPriceMidnight() async {
     try {
@@ -964,8 +969,9 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
       if (doc.exists) {
         final data = doc.data();
-        if (data != null) {
-          initialPriceMidnight = data['sellerDetails']['sellerPriceMidnight'];
+        final sellerDetails = data?['sellerDetails'];
+        if (sellerDetails != null && sellerDetails['sellerPriceMidnight'] != null) {
+          initialPriceMidnight = sellerDetails['sellerPriceMidnight'];
           sellerPriceAfterMidnight.text = initialPriceMidnight.toString();
           return initialPriceMidnight;
         }

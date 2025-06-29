@@ -29,6 +29,13 @@ class _ForgetPasswordState extends State<ForgetPassword> {
   // Added variable to control error message visibility
   bool _showError = false; 
 
+
+  void clearErrors() {
+    setState(() {
+      _showError = false;
+    });
+  }
+
   Future<void> sendResetLink() async {
     showDialog(
       context: context,
@@ -142,6 +149,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
         child: PlatformTextFormField(
           controller: controller,
           obscureText: obscureText,
+          onChanged: (value) => clearErrors(),
           style: const TextStyle(color: Colors.black, fontSize: 20),
           material: (_, __) => MaterialTextFormFieldData(
             decoration: _inputDecoration(hintText, showError),

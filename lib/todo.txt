@@ -1,6 +1,11 @@
 Yapılacaklar
 
-- Alıcı ödeme yapmadan kaleciyle chat'leşemez
-- Eklemek istediğiniz halı sahalar yapılacak
-- login sıkıntısı yenilemeden ana sayfaya atmıyo kullancıyı
 
+- bütün verileri sil
+- production için filtreleme indexlerini oluştur
+- appcheck e kaydol
+- android ve ios a nasıl yükleniyor video izle
+
+
+ERRORS
+- login de bazen giriş yapmıyor

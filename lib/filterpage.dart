@@ -93,7 +93,6 @@ class _FilterPageState extends State<FilterPage> {
       await prefs.remove('selectedField');
       setState(() {
         nameFilter = null;
-        cityFilter = null;
         districtFilter = null;
         fieldFilter = null;
         minFilter = null;
@@ -177,7 +176,8 @@ class _FilterPageState extends State<FilterPage> {
                         ),
                         Align(
                           alignment: Alignment.centerRight,
-                          child: clearFilters(ontap: () {
+                          child: clearFilters(
+                            ontap: () {
                             clearAllFilters();
                             setState(() {
                               isCleared = true;
@@ -206,9 +206,9 @@ class _FilterPageState extends State<FilterPage> {
                           onDistrictSelected: (value) async {
                             SharedPreferences prefs = await SharedPreferences.getInstance();
                             await prefs.setString('selectedDistrict', value!);
+                            await fetchFields(value);
                             setState(() {
                               districtFilter = value;
-                              fetchFields(value);
                               fieldFilter = null;
                             });
                           },

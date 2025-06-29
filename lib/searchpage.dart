@@ -228,7 +228,6 @@ class _GetUserDataState extends State<GetUserData> {
     query = query.where('sellerDetails.fields', arrayContains: fieldFilter);
   }
   if (daysFilter?.isNotEmpty == true && fieldFilter == null) {
-    print('its now here');
     query = query.where('sellerDetails.chosenDays', arrayContains: daysFilter);
   }
   if (minFilter != null && maxFilter != null) {

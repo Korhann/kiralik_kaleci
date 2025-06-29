@@ -214,15 +214,47 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     
     return MaterialApp(
-      home: userType == 'seller' ? SellerMainPage(index: 2) : userType == 'user' ? MainPage(index: 2) : LogIn(),
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: 'Kalecim',
       initialRoute: '/',
-      // routes: {
-      //   '/':(context) => const MainPage(),
-      // },
+      home: HomeRouter(),
     );
+  }
+}
+
+class HomeRouter extends StatefulWidget {
+  @override
+  State<HomeRouter> createState() => _HomeRouterState();
+}
+
+class _HomeRouterState extends State<HomeRouter> {
+  String? userType;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserType();
+  }
+
+  Future<void> _loadUserType() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userType = prefs.getString('userType');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (userType == null) {
+      return LogIn();
+    } else if (userType == 'seller') {
+      return SellerMainPage(index: 2);
+    } else if (userType == 'user') {
+      return MainPage(index: 2);
+    } else {
+      return LogIn();
+    }
   }
 }
 

@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/connectivity.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'direct2messagepage.dart';
 
 class DirectMessages extends StatefulWidget {
@@ -281,6 +282,8 @@ Future<Map<String, dynamic>> fetchConversationData(String participantId) async {
 
   @override
   Widget build(BuildContext context) {
+  final width = MediaQuery.sizeOf(context).width;
+  final iconSize = width * 0.06;
   return ConnectivityWrapper(
     child: StreamBuilder<List<String>>(
       stream: fetchParticipantIds(),
@@ -289,7 +292,26 @@ Future<Map<String, dynamic>> fetchConversationData(String participantId) async {
           return MessagesShimmer();
         }
         if (!snapshot.hasData) {
-          return Text('Henüz bir mesajınız bulunmuyor');
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.message, size: iconSize, color: Colors.grey.shade500),
+                  const SizedBox(height: 10),
+                  Text(
+                  'Henüz bir mesajınız bulunmuyor',
+                  style: GoogleFonts.inter(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black
+                  ),
+                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                ),
+                ],
+              ),
+            ),
+          );
         }
         var participantIds = snapshot.data!;
         return Scaffold(

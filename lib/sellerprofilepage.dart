@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:kiralik_kaleci/addFields.dart';
 import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/earnings.dart';
 import 'package:kiralik_kaleci/globals.dart';
@@ -43,6 +44,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
     saveUserType('seller');
     PushHelper.updateOneSignal();
     userorseller = true;
+    
   }
 
   @override
@@ -198,7 +200,23 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                   iconColor: Colors.white,
                 )
               ),
-              // İlanlarım sayfası
+              Container(
+                height: 1,
+                color: Colors.white,
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AddFields())
+                  );
+                },
+                child: OtherBars(
+                  text: 'Halı Saha Ekle',
+                  icon: Icons.add,
+                  iconColor: Colors.white,
+                )
+              ),
               SizedBox(height: height*0.060),
 
               SignUserOut(),

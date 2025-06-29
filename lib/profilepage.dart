@@ -177,7 +177,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       );
                       },
                       child: OtherBars(
-                        text: 'Halı Saha Ekleyin',
+                        text: 'Halı Saha Ekle',
                         icons: Icon(Icons.add,size: MediaQuery.sizeOf(context).width * 0.06),
                       ),
                     ),

@@ -8,6 +8,7 @@ import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/messagepage.dart';
 import 'package:kiralik_kaleci/apptRequest.dart';
 import 'package:kiralik_kaleci/responsiveTexts.dart';
+import 'package:kiralik_kaleci/selleraddpage.dart';
 import 'package:kiralik_kaleci/sellermainpage.dart';
 import 'package:kiralik_kaleci/sharedvalues.dart';
 import 'package:kiralik_kaleci/shimmers.dart';
@@ -132,7 +133,7 @@ class _SellerDetailsPageState extends State<SellerDetailsPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SellerMainPage(index: 2,))
+                    MaterialPageRoute(builder: (context) => const SellerAddPage())
                   );
                 },
                 style: GlobalStyles.buttonPrimary(context),
