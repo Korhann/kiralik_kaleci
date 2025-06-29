@@ -42,29 +42,35 @@ class ChatService extends ChangeNotifier{
   await _getReceiverDetails(receiverId);
   await _getSenderfullName(currentUserId);
 
-  DocumentReference messageDocRef = _firestore
+  CollectionReference messageDocRef = _firestore
     .collection('chat_rooms')
     .doc(chatRoomId)
-    .collection('messages')
-    .doc('messageDoc'); 
+    .collection('messages');
 
-  DocumentSnapshot messageDocSnapshot = await messageDocRef.get();
+  DocumentReference documentReference = _firestore
+  .collection('chat_rooms')
+  .doc(chatRoomId)
+  .collection('messages')
+  .doc('meta');
+
+  QuerySnapshot messageDocSnapshot = await messageDocRef.get();
 
   // Retrieve the last message
   String lastMessage = '';
-  if (messageDocSnapshot.exists) {
-    final messageListSnapshot = await messageDocRef.collection('messageList')
-        .orderBy('addtime', descending: true)
-        .limit(1)
-        .get();
+  if (messageDocSnapshot.docs.isNotEmpty) {
+    final messageListSnapshot = await documentReference.collection('messageList')
+      .orderBy('addtime', descending: true)
+      .limit(1)
+      .get();
         
     if (messageListSnapshot.docs.isNotEmpty) {
       lastMessage = messageListSnapshot.docs.first.get('message') as String;
+      print(lastMessage);
     }
   }
 
   // yoksa yeniden yarat
-  if (!messageDocSnapshot.exists) {
+  if (!messageDocSnapshot.docs.isNotEmpty) {
     Message newMessage = Message(
       senderId: currentUserId, 
       senderEmail: currentUserEmail, 
@@ -77,10 +83,10 @@ class ChatService extends ChangeNotifier{
       fromMsg: fromMsg,
       toMsg: toMsg
     );
-    await messageDocRef.set(newMessage.toMap());
+    await messageDocRef.doc('meta').set(newMessage.toMap());
   } else {
     // eğer varsa güncelle
-    await messageDocRef.update({
+    await messageDocRef.doc('meta').update({
       'lastMessage': message,
       'timeStamp': timestamp
     });
@@ -94,11 +100,17 @@ class ChatService extends ChangeNotifier{
     email: currentUserEmail
   );
 
-  // messageList e ekleniyor burada
-  Future<DocumentReference<Map<String, dynamic>>> documentReference = messageDocRef.collection('messageList').add(messageContent.toMap());
+  final messageDocRef1 = _firestore
+  .collection('chat_rooms')
+  .doc(chatRoomId)
+  .collection('messages')
+  .doc('meta');
+
+  final messageListRef = messageDocRef1.collection('messageList').doc();
+
+  await messageListRef.set(messageContent.toMap());
   // todo: bunu mesajı göndermeden önce göndermem lazım
-  await unredMessages(documentReference, receiverId,messageDocRef);
-  
+  await unredMessages(messageListRef, receiverId, messageDocRef1);
 }
 
 
@@ -110,7 +122,7 @@ class ChatService extends ChangeNotifier{
     return _firestore.collection('chat_rooms')
       .doc(chatRoomId)
       .collection('messages')
-      .doc('messageDoc')
+      .doc('meta')
       .collection('messageList')
       .orderBy('addtime', descending: false)
       .snapshots();
@@ -142,30 +154,41 @@ class ChatService extends ChangeNotifier{
     }
   }
 
-  Future<void> unredMessages(Future<DocumentReference<Map<String,dynamic>>> documentReference, String receiverID, DocumentReference messageDocRef) async {
+  Future<void> unredMessages(
+  DocumentReference messageListDoc,
+  String receiverID,
+  DocumentReference messageMetaDoc
+) async {
+  try {
+    final messageListSnapshot = await messageListDoc.get();
+    final messageMetaSnapshot = await messageMetaDoc.get();
 
-    DocumentReference<Map<String, dynamic>> messageListdoc = await documentReference;
-    // buradan messageList teki uid yi alıyorum
-    DocumentSnapshot<Map<String, dynamic>> messageListsnapshot = await messageListdoc.get();
-    // buradan messageDoc daki senderId ve receiverId yi alıyorum
-    DocumentSnapshot messageDocSnapshot = await messageDocRef.get();
+    if (!messageMetaSnapshot.exists || !messageListSnapshot.exists) return;
 
-    if(messageDocSnapshot.exists && messageDocSnapshot.data() != null) {
-      Map<String, dynamic>? messageData = messageDocSnapshot.data() as Map<String, dynamic>;
+    final messageListData = messageListSnapshot.data() as Map<String, dynamic>;
+    final messageMetaData = messageMetaSnapshot.data() as Map<String, dynamic>;
 
-      fromMsg = messageData.containsKey('from_msg') ? messageData['from_msg'] : 0;
-      toMsg = messageData.containsKey('to_msg') ? messageData['to_msg'] : 0;
+    int fromMsg = messageMetaData['from_msg'] ?? 0;
+    int toMsg = messageMetaData['to_msg'] ?? 0;
 
-    if (messageListsnapshot.data()!['uid'] == messageData['senderId']) {
-      fromMsg = fromMsg + 1;
-    } else if (messageListsnapshot.data()!['uid'] == messageData['receiverId']) {
-      toMsg = toMsg + 1;
+    final senderId = messageMetaData['senderId'];
+    final receiverId = messageMetaData['receiverId'];
+    final uid = messageListData['uid'];
+
+    if (uid == senderId) {
+      fromMsg += 1;
+    } else if (uid == receiverId) {
+      toMsg += 1;
     }
-  }
-    // burada fromMsg ve toMsg i update ediyor
-    await messageDocRef.update({
+
+    await messageMetaDoc.update({
       'from_msg': fromMsg,
-      'to_msg': toMsg
+      'to_msg': toMsg,
     });
+
+  } catch (e) {
+    print("Error in unredMessages: $e");
   }
+}
+
 }

@@ -8,191 +8,137 @@ class DeliveryAndReturnPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = userorseller;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final bgColor = isDark ? sellerbackground : background;
+
+    TextStyle sectionTitleStyle = GoogleFonts.inter(
+      fontSize: 22,
+      fontWeight: FontWeight.bold,
+      color: textColor,
+    );
+
+    TextStyle boldUnderline = TextStyle(
+      fontWeight: FontWeight.bold,
+      decoration: TextDecoration.underline,
+      color: textColor,
+    );
+
+    TextStyle bodyStyle = TextStyle(color: textColor, fontSize: 15);
+
     return Scaffold(
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: userorseller ? sellerbackground: background,
+        backgroundColor: bgColor,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black)
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back, color: textColor),
         ),
       ),
-      backgroundColor: userorseller ? sellerbackground: background,
       body: SingleChildScrollView(
         child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Teslimat ve İade Koşulları',
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(height: 20,),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Teslimat ve İade Koşulları', style: sectionTitleStyle),
+                const SizedBox(height: 20),
 
-                    // Hizmet Kapsamı
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '1.Hizmet Teslimatı',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline
-                          ),
-                        ),
-                        SizedBox(height: 5,),
-                        Text(
-                          'Kiraladığınız kaleci hizmeti, rezervasyon sırasında belirttiğiniz tarih, saat ve lokasyonda hazır bulunur. Hizmetin zamanında teslim edilmesi, kiralama sürecinde verilen bilgilere bağlıdır.'
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-
-                    // Hizmet Kapsamı
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '2.Hizmet Kapsamı',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline
-                          ),
-                        ),
-                        SizedBox(height: 5,),
-                        Text(
-                          '- Kiralanan kaleci, yalnızca rezervasyon sırasında belirtilen maç veya etkinlik süresi boyunca hizmet verir. \n- Teslimat, hizmet başlangıcını kapsar ve hizmetin tamamlanmasıyla sona erer.'
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-
-                    // Ekstra Gecikmeler
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '3.Ekstra Gecikmeler',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline
-                          ),
-                        ),
-                        SizedBox(height: 5,),
-                        Text(
-                          'Mücbir sebeplerden (örneğin, hava koşulları, trafik veya diğer beklenmedik durumlar) dolayı oluşabilecek gecikmelerde, müşteri bilgilendirilir ve alternatif çözümler sunulur.'
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-
-                    // İade koşulları giriş
-                    Text(
-                      'İade Koşulları',
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-
-                    // Rezervasyon İptali
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '1.Rezervasyon İptali',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline
-                          ),
-                        ),
-                        SizedBox(height: 5,),
-                        Text(
-                          '- Rezervasyonunuzu, hizmet başlangıç saatinden 24 saat öncesine kadar iptal etmeniz durumunda ödediğiniz ücret size eksiksiz iade edilir.\n- 24 saatten daha az bir süre kala yapılan iptallerde, ödenen ücretin %50’si kesinti yapılır.'
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-
-                    // Hizmet Memnuniyetsizliği
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '2.Hizmet Memnuniyestsizliği',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline
-                          ),
-                        ),
-                        SizedBox(height: 5,),
-                        Text(
-                          '- Kaleci hizmetinden memnun kalmamanız durumunda, etkinlik tamamlandıktan sonra en geç 48 saat içinde uygulama destek birimine durumu bildirebilirsiniz.\n- Şikâyetler değerlendirilir ve haklı bulunması durumunda ücretin tamamı veya bir kısmı iade edilebilir.'
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-
-                    // İade Süreci
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '3.İade Süreci',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline
-                          ),
-                        ),
-                        SizedBox(height: 5,),
-                        Text(
-                          'İade işlemleri, ödeme yaptığınız yönteme göre gerçekleştirilir: \n-Kredi Kartı: İşleminiz iptal edilmesinden sonra 7 iş günü içinde iade gerçekleştirilir. \n- Bankanızın süreçleri nedeniyle bu süre uzayabilir. Banka Havalesi/EFT: İadeniz, en geç 5 iş günü içinde belirttiğiniz hesap numarasına yapılır.'
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-
-                    Text(
-                      'Cayma Hakkı',
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: userorseller ? Colors.white: Colors.black
-                      ),
-                    ),
-                    const SizedBox(height: 15,),
-
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Kullanıcı, rezervasyon onayını verdiği tarihten itibaren 14 gün içinde ve hizmetin başlamasından önce cayma hakkını kullanabilir. Cayma hakkı kullanımı için, aşağıdaki iletişim kanallarımızdan bize ulaşabilirsiniz.'
-                        ),
-                        SizedBox(height: 5,),
-                        Text(
-                          'İletişim Bilgileri: \n- E-Posta: kiraliikkalecii@gmail.com \n- Telefon: +90 541 522 14 89'
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 80)
-                  ],
+                _Section(
+                  title: '1. Hizmet Teslimatı',
+                  content:
+                      'Kiraladığınız kaleci, rezervasyon sırasında belirtilen tarih, saat ve lokasyonda hazır bulunur. Teslimat, hizmet başlangıcı anında gerçekleşmiş sayılır.',
+                  titleStyle: boldUnderline,
+                  contentStyle: bodyStyle,
                 ),
-              )
-            ],
+
+                _Section(
+                  title: '2. Hizmet Kapsamı',
+                  content:
+                      '- Kaleci sadece belirtilen maç süresi boyunca görev yapar.\n- Teslimat hizmetin başlamasını, tamamlanması ise maçın sona ermesini ifade eder.',
+                  titleStyle: boldUnderline,
+                  contentStyle: bodyStyle,
+                ),
+
+                _Section(
+                  title: '3. Gecikme Durumları',
+                  content:
+                      'Olağanüstü durumlar (hava durumu, trafik, vb.) nedeniyle oluşabilecek gecikmelerde kullanıcı bilgilendirilir ve alternatif çözümler sunulur.',
+                  titleStyle: boldUnderline,
+                  contentStyle: bodyStyle,
+                ),
+
+                const SizedBox(height: 20),
+                Text('İade Politikası', style: sectionTitleStyle),
+                const SizedBox(height: 15),
+
+                _Section(
+                  title: '1. Ödeme Güvenliği ve Onay',
+                  content:
+                      'Uygulamamızda doğrudan iade işlemi yapılmamaktadır. Bunun yerine, ödeme yalnızca hizmet tamamlandıktan ve kaleci tarafından doğrulama kodu girildikten sonra gerçekleştirilir.',
+                  titleStyle: boldUnderline,
+                  contentStyle: bodyStyle,
+                ),
+
+                _Section(
+                  title: '2. Kod Girilmezse Ne Olur?',
+                  content:
+                      'Eğer satıcı (kaleci) doğrulama kodunu girmezse, ödeme başarıyla tamamlanmaz ve hesabınızdan herhangi bir ücret tahsil edilmez.',
+                  titleStyle: boldUnderline,
+                  contentStyle: bodyStyle,
+                ),
+
+                _Section(
+                  title: '3. Memnuniyetsizlik Durumu',
+                  content:
+                      'Hizmetle ilgili yaşadığınız memnuniyetsizlik durumlarını destek ekibimize 48 saat içinde bildirmeniz durumunda konuyu değerlendiririz.',
+                  titleStyle: boldUnderline,
+                  contentStyle: bodyStyle,
+                ),
+
+                const SizedBox(height: 20),
+                Text('İletişim', style: sectionTitleStyle),
+                const SizedBox(height: 10),
+                Text(
+                  'Her türlü soru ve destek talebi için bizimle iletişime geçebilirsiniz:\n\n'
+                  '- E-Posta: kiraliikkalecii@gmail.com',
+                  style: bodyStyle,
+                ),
+                const SizedBox(height: 80),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _Section extends StatelessWidget {
+  final String title;
+  final String content;
+  final TextStyle titleStyle;
+  final TextStyle contentStyle;
+
+  const _Section({
+    required this.title,
+    required this.content,
+    required this.titleStyle,
+    required this.contentStyle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: titleStyle),
+          const SizedBox(height: 5),
+          Text(content, style: contentStyle),
+        ],
       ),
     );
   }

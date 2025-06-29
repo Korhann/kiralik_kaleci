@@ -1,0 +1,11 @@
+Yapılacaklar
+
+
+- bütün verileri sil
+- production için filtreleme indexlerini oluştur
+- appcheck e kaydol
+- android ve ios a nasıl yükleniyor video izle
+
+
+ERRORS
+- login de bazen giriş yapmıyor

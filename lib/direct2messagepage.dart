@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kiralik_kaleci/chat_services.dart';
 import 'package:kiralik_kaleci/styles/chatBubble.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class Direct2Message extends StatefulWidget {
   final String receiverId;
@@ -29,33 +30,46 @@ class _Direct2MessageState extends State<Direct2Message> {
   }
 
   void sendMessage() async {
-    if (_messageController.text.isNotEmpty) {
+    try {
+      if (_messageController.text.isNotEmpty) {
       await _chatService.sendMessage(widget.receiverId, _messageController.text);
       _messageController.clear();
+    }
+    } catch (e, stack) {
+      reportErrorToCrashlytics(e, stack, reason: 'direct2messages send message error ${widget.receiverId}');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(sellerEmail ?? 'Loading...'),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back),
-        ),
+  return Scaffold(
+    resizeToAvoidBottomInset: true, 
+    appBar: AppBar(
+      title: Text(sellerEmail ?? 'Loading...'),
+      leading: IconButton(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.arrow_back),
       ),
-      body: Column(
+    ),
+    body: SafeArea(
+      child: Column(
         children: [
-          Expanded(
-            child: _buildMessageList(),
+          // Messages List
+          Expanded(child: _buildMessageList()),
+              
+          // Message Input Field wrapped in SafeArea
+          SafeArea(
+            top: false,
+            child: _buildMessageInput(),
           ),
-          _buildMessageInput(),
           const SizedBox(height: 20),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
+
 
   Widget _buildMessageList() {
     return StreamBuilder<QuerySnapshot>(
@@ -89,7 +103,6 @@ class _Direct2MessageState extends State<Direct2Message> {
   Widget _buildMessageItem(DocumentSnapshot documentSnapshot) {
     // bunun document i yanlış olduğu için göstermiyor
     Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-    
 
     var alignment = (data['uid'] == _firebaseAuth.currentUser!.uid)
         ? Alignment.centerRight
@@ -124,13 +137,16 @@ class _Direct2MessageState extends State<Direct2Message> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                hintText: 'Mesaj yazın',
-                border: OutlineInputBorder(),
+            child: Focus(
+              child: TextField(
+                autofocus: true,
+                controller: _messageController,
+                decoration: const InputDecoration(
+                  hintText: 'Mesaj yazın',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: false,
               ),
-              obscureText: false,
             ),
           ),
           IconButton(

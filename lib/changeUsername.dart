@@ -2,22 +2,29 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/globals.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
-class SellerChangeUserName extends StatefulWidget {
-  const SellerChangeUserName({super.key});
+class ChangeUserName extends StatefulWidget {
+  const ChangeUserName({super.key});
 
   @override
-  State<SellerChangeUserName> createState() => _SellerChangeUserNameState();
+  State<ChangeUserName> createState() => _ChangeUserNameState();
 }
 
-class _SellerChangeUserNameState extends State<SellerChangeUserName> {
+class _ChangeUserNameState extends State<ChangeUserName> {
+  
   final _key = GlobalKey<FormState>();
   final _newUsername = TextEditingController();
   final errorstyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.red);
   bool _showErrorUsername = false;
+
+  bool isUpdated = false;
 
   @override
   void dispose() {
@@ -32,9 +39,9 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
         backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.of(context).pop();
           },
-          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white : Colors.black),
+          icon: Icon(Icons.arrow_back,color: userorseller ? Colors.white : Colors.black),
         ),
       ),
       backgroundColor: userorseller ? sellerbackground : background,
@@ -44,30 +51,23 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  'Yeni Kullanıcı Adı',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: userorseller ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
+              newUserName(),
               const SizedBox(height: 5),
               Container(
                 width: double.infinity,
-                color: userorseller ? sellergrey : Colors.white,
+                color: userorseller ? sellerbackground : background,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextFormField(
-                    style: TextStyle(color: userorseller ? Colors.white : Colors.black),
+                    decoration: GlobalStyles.inputDecoration1(hintText: 'Ad Soyad', showError: _showErrorUsername),
+                    style: TextStyle(color: Colors.black, fontSize: 20),
                     controller: _newUsername,
                     onChanged: (value) => clearErrors(),
                     validator: (value) {
                       final trimmedValue = value?.trim();
-                      if (trimmedValue == null || trimmedValue.isEmpty || trimmedValue.length < 6) {
+                      if (trimmedValue == null ||
+                          trimmedValue.isEmpty ||
+                          trimmedValue.length < 6) {
                         setState(() {
                           _showErrorUsername = true;
                         });
@@ -86,16 +86,28 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
                 errorMessage('Kullanıcı adı boş bırakılamaz'),
               if (_showErrorUsername && _newUsername.text.trim().length < 6)
                 errorMessage('Kullanıcı adı 6 haneden uzun olmalı'),
-
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_key.currentState!.validate()) {
-                      changeUsername();
+                      if (await InternetConnection().hasInternetAccess) {
+                        await changeUsername();
+                        if (isUpdated) {
+                          _newUsername.clear();
+                          if (mounted) {
+                            Showalert(context: context, text: 'İşlem Başarılı').showSuccessAlert();
+                          }
+                        }
+                      } else {
+                        if (mounted) {
+                          Showalert(context: context, text: 'Ooopps...').showErrorAlert();
+                        }
+                      }
                     }
+                    isUpdated = false;
                   },
-                  style: buttonPrimary,
+                  style: GlobalStyles.buttonPrimary(context),
                   child: Text(
                     'Onayla',
                     style: GoogleFonts.roboto(
@@ -103,6 +115,7 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
                       fontWeight: FontWeight.bold,
                       color: userorseller ? Colors.white : Colors.black,
                     ),
+                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                   ),
                 ),
               )
@@ -132,48 +145,42 @@ class _SellerChangeUserNameState extends State<SellerChangeUserName> {
     });
   }
 
-  void changeUsername() async {
+  Future<void> changeUsername() async {
     final String? currentuser = FirebaseAuth.instance.currentUser?.uid;
     if (currentuser != null) {
       try {
-        await FirebaseFirestore.instance.collection('Users')
-          .doc(currentuser)
-          .update({
-          'fullName': _newUsername.text.trim()
-        });
-        // onay mesajını göster
-        await showBottomSheetDialog(context);
-        Navigator.pop(context);
-      } catch (e) {
-        print('Error updating username $e');
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(currentuser)
+            .update({'fullName': _newUsername.text.trim()});
+        isUpdated = true;
+      } catch (e, stack) {
+        await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'change username failed',
+      );
       }
     }
   }
-
-  Future<void> showBottomSheetDialog(BuildContext context) async {
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) {
-      return Container(
-        height: 80,
-        padding: const EdgeInsets.all(16.0),
-        color: userorseller ? sellerbackground : background,
-        child: Center(
-          child: Text(
-            'Kullanıcı adı başarı ile güncellenmiştir',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: userorseller ? Colors.white : Colors.black,
-            ),
-          ),
-        ),
-      );
-    },
-  );
-  // Delay pop to give user time to see the confirmation message
-  await Future.delayed(const Duration(seconds: 1));
 }
+
+class newUserName extends StatelessWidget {
+  const newUserName({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20),
+      child: Text(
+        'Yeni Kullanıcı Adı',
+        style: GoogleFonts.roboto(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: userorseller ? Colors.white : Colors.black,
+        ),
+        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+      ),
+    );
+  }
 }

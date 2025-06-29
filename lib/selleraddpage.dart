@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -12,16 +10,17 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:kiralik_kaleci/football_field.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellersuccesspage.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:html/dom.dart' as dom;
-import 'package:html/parser.dart' as parser;
-import 'package:beautiful_soup_dart/beautiful_soup.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 
 class SellerAddPage extends StatefulWidget {
@@ -31,13 +30,16 @@ class SellerAddPage extends StatefulWidget {
   State<SellerAddPage> createState() => _SellerAddPageState();
 }
 
-//TODO: Resim eklemek zorunlu olması lazım yoksa getuserinformation page hata veriyor index ten dolayı
+//TODO: gün ve sahaları beraber bir array'e yükle 
 
 class _SellerAddPageState extends State<SellerAddPage> {
+
+  bool isLoading = true;
   
   // Kullanıcı bilgileri
   TextEditingController sellerFullName = TextEditingController();
   TextEditingController sellerPrice = TextEditingController();
+  TextEditingController sellerPriceAfterMidnight = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -59,19 +61,90 @@ class _SellerAddPageState extends State<SellerAddPage> {
   Set<String> multFields = {};
   String? value1;
 
-  bool isInserted = false;
+  // this shows the inital and selected fields
+  Set<String> selectedFields = {};
+
+  // this is the inital values of textfields for düzenle
+  late String initialName = '';
+  late int initialPrice = 0; 
+  late int initialPriceMidnight = 0;
+  // this three is for printing the initial district
+  late String initialDistrict = '';
+  String districtFromDb = '';
+  bool initialD = true;
 
   // for selecting the fields according to the districts
   List<String> fields = [];
 
+  String currentUser = FirebaseAuth.instance.currentUser!.uid;
+  bool userisSeller = false;
+
+  final GlobalKey<_AmenitiesState> mondayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> tuesdayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> wednesdayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> thursdayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> fridayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> saturdayKey = GlobalKey();
+  final GlobalKey<_AmenitiesState> sundayKey = GlobalKey();
+
+  late Future<bool> sellerCheckFuture;
 
   @override
   void initState() {
     super.initState();
-    fetchCities();
-    FootballField.storeFields();
-    userorseller = true;
+    initData();
+    sellerPrice.addListener(() {
+      setState(() {}); 
+    });
+    sellerPriceAfterMidnight.addListener(() {
+      setState(() {});
+    });
+    sellerCheckFuture = checkIfUserIsAlreadySeller();
   }
+
+//   Future<void> initData() async {
+//   await fetchCities(); 
+//   onCitySelected('İstanbul');
+//   await getInitialName();
+//   await getInitialPrice();
+//   await getInitialPriceMidnight();
+//   districtFromDb = await getInitialDistrict();
+//   setState(() {
+//     selectedDistrict = districtFromDb;
+//   });
+//   await getInitialFields();
+//   await getInitialDayHours();
+//   FootballField.storeFields();
+//   userorseller = true;
+//   setState(() {
+//   isLoading = false;
+//   });
+
+// }
+  
+  Future<void> initData() async {
+  await fetchCities(); // This is needed first for cityData
+  onCitySelected('İstanbul'); // This can be called after cities are fetched
+
+  // Fetch all Firestore data in parallel
+  final results = await Future.wait([
+    getInitialName(),
+    getInitialPrice(),
+    getInitialPriceMidnight(),
+    getInitialDistrict(),
+    getInitialFields(),
+    getInitialDayHours(),
+  ]);
+
+  districtFromDb = results[3] as String;
+  setState(() {
+    selectedDistrict = districtFromDb;
+    isLoading = false;
+  });
+
+  FootballField.storeFields();
+  userorseller = true;
+}
 
   @override
   void dispose() {
@@ -87,14 +160,45 @@ class _SellerAddPageState extends State<SellerAddPage> {
         imageFileList.clear();
         sellerFullName.clear();
         sellerPrice.clear();
+        multFields.clear();
+        selectedCity = null;
+        selectedDistrict = null;
+        mondayKey.currentState?.resetSelection();
+        tuesdayKey.currentState?.resetSelection();
+        wednesdayKey.currentState?.resetSelection();
+        thursdayKey.currentState?.resetSelection();
+        fridayKey.currentState?.resetSelection();
+        saturdayKey.currentState?.resetSelection();
+        sundayKey.currentState?.resetSelection();
       });
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
+    if (isLoading) {
+      return const SellerAddPageShimmer();
+    }
     return Scaffold(
       backgroundColor: sellerbackground,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: sellerbackground,
+        centerTitle: true,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 30, bottom: 10),
+          child: buildButton(),
+        ),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back, color: Colors.white,)
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Form(
@@ -102,520 +206,361 @@ class _SellerAddPageState extends State<SellerAddPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 50),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Fotoğraf Ekle",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  color: sellergrey,
-                  height: 110,
-                  width: double.infinity,
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: GestureDetector(
-                            child: Container(
-                              width: 100,
-                              height: 90,
-                              color: sellerwhite,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.camera_alt, size: 24),
-                                  const SizedBox(height: 2),
-                                  Text("Fotoğraf",
-                                    style: GoogleFonts.inter(
-                                        color: Colors.black,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  Text("Ekle",
-                                      style: GoogleFonts.inter(
-                                          color: Colors.black,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            ),
-                            onTap: () {
-                              _pickImageFromGallery();
-                            },
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(
-                          width: 100,
-                          height: 90,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: imageFileList.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: GestureDetector(
-                                        child: Image.file(
-                                          File(imageFileList[index].path),
-                                          fit: BoxFit.fitHeight,
-                                        ),
-                                        onTap: () {
-                                          currentIndex = index;
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return Dialog(
-                                                child: SizedBox(
-                                                  width: MediaQuery.of(context).size.width,
-                                                  height: MediaQuery.of(context).size.height,
-                                                  child: Expanded(
-                                                    child: CarouselSlider(
-                                                      options: CarouselOptions(
-                                                        aspectRatio: 1,
-                                                        viewportFraction: 1,
-                                                        enableInfiniteScroll:false,
-                                                        padEnds: false,
-                                                        initialPage:currentIndex,
-                                                      ),
-                                                      items: imageFileList.map<Widget>(
-                                                        (imageFile) {
-                                                          return Builder(
-                                                            builder: (BuildContext context) {
-                                                            return Image.file(File(imageFile.path),
-                                                              fit: BoxFit.cover);
-                                                          },
-                                                        );
-                                                      }).toList(),
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 0,
-                                      right: 0,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          _removeImage(index);
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.red,
-                                          ),
-                                          child: const Icon(
-                                            Icons.close,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Ad Soyad",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
-                  ),
+                  child: Row(
+                    children: [
+                      GlobalStyles.textStyle(text: 'Fotoğraf Ekle', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                      const SizedBox(width: 5),
+                      GlobalStyles.textStyle(text: '(Opsiyonel)', context: context, size: 15, fontWeight: FontWeight.w500, color: Colors.white),
+                    ],
+                  )
                 ),
                 const SizedBox(height: 10),
-                TextFormField(
-                  controller: sellerFullName,
-                  validator: (name) {
-                    if (name == null || name.isEmpty) {
-                      return "Boş Bırakılamaz !";
+
+                // image picker
+                PickImageGallery(
+                  imageFileList: imageFileList,
+                  onTap: () async {
+                    final ImagePicker picker = ImagePicker();
+                    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                    if (image != null) {
+                      setState(() {
+                        imageFileList.add(image);
+                      });
                     }
-                    return null;
                   },
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300),
-                  decoration: InputDecoration(
-                      hintText: "İsminizi giriniz",
-                      hintStyle: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300),
-                      contentPadding: const EdgeInsets.all(10),
-                      fillColor: sellergrey,
-                      filled: true),
                 ),
-                const SizedBox(height: 40),
-                
+
+                SizedBox(height: height*0.020),
+
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child :GlobalStyles.textStyle(text: 'Ad Soyad', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                ),
+                const SizedBox(height: 10),
+
+                NameField(
+                  controller: sellerFullName,
+                ),
+
                 /*
                 Seçilen şehire göre ilçeler updateDistrictOptions() fonksiyonu ile popüle ediliyor
                 */
+                
+                SizedBox(height: height*0.040),
                 Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Şehir",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600
-                    ),
-                  ),
+                  padding: const EdgeInsets.only(left: 10), 
+                  child: GlobalStyles.textStyle(text: 'İlçe', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
                 const SizedBox(height: 15),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      height: 45,
-                      width: 350,
-                      color: Colors.white,
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedCity,
-                        items: cities.map((city) => DropdownMenuItem<String>(
-                          value: city,
-                          child: Text(
-                            city,
-                            style: GoogleFonts.inter(
-                              color: Colors.black
-                            ),
-                          ),
-                        )).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            onCitySelected(value);
-                          }
-                          multFields.clear();
-                        },
-                        hint: const Text('Şehir seçin'),
-                        underline: const SizedBox(),
-                      ),
-                    ),
-                  ),
+                DistrictDropDown(
+                  districtFromDb: districtFromDb,
+                  isInitial: initialD,
+                  selectedDistrict: selectedDistrict,
+                  districts: districts,
+                  onDistrictSelected: (value) {
+                    selectedDistrict = value;
+                    fetchFields(value.toString());
+                  },
+                  multFields: multFields
                 ),
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "İlçe",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600
-                      ),
-                  ),
+                  child:GlobalStyles.textStyle(text: 'Halı Sahalar', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
                 ),
                 const SizedBox(height: 15),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      height: 45,
-                      width: 350,
-                      color: Colors.white,
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedDistrict,
-                        items: districts.map((district) => DropdownMenuItem<String>(
-                          value: district,
-                          child: Text(
-                            district,
-                            style: GoogleFonts.inter(
-                              color: Colors.black,
-                            ),
-                          ),
-                        )).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedDistrict = value;
-                            fetchFields(value.toString());
-                            multFields.clear();
-                          });
-                        },
-                        hint: const Text('İlçe seçin'),
-                        underline: const SizedBox(),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Halı Sahalar",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                // TODO: hint text eklenecek ve seçtiğin halı sahalar kutu halinde gözükecek
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        height: 45,
-                        width: 350,
-                        color: Colors.white,
-                        child: GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (context) {
-                              return StatefulBuilder(
-                                builder: (context, _setState) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: ListView(
-                                    children: fields.map((e) {
-                                    return CheckboxListTile(
-                                      title: Text(e),
-                                      value: multFields.contains(e),
-                                      onChanged: (isSelected) {
-                                        if (isSelected == true) {
-                                          multFields.add(e);
-                                        } else {
-                                          multFields.remove(e);
-                                        }
-                                        _setState(() {});
-                                        setState(() {}); 
-                                      },
-                                    );
-                                }).toList(),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
+
+                FieldsDropDown(
+                  multFields: selectedFields,
+                  fields: fields, 
+                  onSelectionChanged: (updatedFields) {
+                    setState(() {
+                      selectedFields = updatedFields;
+                    });
                   },
                 ),
-              ),
-            ),
-          ),
-            const SizedBox(height: 20),
+          
+          const SizedBox(height: 10),
+
+          showFields(multFields: selectedFields),
+
+            const SizedBox(height: 5),
                 // SAAT BİLGİLERİNİ GİR
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Text(
-                    "Saatler",
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
+                  child: GlobalStyles.textStyle(text: 'Saatler', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                ),
+                SizedBox(height: height*0.020),
+                SizedBox(
+                  width: width,
+                  child: FutureBuilder<Map<String,dynamic>>(
+                    future: getInitialDayHours(),
+                    builder: (context,snapshot) {
+                      if (!snapshot.hasData) {
+                        return CircularProgressIndicator();
+                      }
+                      final initialData = snapshot.data!;
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Pazartesi', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: mondayKey,
+                                  day: 'Pazartesi',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Pazartesi'] ?? []),
+                                  ),
+                  
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Salı', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: tuesdayKey,
+                                  day: 'Salı',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Salı'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Çarşamba', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: wednesdayKey,
+                                  day: 'Çarşamba',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Çarşamba'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Perşembe', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: thursdayKey,
+                                  day: 'Perşembe',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Perşembe'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Cuma', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: fridayKey,
+                                  day: 'Cuma',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Cuma'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Cumartesi', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: saturdayKey,
+                                  day: 'Cumartesi',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Cumartesi'] ?? []),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              children: [
+                                GlobalStyles.textStyle(text: 'Pazar', context: context, size: 15, fontWeight: FontWeight.w400, color: Colors.white),
+                                Amenities(
+                                  key: sundayKey,
+                                  day: 'Pazar',
+                                  initials: List<Map<String, dynamic>>.from(initialData['Pazar'] ?? []),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                   ),
                 ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              Text(
-                                "Pazartesi",
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white
-                                ),
-                              ),
-                              const Amenities(day: 'Pazartesi',),
-                            ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Salı",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            const Amenities(day: 'Salı')
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Çarşamba",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            const Amenities(day: 'Çarşamba')
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Perşembe",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            const Amenities(day: 'Perşembe',)
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Cuma",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            const Amenities(day: 'Cuma')
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Cumartesi",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            const Amenities(day: 'Cumartesi')
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: [
-                            Text(
-                              "Pazar",
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white
-                              ),
-                            ),
-                            const Amenities(day: 'Pazar')
-                          ],
-                        ),
-                        const SizedBox(width: 5),
-                      ],
-                    ),
-                  ),
-                ), 
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 5),
+                //   child: SingleChildScrollView(
+                //     scrollDirection: Axis.horizontal,
+                //     child: Row(
+                //       children: [
+                //         const SizedBox(width: 10),
+                //           Column(
+                //             children: [
+                //               Text(
+                //                 "Pazartesi",
+                //                 style: GoogleFonts.inter(
+                //                   fontSize: 16,
+                //                   fontWeight: FontWeight.w500,
+                //                   color: Colors.white
+                //                 ),
+                //               ),
+                //               Amenities(key: mondayKey ,day: 'Pazartesi',),
+                //             ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Salı",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: tuesdayKey ,day: 'Salı')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Çarşamba",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: wednesdayKey ,day: 'Çarşamba')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Perşembe",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: thursdayKey ,day: 'Perşembe',)
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Cuma",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: fridayKey ,day: 'Cuma')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Cumartesi",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //              Amenities(key: saturdayKey ,day: 'Cumartesi')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 10),
+                //         Column(
+                //           children: [
+                //             Text(
+                //               "Pazar",
+                //               style: GoogleFonts.inter(
+                //                 fontSize: 16,
+                //                 fontWeight: FontWeight.w500,
+                //                 color: Colors.white
+                //               ),
+                //             ),
+                //             Amenities(key: sundayKey ,day: 'Pazar')
+                //           ],
+                //         ),
+                //         const SizedBox(width: 5),
+                //       ],
+                //     ),
+                //   ),
+                // ), 
                 
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
                   child: Row(
                     children: [
-                      Text(
-                        "Fiyat",
-                        style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(width: 5),
+                      GlobalStyles.textStyle(text: 'Fiyat', context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white)
                     ],
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextFormField(
-                  controller: sellerPrice,
-                  keyboardType: TextInputType.number,
-                  maxLines: null,
-                  textInputAction: TextInputAction.done,
-                  validator: (price) {
-                    if (price == null || price.isEmpty) {
-                      return  "Fiyat bilgisi girmelisiniz!";
-                    } else {
-                      return null;
-                    }
-                  },
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600),
-                  decoration: InputDecoration(
-                      border: InputBorder.none,
-                      fillColor: sellergrey,
-                      filled: true,
-                      suffixText: 'TL',
-                      suffixStyle: GoogleFonts.inter(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white
-                      )
+
+                priceField(controller: sellerPrice),
+                const SizedBox(height: 10),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: YourEarning(earnedPrice: sellerPrice),
+                ),
+
+                const SizedBox(height: 20),
+
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Row(
+                    children: [
+                      GlobalStyles.textStyle(text: "Fiyat (00:00'dan sonra)", context: context, size: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 5),
+
+                priceFieldAfterMidnight(controller: sellerPriceAfterMidnight),
+
+                const SizedBox(height: 10),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: YourEarning(earnedPrice: sellerPriceAfterMidnight),
+                ),
+                
                 const SizedBox(height: 40),
                 Center(
                   child: ElevatedButton(
-                      style: buttonPrimary,
+                      style: GlobalStyles.buttonPrimary(context),
                       onPressed: () async {
                         try {
-                            await _insertSellerDetails(context);
-                            _clearImageandText();
+                          if (await InternetConnection().hasInternetAccess) {
+                            bool isInserted = await _insertSellerDetails(context);
+                            if (isInserted) {
+                              _clearImageandText();
+                            }
+                          } else {
+                            Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                          }
                         } catch (e) {
-                          log("error at $e");
+                          Showalert(context: context, text: 'Tüm alanları doldurduğunuza emin misiniz?').showErrorAlert();
                         }
                       },
-                      child: Text(
-                        "Onayla",
-                        style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white),
-                      )),
+                      child: GlobalStyles.textStyle(text: 'Onayla', context: context, size: 24, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
                 ),
                 const SizedBox(height: 30),
               ],
@@ -628,48 +573,99 @@ class _SellerAddPageState extends State<SellerAddPage> {
 
 
   Future<void> fetchFields(String selectedDistrict) async {
-  var localDb = await Hive.openBox<FootballField>('football_fields');
-
-  try {
-    // looking if the selectedDistrict is in the districts
-    var field = localDb.values.firstWhere(
-    (f) => f.city == selectedCity && f.district == selectedDistrict,
-  );
-  setState(() {
-    // adds what is in that specific district
-    fields = field.fieldName;
-    selectedField = null;
-  });
-  } catch (e) {
-    setState(() {
-      fields = [];
-      selectedField = null;
-    });
-    }
-  }
-
-
-  Future<void> fetchCities() async {
-    var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
-    if (response.statusCode == 200) {
-      final List<dynamic> citiesData = jsonDecode(response.body)['data'];
-      List<String> cityNames = citiesData.map((city) => city['name'].toString()).toList();
+    try {
+      var localDb = await Hive.openBox<FootballField>('football_fields');
+      var field = localDb.values.firstWhere((f) => f.district == selectedDistrict);
+      setState(() {
+        fields = field.fieldName;
+        selectedField = null;
+      });
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage fetchFields error for district $selectedDistrict',
+      );
       if (mounted) {
         setState(() {
-          cities = cityNames;
-          cityData = citiesData;
+          fields = [];
+          selectedField = null;
         });
-      }
-    } else {
-      if (kDebugMode) {
-        print(response.reasonPhrase);
       }
     }
   }
+
+  Future<void> fetchCities() async {
+    try {
+      var response = await http.get(Uri.parse('https://turkiyeapi.dev/api/v1/provinces'));
+      if (response.statusCode == 200) {
+        final List<dynamic> citiesData = jsonDecode(response.body)['data'];
+        List<String> cityNames = citiesData.map((city) => city['name'].toString()).toList();
+        if (mounted) {
+          setState(() {
+            cities = cityNames;
+            cityData = citiesData;
+          });
+        }
+      } else {
+        if (kDebugMode) {
+          print(response.reasonPhrase);
+        }
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage fetchCities error',
+      );
+    }
+  }
+
+  // checks if the seller is currently has an active ad
+  Future<bool> checkIfUserIsAlreadySeller() async {
+    try {
+      final documentSnapshot = await FirebaseFirestore.instance.collection('Users').doc(currentUser).get();
+      userisSeller = documentSnapshot.data()?['sellerDetails'] != null;
+      return userisSeller;
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage checkIfUserIsAlreadySeller error for user $currentUser',
+      );
+      return false;
+    }
+  }
+
+  Widget buildButton() {
+  return FutureBuilder<bool>(
+    future: sellerCheckFuture,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Container();
+      }
+
+      if (snapshot.hasData) {
+        return Text(
+          snapshot.data! ? 'İlanı Düzenle' : 'İlan Ekle',
+          style: GoogleFonts.inter(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        );
+      }
+
+      return Text('Hata', style: GoogleFonts.inter(fontSize: 20));
+    },
+  );
+}
+
 
   // to populate with districts
   void onCitySelected(String selectedCity) {
-    final city = cityData.firstWhere((city) => city['name'] == selectedCity);
+    // todo: Burada selectedCity istanbul olacak
+    final city = cityData.firstWhere((city) => city['name'].toString() == selectedCity);
     if (city != null) {
       final districtsData = city['districts'];
       if (districtsData != null) {
@@ -684,152 +680,311 @@ class _SellerAddPageState extends State<SellerAddPage> {
     }
   }
 
-  void _removeImage(int index) {
-    setState(() {
-      imageFileList.removeAt(index);
-    });
-  }
+  Future<bool> _insertSellerDetails(BuildContext context) async {
+    bool hasSelectedAnyHour = _AmenitiesState.selectedHoursByDay.values.any((list) => list.isNotEmpty);
+    if (_formKey.currentState!.validate() && hasSelectedAnyHour && selectedFields.isNotEmpty) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: Colors.green,
+              backgroundColor: Colors.grey,
+            ),
+          );
+        }
+      );
 
+      try {
 
-  Future _pickImageFromGallery() async {
-    final List<XFile> selectedImages = await imagePicker.pickMultiImage();
-    if (selectedImages.isNotEmpty) {
-      imageFileList.addAll(selectedImages);
+        String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+        if (userId.isNotEmpty) {
+          List<String> imageUrls = await _uploadImagesToStorage();
+
+          Map<String, dynamic> formattedData = {};
+          _AmenitiesState.selectedHoursByDay.forEach((day, selectedHours) {
+            if (selectedHours.isNotEmpty) {
+              formattedData[day] = selectedHours.map((hour) => {
+                    'title': hour.title,
+                    'istaken': false,
+                    'takenby': 'empty'
+                  }).toList();
+            } 
+          });
+          List<String> dayNames = formattedData.keys.toList();
+          // for easier querying (Hasan Özaydın_Cuma), combines fields with days
+          List<String> querytags = await filterTags(selectedFields,dayNames);
+
+          int? price = int.tryParse(sellerPrice.text);
+          int? priceAfterMidnight = int.tryParse(sellerPriceAfterMidnight.text);
+
+          Map<String, dynamic> sellerDetails = {
+            "sellerFullName": sellerFullName.text,
+            "sellerPrice": price,
+            'sellerPriceMidnight': priceAfterMidnight,
+            "city": selectedCity,
+            "district": selectedDistrict ?? districtFromDb,
+            'fields': selectedFields,
+            "imageUrls": imageUrls,
+            'chosenDays': formattedData.keys.toList(),
+            'queryTags' : querytags,
+            "selectedHoursByDay": formattedData,
+          };
+
+          await FirebaseFirestore.instance
+              .collection("Users")
+              .doc(userId)
+              .update({"sellerDetails": sellerDetails});
+
+          setState(() {
+            _AmenitiesState.selectedHoursByDay.clear();
+          });
+
+          Navigator.of(context).pop();
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SellerSuccessPage()));
+        }
+        return true;
+      } catch (e, stack) {
+        Navigator.of(context).pop();
+        await reportErrorToCrashlytics(
+          e,
+          stack,
+          reason: 'selleraddpage _insertSellerDetails error for user $currentUser',
+        );
+        Showalert(context: context, text: 'Ooops...').showErrorAlert();
+        return false;
+      }
+    } else {
+      Showalert(context: context, text: 'Tüm alanları doldurduğunuza emin misiniz?').showErrorAlert();
+      return false;
     }
   }
 
-  Future<void> _insertSellerDetails(BuildContext context) async {
-  if (_formKey.currentState!.validate()) {
-    // Show loading dialog
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(
-            color: Colors.green,
-            backgroundColor: Colors.grey,
-          ),
-        );
-      }
-    );
+  Future<List<String>> filterTags(Set<String> selectedFields,List<String> days) async {
+    List<String> filtertags = [];
+    if (selectedFields.isNotEmpty && days.isNotEmpty) {
+      for (var field in selectedFields) {
+        for (var day in days) {
+          filtertags.add('${field}_$day');
+        }
+      } 
+      return filtertags;
+    } else {
+      return [];
+    }
+  }
 
-    try {
-      String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-      if (userId.isNotEmpty) {
-        List<String> imageUrls = await _uploadImagesToStorage();
-
-        Map<String, dynamic> formattedData = {};
-        _AmenitiesState.selectedHoursByDay.forEach((day, selectedHours) {
-          if (selectedHours.isNotEmpty) {
-            formattedData[day] = selectedHours.map((hour) => {
-                  'title': hour.title,
-                  'istaken': false,
-                  'takenby': 'empty'
-                }).toList();
-          }
-        });
-
-        int? price = int.tryParse(sellerPrice.text);
-
-        Map<String, dynamic> sellerDetails = {
-          "sellerFullName": sellerFullName.text,
-          "sellerPrice": price,
-          "city": selectedCity,
-          "district": selectedDistrict,
-          'fields': multFields,
-          "imageUrls": imageUrls,
-          'chosenDays': formattedData.keys.toList(),
-          "selectedHoursByDay": formattedData,
-        };
-
-        await FirebaseFirestore.instance
-            .collection("Users")
-            .doc(userId)
-            .update({"sellerDetails": sellerDetails});
-
-        setState(() {
-          _AmenitiesState.selectedHoursByDay.clear();
-          isInserted = true;
-        });
-
-        // yükleme ekranından çık
-        Navigator.of(context).pop();
-
-        // saat seçme ui ını yenilemesi için pushreplacement
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SellerSuccessPage())
-        );
-      }
-    } catch (e) {
-      log("error $e");
-      Navigator.of(context).pop(); // Close the loading dialog if an error occurs
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Error"),
-            content: Text("An error occurred: $e"),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the error dialog
-                },
-                child: const Text("OK"),
-              ),
-            ],
+  Future<List<String>> _uploadImagesToStorage() async {
+    List<String> imageUrls = [];
+    if (imageFileList.isNotEmpty) {
+      for (XFile imageFile in imageFileList) {
+        try {
+          File file = File(imageFile.path);
+          String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+          Reference ref = FirebaseStorage.instance.ref().child('images/$fileName.jpg');
+          UploadTask uploadTask = ref.putFile(file);
+          TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+          String imageUrl = await taskSnapshot.ref.getDownloadURL();
+          imageUrls.add(imageUrl);
+        } catch (e, stack) {
+          await reportErrorToCrashlytics(
+            e,
+            stack,
+            reason: 'selleraddpage _uploadImagesToStorage error',
           );
-        },
+        }
+      }
+    } else {
+      try {
+        File defaultImage = await getDefaultImageFile();
+        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        Reference ref = FirebaseStorage.instance.ref().child('images/default_$fileName.jpg');
+        UploadTask uploadTask = ref.putFile(defaultImage);
+        TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+        String defaultImageUrl = await taskSnapshot.ref.getDownloadURL();
+        imageUrls.add(defaultImageUrl);
+      } catch (e, stack) {
+        await reportErrorToCrashlytics(
+          e,
+          stack,
+          reason: 'selleraddpage _uploadImagesToStorage default image error',
+        );
+      }
+    }
+    return imageUrls;
+  }
+
+  Future<File> getDefaultImageFile() async {
+    try {
+      final byteData = await rootBundle.load('lib/images/defImage.jpg');
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/imageDefault.jpg');
+      await tempFile.writeAsBytes(byteData.buffer.asUint8List());
+      return tempFile;
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getDefaultImageFile error',
+      );
+      rethrow;
+    }
+  }
+
+  Future<String> getInitialName() async {
+  try {
+    final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
+
+    if (doc.exists) {
+      final data = doc.data();
+      final sellerDetails = data?['sellerDetails'];
+      if (sellerDetails != null && sellerDetails['sellerFullName'] != null) {
+        initialName = sellerDetails['sellerFullName'];
+        sellerFullName.text = initialName;
+        return initialName;
+      }
+    }
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(
+      e,
+      stack,
+      reason: 'selleraddpage getInitialName error for user $currentUser',
+    );
+  }
+  return '';
+}
+
+  Future<String> getInitialDistrict() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser)
+        .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        final sellerDetails = data?['sellerDetails'];
+        if (sellerDetails != null && sellerDetails['district'] != null) {
+          initialDistrict = sellerDetails['district'];
+          selectedDistrict = initialDistrict;
+          fetchFields(initialDistrict.trim());
+          return initialDistrict.trim();
+        }
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialDistrict error for user $currentUser',
+      );
+    }
+    return '';
+  }
+
+  Future<void> getInitialFields() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser)
+        .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        final sellerDetails = data?['sellerDetails'];
+        if (sellerDetails != null && sellerDetails['fields'] != null) {
+          selectedFields = Set.from(sellerDetails['fields']);
+          setState(() {});
+        }
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialFields error for user $currentUser',
       );
     }
   }
-}   
 
-  Future<List<String>> _uploadImagesToStorage() async {
-  List<String> imageUrls = [];
-
-  // Loop through each image file and upload to Firebase Storage
-  if (imageFileList.isNotEmpty) {
-    for (XFile imageFile in imageFileList) {
+  Future<Map<String, dynamic>> getInitialDayHours() async {
     try {
-      // kullanıcının seçtiği resim olucaksa bu kod
-      File file = File(imageFile.path);
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      Reference ref = FirebaseStorage.instance.ref().child('images/$fileName.jpg');
-      UploadTask uploadTask = ref.putFile(file);
-      TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-      String imageUrl = await taskSnapshot.ref.getDownloadURL();
+      final doc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser)
+          .get();
 
-      imageUrls.add(imageUrl);
-    } catch (e) {
-      print("Error uploading image: $e");
+      if (doc.exists) {
+        final data = doc.data();
+        final sellerDetails = data?['sellerDetails'];
+        if (sellerDetails != null && sellerDetails['selectedHoursByDay'] != null) {
+          final hoursDays = sellerDetails['selectedHoursByDay'];
+          return Map<String, dynamic>.from(hoursDays);
+        }
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialDayHours error for user $currentUser',
+      );
+    }
+    return {};
+  }
+
+  Future<int> getInitialPrice() async {
+  try {
+    final doc = await FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .get();
+
+    if (doc.exists) {
+      final data = doc.data();
+      final sellerDetails = data?['sellerDetails'];
+      if (sellerDetails != null && sellerDetails['sellerPrice'] != null) {
+        initialPrice = sellerDetails['sellerPrice'];
+        sellerPrice.text = initialPrice.toString();
+        return initialPrice;
       }
     }
-  } else {
-    // değilse default bir image yükle
-    File defaultImage = await getDefaultImageFile();
-    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference ref = FirebaseStorage.instance.ref().child('images/default_$fileName.jpg');
-    UploadTask uploadTask = ref.putFile(defaultImage);
-    TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-    String defaultImageUrl = await taskSnapshot.ref.getDownloadURL();
-    imageUrls.add(defaultImageUrl);
+  } catch (e, stack) {
+    await reportErrorToCrashlytics(
+      e,
+      stack,
+      reason: 'selleraddpage getInitialPrice error for user $currentUser',
+    );
   }
-
-  return imageUrls;
+  return 0;
 }
-  // default resim dosyası path almak için
-  Future<File> getDefaultImageFile() async {
-    final byteData = await rootBundle.load('lib/images/image1.jpg');
-    final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/image1.jpg');
-    await tempFile.writeAsBytes(byteData.buffer.asUint8List());
-    print('file is $tempFile');
-    return tempFile;
-  }
 
+  Future<int> getInitialPriceMidnight() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser)
+        .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        final sellerDetails = data?['sellerDetails'];
+        if (sellerDetails != null && sellerDetails['sellerPriceMidnight'] != null) {
+          initialPriceMidnight = sellerDetails['sellerPriceMidnight'];
+          sellerPriceAfterMidnight.text = initialPriceMidnight.toString();
+          return initialPriceMidnight;
+        }
+      }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'selleraddpage getInitialPriceMidnight error for user $currentUser',
+      );
+    }
+    return 0;
+  }
 }
 /*
   BURDAN SONRAKİ TEXTLER KULLANICI İÇİN SAAT SEÇİCİ OLACAK
@@ -851,7 +1006,13 @@ class CheckContainerModel {
 class Amenities extends StatefulWidget {
   
   final String day;
-  const Amenities({super.key, required this.day});
+  final List<Map<String,dynamic>>? initials;
+
+  const Amenities({
+    super.key, 
+    required this.day,
+    this.initials
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -887,28 +1048,65 @@ class _AmenitiesState extends State<Amenities> {
    @override
   void initState() {
     super.initState();
-    
     if (!selectedHoursByDay.containsKey(widget.day)) {
       selectedHoursByDay[widget.day] = [];
     }
+    if (widget.initials != null) {
+  final List<Map<String, dynamic>> initialList = List<Map<String, dynamic>>.from(widget.initials!);
+
+  for (var selected in initialList) {
+    final title = selected['title'];
+    for (var container in checkContainers) {
+      if (container.title == title) {
+        container.isCheck = true;
+
+        // ✅ Prevent duplicate additions
+        if (!selectedHoursByDay[widget.day]!.any((c) => c.title == container.title)) {
+          selectedHoursByDay[widget.day]!.add(container);
+        }
+      }
+    }
+  }
+}
+
   }
 
 
-  void onCheckTap(CheckContainerModel container) {
-    final index = checkContainers.indexWhere(
-      (element) => element.title == container.title,
+void onCheckTap(CheckContainerModel container) {
+  final index = checkContainers.indexWhere(
+    (element) => element.title == container.title, 
+  );
+
+  bool previousIsCheck = checkContainers[index].isCheck;
+  checkContainers[index].isCheck = !previousIsCheck;
+
+  // Ensure the list is initialized
+  selectedHoursByDay[widget.day] ??= [];
+
+  if (checkContainers[index].isCheck) {
+    selectedHoursByDay[widget.day]!.add(checkContainers[index]);
+    selectedHours.add(checkContainers[index]);
+  } else {
+    selectedHoursByDay[widget.day]!.removeWhere(
+      (element) => element.title == checkContainers[index].title,
     );
-    bool previousIsCheck = checkContainers[index].isCheck;
-    checkContainers[index].isCheck = !previousIsCheck;
-    if (checkContainers[index].isCheck) {
-      selectedHoursByDay[widget.day]!.add(checkContainers[index]);
-    } else {
-      selectedHoursByDay[widget.day]!.removeWhere(
-        (element) => element.title == checkContainers[index].title
-      );
-    }
+  }
+  
+  if (mounted) {
     setState(() {});
   }
+}
+  void resetSelection() {
+  checkContainers = checkContainers.map((container) {
+    return container.copyWith(isCheck: false); // Create a new instance with isCheck = false
+  }).toList(); // Convert back to list
+
+  //selectedHoursByDay[widget.day]?.clear(); // Clear the selected list for the day
+  if (mounted) {
+    setState(() {}); // Refresh the UI
+  }
+}
+
 
 
 @override
@@ -916,20 +1114,24 @@ Widget build(BuildContext context) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: checkContainers.map((container) {
-      return InkWell(
-        splashColor: Colors.cyanAccent,
-        onTap: () => onCheckTap(container),
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 5.0),
-          padding: const EdgeInsets.all(8),
-          color: container.isCheck ? const Color.fromRGBO(33, 150, 243, 1) : Colors.white, // seçim rengini yeşil yap
-          child: Text(
-            container.title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: container.isCheck ? Colors.white : Colors.black,
-            ),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          splashColor: Colors.cyanAccent,
+          onTap: () => onCheckTap(container),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 5.0),
+            padding: const EdgeInsets.all(8),
+            color: container.isCheck ? Colors.green : Colors.white, // seçim rengini yeşil yap
+            // child: Text(
+            //   container.title,
+            //   textAlign: TextAlign.center,
+            //   style: TextStyle(
+            //     fontSize: 14,
+            //     color: container.isCheck ? Colors.white : Colors.black,
+            //   ),
+            // ),
+            child: GlobalStyles.textStyle(text: container.title, context: context, size: 14, fontWeight: FontWeight.normal, color: container.isCheck?Colors.white:Colors.black),
           ),
         ),
       );
@@ -937,13 +1139,624 @@ Widget build(BuildContext context) {
   );
   }
 }
+class PickImageGallery extends StatefulWidget {
+  final List<XFile> imageFileList;
+  final VoidCallback onTap;
 
-/*
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
+  const PickImageGallery({
+    Key? key,
+    required this.imageFileList,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  _PickImageGalleryState createState() => _PickImageGalleryState();
+}
+
+class _PickImageGalleryState extends State<PickImageGallery> {
+  int currentIndex = 0;
+
+  void _removeImage(int index) {
+    setState(() {
+      widget.imageFileList.removeAt(index);
+    });
   }
-} 
-*/
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: sellergrey, 
+      height: 110,
+      width: MediaQuery.of(context).size.width,
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: GestureDetector(
+                onTap: widget.onTap,
+                child: Container(
+                  width: 100,
+                  height: 90,
+                  color: Colors.white, 
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.camera_alt, size: 24),
+                      const SizedBox(height: 2),
+                      Text(
+                        "Fotoğraf",
+                        style: GoogleFonts.inter(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        "Ekle",
+                        style: GoogleFonts.inter(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: SizedBox(
+              width: 100,
+              height: 90,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: widget.imageFileList.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                currentIndex = index;
+                              });
+
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    child: SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      height: MediaQuery.of(context).size.height,
+                                      child: CarouselSlider(
+                                        options: CarouselOptions(
+                                          aspectRatio: 1,
+                                          viewportFraction: 1,
+                                          enableInfiniteScroll: false,
+                                          padEnds: false,
+                                          initialPage: currentIndex,
+                                        ),
+                                        items: widget.imageFileList.map((imageFile) {
+                                          return Builder(
+                                            builder: (BuildContext context) {
+                                              return Image.file(
+                                                File(imageFile.path),
+                                                fit: BoxFit.cover,
+                                              );
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: Image.file(
+                              File(widget.imageFileList[index].path),
+                              fit: BoxFit.fitHeight,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () {
+                              _removeImage(index);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.red,
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class NameField extends StatelessWidget {
+  final TextEditingController controller;
+  const NameField({
+    required this.controller,
+    super.key
+  });
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+                  controller: controller,
+                  validator: (name) {
+                    if (name == null || name.isEmpty) {
+                      return "Boş Bırakılamaz !";
+                    }
+                    return null;
+                  },
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300),
+                  decoration: InputDecoration(
+                      hintText: "İsminizi giriniz",
+                      hintStyle: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.all(10),
+                      fillColor: sellergrey,
+                      filled: true,
+                  ),
+                );
+  }
+}
+class CityDropdown extends StatelessWidget {
+  final String? selectedCity;
+  final List<String> cities;
+  final ValueChanged<String?> onCitySelected;
+  final Set<String> ?multFields;
+
+  const CityDropdown({
+    super.key,
+    required this.selectedCity,
+    required this.cities,
+    required this.onCitySelected,
+    required this.multFields
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        isExpanded: true,
+                        value: selectedCity,
+                        items: cities.map((city) => DropdownMenuItem<String>(
+                          value: city,
+                          child: Text(
+                            city,
+                            style: GoogleFonts.inter(
+                              color: Colors.black
+                            ),
+                          ),
+                        )).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            onCitySelected(value);
+                          }
+                          multFields!.clear();
+                        },
+                        hint: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: const Text(
+                            'Şehir seçin'
+                          ),
+                        ),
+                        decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            errorStyle: const TextStyle(height: 0),
+                          ),
+                        validator: (value) {
+                          if (value == null) {
+                            return '';
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                    const SizedBox(height: 2),
+                    if (selectedCity == null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5, left: 10),
+                      child: Text(
+                        'Lütfen bir şehir seçin',
+                        style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                    ],
+                  ),
+                );
+  }
+}
+
+class DistrictDropDown extends StatelessWidget {
+  final String? selectedDistrict;
+  final List<String> districts;
+  final ValueChanged<String?> onDistrictSelected;
+  final Set<String>? multFields;
+  final bool isInitial;
+  final String districtFromDb;
+
+  const DistrictDropDown({
+    super.key,
+    required this.selectedDistrict,
+    required this.districts,
+    required this.onDistrictSelected,
+    required this.multFields,
+    required this.isInitial,
+    required this.districtFromDb,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<String>(
+            value: (selectedDistrict != null && districts.contains(selectedDistrict)) ? selectedDistrict
+                : (districtFromDb.isNotEmpty && districts.contains(districtFromDb))
+                ? districtFromDb
+                : null,
+            items: districts.map((district) {
+              return DropdownMenuItem<String>(
+                value: district,
+                child: Text(
+                  district,
+                  style: GoogleFonts.inter(color: Colors.black),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              onDistrictSelected(value);
+              multFields?.clear();
+            },
+            isExpanded: true,
+            hint: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text('İlçe seçin'),
+            ),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              errorStyle: const TextStyle(height: 0),
+            ),
+            validator: (value) {
+              if (value == null) return '';
+              return null;
+            },
+          ),
+          const SizedBox(height: 2),
+        ],
+      ),
+    );
+  }
+}
+
+class FieldsDropDown extends StatelessWidget {
+  final Set<String> multFields;
+  final List<String> fields;
+  final ValueChanged<Set<String>> onSelectionChanged; // Callback to parent
+
+  const FieldsDropDown({
+    super.key,
+    required this.multFields,
+    required this.fields,
+    required this.onSelectionChanged, // Receive function from parent
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          height: 45,
+          width: MediaQuery.sizeOf(context).width,
+          color: Colors.white,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return StatefulBuilder(
+                    builder: (context, _setState) {
+                      return Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: ListView(
+                          children: fields.map((e) {
+                            return CheckboxListTile(
+                              title: Text(e),
+                              value: multFields.contains(e),
+                              onChanged: (isSelected) {
+                                _setState(() { // First, update the modal UI
+                                if (isSelected == true) {
+                                  multFields.add(e);
+                                  print(multFields);
+                                } else {
+                                  multFields.remove(e);
+                                }
+                              });
+                              // Then, notify the parent about the change
+                              onSelectionChanged(Set.from(multFields));
+                            },
+                            );
+                          }).toList(),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    Text(
+                      'Saha Seç',
+                      style: GoogleFonts.inter(color: Colors.black),
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.arrow_drop_down)
+                  ],
+                ),
+              ), 
+          ),
+        ),
+      ),
+    );
+  }
+}
+class showFields extends StatefulWidget {
+  final Set<dynamic> multFields;
+  const showFields({
+    super.key,
+    required this.multFields
+  });
+
+  @override
+  State<showFields> createState() => _showFieldsState();
+}
+
+class _showFieldsState extends State<showFields> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+            height: 60,
+            width: MediaQuery.of(context).size.width,
+            child: ListView.separated(
+            separatorBuilder: (context,index) => SizedBox(width: 10),
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.all(8),
+            shrinkWrap: true,
+            itemCount: widget.multFields.length,
+            itemBuilder: (BuildContext context, int index) {
+              List fieldList = widget.multFields.toList();
+              return Stack(
+                children: [
+                  Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Center(
+                      child: Text(
+                        fieldList[index]
+                      )
+                    )
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        widget.multFields.remove(fieldList[index]);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 10,
+                      ),
+                    ),
+                  ),
+                ),
+                ],
+              );
+            },
+            ),
+          );
+  }
+}
+class priceField extends StatelessWidget {
+  final TextEditingController controller;
+  const priceField({
+    super.key,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  maxLines: null,
+                  textInputAction: TextInputAction.done,
+                  validator: (price) {
+                    if (price == null || price.isEmpty) {
+                      return  "Fiyat bilgisi girmelisiniz!";
+                    } 
+                    final value = int.tryParse(price);
+                    if (value == null) {
+                      return 'Fiyat bilgisi girmelisiniz';
+                    }
+                    // if (value < 250) {
+                    //   return "Fiyat 250 TL'den az olamaz!";
+                    // } 
+                    else {
+                      return null;
+                    }
+                  },
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      fillColor: sellergrey,
+                      filled: true,
+                      suffixText: 'TL',
+                      suffixStyle: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white
+                      )
+                  ),
+                );
+  }
+}
+class priceFieldAfterMidnight extends StatelessWidget {
+  final TextEditingController controller;
+  const priceFieldAfterMidnight({
+    super.key,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  maxLines: null,
+                  textInputAction: TextInputAction.done,
+                  validator: (price) {
+                    if (price == null || price.isEmpty) {
+                      return  "Fiyat bilgisi girmelisiniz!";
+                    } 
+                    final value = int.tryParse(price);
+                    if (value == null) {
+                      return "Geçerli bir sayı giriniz!";
+                    }
+                    if (value < 250) {
+                      return "Fiyat 250 TL'den az olamaz!";
+                    }
+                    else {
+                      return null;
+                    }
+                  },
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      fillColor: sellergrey,
+                      filled: true,
+                      suffixText: 'TL',
+                      suffixStyle: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white
+                      )
+                  ),
+                );
+  }
+}
+class YourEarning extends StatelessWidget {
+  final TextEditingController earnedPrice;
+
+  const YourEarning({
+    super.key,
+    required this.earnedPrice,
+  });
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Spacer(),
+        GlobalStyles.textStyle(text: 'Senin Kazancın', context: context, size: 14, fontWeight: FontWeight.w300, color: Colors.white),
+        const SizedBox(width: 10),
+        Text(
+          '${calculateEarning()} ₺',
+          style: GoogleFonts.roboto(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16
+          ),
+        )
+      ],
+    );
+  }
+
+  int calculateEarning() {
+    int getValue = int.tryParse(earnedPrice.text) ?? 0;
+    int fivePercent = (getValue * 10 ~/ 100); 
+    return getValue - fivePercent;
+  }
+}
+
+

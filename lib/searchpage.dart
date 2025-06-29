@@ -1,12 +1,20 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/simple/list_notifier.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/SellerGridItem.dart';
+import 'package:kiralik_kaleci/appointmentspage.dart';
 import 'package:kiralik_kaleci/filterpage.dart';
 import 'package:kiralik_kaleci/globals.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
+import 'package:kiralik_kaleci/shimmers.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 import 'sellerDetails.dart';
 import 'sharedvalues.dart';
+
 
 class GetUserData extends StatefulWidget {
   const GetUserData({super.key});
@@ -16,325 +24,170 @@ class GetUserData extends StatefulWidget {
 }
 
 class _GetUserDataState extends State<GetUserData> {
-  
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _userStream;
 
-  String? nameFilter;
-  String? cityFilter;
-  String? districtFilter;
-  String? fieldFilter;
-  List<String> ?daysFilter;
-  int? minFilter = 0;
-  int? maxFilter = 0;
+  String? nameFilter, cityFilter, districtFilter, fieldFilter, daysFilter;
+  int? minFilter = 0, maxFilter = 0;
+
+  bool isLoading = true;
+
+  // for the lazy loading of the gridview
+  final ScrollController _scrollController = ScrollController();
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> sellers = [];
+  bool hasMore = true;
+  DocumentSnapshot? lastDoc;
+  static const int batchSize = 10;
+  late Query<Map<String,dynamic>> globalquery;
+
+  bool queryGiven = false;
+
 
   @override
   void initState() {
     super.initState();
-    _userStream = _firestore.collection("Users").snapshots();
+    getUserStream();
+    _fetchSellers();
+    _scrollController.addListener(_onScroll);
     userorseller = false;
+    
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchSellers() async {
+    if (isLoading || !hasMore) return;
+    setState(() => isLoading = true);
+
+    // if query is changed in apply filters, does not enter here
+    if (!queryGiven) {
+      globalquery = _firestore
+      .collection("Users")
+      .where('sellerDetails', isNotEqualTo: null)
+      .orderBy('sellerDetails.sellerFullName')
+      .limit(batchSize);
     }
 
-    @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
+    if (lastDoc != null) {
+      globalquery = globalquery.startAfterDocument(lastDoc!);
+    }
+
+    final snapshot = await globalquery.get();
+    if (snapshot.docs.isNotEmpty) {
+      lastDoc = snapshot.docs.last;
+      sellers.addAll(snapshot.docs);
+    }
+    if (snapshot.docs.length < batchSize) {
+      hasMore = false;
+    }
+    setState(() => isLoading = false);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      _fetchSellers();
+    }
+  }
+
+  Future<void> getUserStream() async {
+    try {
+      _userStream = _firestore
+        .collection("Users")
+        .where('sellerDetails', isNotEqualTo: null)
+        .snapshots();
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e, stack) {
+      if (mounted) {
+        setState(() {
+          isLoading = true;
+        });
+      }
+      await reportErrorToCrashlytics(e, stack, reason: 'Search page getUserStream error for the user ${FirebaseAuth.instance.currentUser!.uid}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: background,
-      body: StreamBuilder(
-        stream: _userStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Text("Bağlantı hatası");
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          }
-          var docs = snapshot.data!.docs;
+  final width = MediaQuery.sizeOf(context).width;
+  final height = MediaQuery.sizeOf(context).height;
+  final bannerHeight = width * 0.3;
 
-          docs = docs.where((doc) => doc.data().containsKey('sellerDetails')).toList();
-
-          if (docs.isEmpty) {
-            return Column(
-              children: [
-                Container(
-                  color: background,
-                  padding: const EdgeInsets.only(top: 15),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Kalecilerimiz',
-                        style: GoogleFonts.inter(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black,
-                        )
+  return Scaffold(
+    backgroundColor: background,
+    body: MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      removeBottom: true,
+      removeLeft: true,
+      removeRight: true,
+      child: Column(
+        children: [
+          _HeaderSection(
+            onFilterTap: _navigateToFilterPage,
+            onNotificationTap: _navigateToAppsPage,
+            width: width,
+            height: height,
+          ),
+          ImageSliderDemo(width: width, height: bannerHeight),
+          const SizedBox(height: 10),
+          Expanded(
+            child: isLoading && sellers.isEmpty
+                ? SellerGridShimmer()
+                : sellers.isEmpty
+                    ? _EmptyState()
+                    : _SellerGrid(
+                        docs: sellers,
+                        onCardTap: _handleCardTap,
+                        isLoading: isLoading,
+                        scrollController: _scrollController,
+                        hasMore: hasMore,
                       ),
-                      const SizedBox(width: 10),
-                      const Icon(Icons.handshake),
-                      const Spacer(),
-                      Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: GestureDetector(
-                              onTap: () async {
-                                final filters = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const FilterPage(),
-                                  ),
-                                );
-                                runFilters(filters);
-                              },
-                              child: Image.asset(
-                                'lib/icons/setting.png',
-                                width: 20,
-                                height: 20,
-                              ),
-                            ),
-                          ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search,
-                          size: 70,
-                          color: Colors.grey.shade500,
-                        ),
-                        const SizedBox(height: 10),
-                        Center(
-                          child: Text(
-                            'İlgili sonuç bulunamadı',
-                            style: GoogleFonts.inter(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black
-                            ),
-                          ),
-                        )
-                      ],
-                    )
-                  ),
-                )
-              ],
-            );
-          }
-
-          return ListView.builder(
-            itemCount: (docs.length / 2).ceil(),
-            itemBuilder: (context, index) {
-              var startIndex = index * 2;
-              var endIndex = startIndex + 1;
-
-              if (endIndex >= docs.length) {
-                endIndex = docs.length - 1;
-              }
-
-              var sellerDetails1 = docs[startIndex]['sellerDetails'];
-              var fullName1 = sellerDetails1['sellerFullName'];
-              var imageUrls1 = sellerDetails1['imageUrls'];
-              var imageUrl1 = imageUrls1[0];
-              String city1 = sellerDetails1['city'];
-              String district1 = sellerDetails1['district'];
-              var sellerUid1 = docs[startIndex].id;
-
-              var sellerDetails2 = docs[endIndex]['sellerDetails'];
-              var fullName2 = sellerDetails2['sellerFullName'];
-              var imageUrls2 = sellerDetails2['imageUrls'];
-              var imageUrl2 = imageUrls2[0];
-              String city2 = sellerDetails2['city'];
-              String district2 = sellerDetails2['district'];
-              var sellerUid2 = docs[endIndex].id;
-
-              return Column(
-                children: [
-                  if (index == 0)
-                    Container(
-                      color: background,
-                      padding: const EdgeInsets.only(top: 15),
-                      child: Row(
-                        children: [
-                          Text(
-                            "Kalecilerimiz",
-                            style: GoogleFonts.inter(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Icon(Icons.handshake),
-                          const Spacer(),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: GestureDetector(
-                              onTap: () async {
-                                final filters = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const FilterPage(),
-                                  ),
-                                );
-                                runFilters(filters);
-                              },
-                              child: Image.asset(
-                                'lib/icons/setting.png',
-                                width: 20,
-                                height: 20,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  Container(
-                    color: background,
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10, bottom: 5),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    sharedValues.sellerUid = sellerUid1;
-                                    _handleCardTap(context, sellerDetails1, sellerUid1);
-                                  },
-                                  child: Card(
-                                    elevation: 3,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          color: Colors.white,
-                                          child: Image.network(
-                                            imageUrl1,
-                                            height: 190,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                        if (fullName1 != null && fullName1.isNotEmpty)
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  fullName1,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      "$city1,$district1",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.w400,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    sharedValues.sellerUid = sellerUid2;
-                                    _handleCardTap(context, sellerDetails2, sellerUid2);
-                                  },
-                                  child: Card(
-                                    elevation: 3,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        if (imageUrl1 != imageUrl2)
-                                          Container(
-                                            color: Colors.white,
-                                            child: Image.network(
-                                              imageUrl2,
-                                              height: 190,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        if (fullName2 != null && fullName2.isNotEmpty && fullName1 != fullName2)
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  fullName2,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      "$city2,$district2",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.w400,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
+          ),
+        ],
       ),
+    ),
+  );
+}
+
+  void _navigateToFilterPage() async {
+    final filters = await Navigator.push(
+      context,
+      _createRoute(FilterPage(selectedDay: daysFilter)),
     );
+    runFilters(filters);
   }
-  
-  void _handleCardTap(BuildContext context, Map<String, dynamic>? sellerDetails, String sellerUid) {
-    if (sellerDetails != null) {
-      sharedValues.sellerUid = sellerUid;
-      Navigator.push(
+
+  void _navigateToAppsPage() async {
+    try {
+      await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: sellerUid),
-        ),
-      );
-    } else {
-      print("Seller details not found");
+            builder: (context) => AppointmentsPage(whereFrom: 'homePage')));
+    } catch (e, stack) {
+      reportErrorToCrashlytics(e, stack, reason: 'failed navigation to appsPage');
+    }
+  }
+
+  void _handleCardTap(BuildContext context, Map<String, dynamic> sellerDetails,String sellerUid) {
+    try {
+      sharedValues.sellerUid = sellerUid;
+      Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SellerDetailsPage(
+            sellerDetails: sellerDetails, sellerUid: sellerUid, wherFrom: '',),
+      ),
+    );
+    } catch (e, stack) {
+      reportErrorToCrashlytics(e, stack, reason: 'Search page card tap error ${FirebaseAuth.instance.currentUser!.uid}');
     }
   }
 
@@ -353,37 +206,286 @@ class _GetUserDataState extends State<GetUserData> {
     }
   }
 
-  void applyFilter() async {
-  Query<Map<String, dynamic>> filterquery = _firestore.collection('Users');
+  void applyFilter() async{
+  Query<Map<String, dynamic>> query = _firestore.collection('Users');
 
-  if (nameFilter != null && nameFilter!.isNotEmpty) {
-    filterquery = filterquery.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
+  try {
+    if (nameFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.sellerFullName', isEqualTo: nameFilter);
   }
-  if (cityFilter != null && cityFilter!.isNotEmpty) {
-    filterquery = filterquery.where('sellerDetails.city', isEqualTo: cityFilter);
+  if (cityFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.city', isEqualTo: cityFilter);
   }
-  if (districtFilter != null && districtFilter!.isNotEmpty) {
-    filterquery = filterquery.where('sellerDetails.district', isEqualTo: districtFilter);
+  if (districtFilter?.isNotEmpty == true) {
+    query = query.where('sellerDetails.district', isEqualTo: districtFilter);
   }
-  if (fieldFilter != null && fieldFilter!.isNotEmpty) {
-    filterquery = filterquery.where('sellerDetails.fields', arrayContains: fieldFilter);
+  // if both selected use querytags
+  if (fieldFilter?.isNotEmpty == true && daysFilter?.isNotEmpty == true) {
+    String queryTag = '${fieldFilter}_$daysFilter';
+    query = query.where('sellerDetails.queryTags', arrayContains: queryTag);
   }
-  if (daysFilter != null && daysFilter!.isNotEmpty) {
-    filterquery = filterquery.where('sellerDetails.chosenDays', arrayContainsAny: daysFilter);
+  if (fieldFilter?.isNotEmpty == true && daysFilter == null) {
+    query = query.where('sellerDetails.fields', arrayContains: fieldFilter);
   }
-
+  if (daysFilter?.isNotEmpty == true && fieldFilter == null) {
+    query = query.where('sellerDetails.chosenDays', arrayContains: daysFilter);
+  }
   if (minFilter != null && maxFilter != null) {
-    filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter);
-    filterquery = filterquery.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter);
+    query = query.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter!).where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
   } else if (minFilter != null) {
-    filterquery = filterquery.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter);
+    query = query.where('sellerDetails.sellerPrice', isGreaterThanOrEqualTo: minFilter!);
   } else if (maxFilter != null) {
-    filterquery = filterquery.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter);
-  } 
-  
-  // Update the user stream based on the filter query
+    query = query.where('sellerDetails.sellerPrice', isLessThanOrEqualTo: maxFilter!);
+  }
+
+  query = query.orderBy('sellerDetails.sellerFullName').limit(batchSize);  
+
   setState(() {
-    _userStream = filterquery.snapshots();
+    globalquery = query;
+    sellers.clear();
+    lastDoc = null;
+    hasMore = true;
+    isLoading = false;
+    queryGiven = true;
   });
+  _fetchSellers();
+  } catch (e, stack) {
+    reportErrorToCrashlytics(e, stack, reason: 'Searchpage filters error ${FirebaseAuth.instance.currentUser!.uid}');
   }
 }
+
+  Route _createRoute(Widget child) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.ease;
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(position: animation.drive(tween), child: child);
+      },
+    );
+  }
+}
+
+class _HeaderSection extends StatelessWidget {
+  final VoidCallback onFilterTap;
+  final VoidCallback onNotificationTap;
+  final double width;
+  final double height;
+
+  const _HeaderSection({required this.onFilterTap, required this.onNotificationTap, required this.width, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+
+      final iconSize = width * 0.06;
+      return Container(
+        width: width,
+        height: height * 0.07,
+        color: background,
+        padding: const EdgeInsets.only(top: 15),
+        child: Row(
+          children: [
+            Text(
+              "Kalecilerimiz",
+              style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black),
+              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+            ),
+            const SizedBox(width: 10),
+            Icon(Icons.handshake, size: iconSize),
+            const Spacer(),
+      
+            GestureDetector(
+              onTap: onNotificationTap,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Icon(Icons.notifications, size: iconSize, color: Colors.black),
+                  ),
+                  StreamBuilder<int>(
+                    stream: getUnreadCount(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData || snapshot.data == 0) {
+                        return SizedBox();
+                      }
+                      return Positioned(
+                        right: 5, // Adjust position
+                        top: -3,
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            snapshot.data.toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: onFilterTap,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 20),
+                child:
+                    Image.asset('lib/icons/setting.png', width: iconSize, height: MediaQuery.sizeOf(context).width * 0.05),
+              ),
+            ),
+          ],
+        ),
+      );
+  }
+
+  Stream<int> getUnreadCount() {
+    final String currentUser = FirebaseAuth.instance.currentUser!.uid;
+
+    return FirebaseFirestore.instance
+      .collection('Users')
+      .doc(currentUser)
+      .collection('appointmentbuyer')
+      .where('appointmentDetails.status', whereIn: ['approved', 'rejected'])
+      .where('appointmentDetails.paymentStatus', isEqualTo: 'waiting')
+      .where('appointmentDetails.isSeen', isEqualTo: false) 
+      .snapshots()
+      .map((snapshot) => snapshot.docs.length);
+      
+  }  
+}
+
+
+
+
+class _EmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext ctx, BoxConstraints constraints) {
+        final iconSize = MediaQuery.sizeOf(context).width * 0.08;
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.search, size: iconSize, color: Colors.grey.shade500),
+              const SizedBox(height: 10),
+              Text(
+                'İlgili sonuç bulunamadı',
+                style: GoogleFonts.inter(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black
+                ),
+                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+}
+
+class _SellerGrid extends StatelessWidget {
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> docs;
+  final Function(BuildContext, Map<String, dynamic>, String) onCardTap;
+  final bool isLoading;
+  final ScrollController? scrollController;
+  final bool hasMore;
+
+  const _SellerGrid({
+    required this.docs,
+    required this.onCardTap,
+    required this.isLoading,
+    required this.scrollController,
+    required this.hasMore
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = constraints.maxWidth;
+        int crossAxisCount = width > 600 ? 3 : 2; 
+
+        return GridView.builder(
+          controller: scrollController,
+          padding: EdgeInsets.zero,
+          physics: const ScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1.8 / 2.3,
+          ),
+          itemCount: docs.length,
+          itemBuilder: (context, index) {
+            var sellerDetails = docs[index]['sellerDetails'];
+            var sellerUid = docs[index].id;
+        
+            return SellerGridItem(
+              sellerDetails: sellerDetails,
+              sellerUid: sellerUid,
+              onTap: (uid) => onCardTap(context, sellerDetails, uid),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class ImageSliderDemo extends StatelessWidget {
+  final double width;
+  final double height;
+
+  final List<String> bannerImages = [
+    'lib/images/kalecimafis1.jpg',
+    'lib/images/kalecimafis2.jpg'
+  ];
+
+  ImageSliderDemo({super.key, required this.width, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+        return SizedBox(
+          width: width,
+          height: height,
+          child: CarouselSlider(
+            options: CarouselOptions(
+              viewportFraction: 1.0,
+              enlargeCenterPage: false,
+              autoPlay: true,
+              height: height,
+              padEnds: false,
+            ),
+            items: bannerImages.map((item) => 
+              SizedBox(
+                width: width,
+                child: Image.asset(
+                  item,
+                  width: width,
+                  fit: BoxFit.fill,
+                ),
+              ),
+            ).toList(),
+          ),
+        );
+  }
+}
+
+

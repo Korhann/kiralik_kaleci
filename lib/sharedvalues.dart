@@ -7,5 +7,4 @@ class sharedValues {
   static bool? onTapped;
   static String? ids;
   static List<String> idsroom = [];
-  
 }

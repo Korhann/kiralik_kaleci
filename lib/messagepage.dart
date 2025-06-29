@@ -45,103 +45,111 @@ class _MessagePageState extends State<MessagePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('$sellerEmail'),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-        }, icon: const Icon(Icons.arrow_back)),
+Widget build(BuildContext context) {
+  return Scaffold(
+    resizeToAvoidBottomInset: true,
+    appBar: AppBar(
+      title: Text('$sellerEmail'),
+      leading: IconButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        icon: const Icon(Icons.arrow_back),
       ),
-      body: Column(
+    ),
+    body: SafeArea(
+      child: Column(
         children: [
-          // mesajlar
-          Expanded(
+          // Message list section
+          Flexible(
             child: _buildMessageList(),
           ),
-
-          // kullanıcı input u
-          _buildMessageInput(),
-          const SizedBox(height: 20)
+          // Message input section
+          Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: _buildMessageInput(),
+          ),
         ],
-      )
-    );
-  }
+      ),
+    ),
+  );
+}
 
-  Widget _buildMessageList() {
-    return StreamBuilder(
-      stream: _chatService.getMessages(sharedValues.sellerUid, _firebaseAuth.currentUser!.uid),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Text("Hata ${snapshot.error}");
-        }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text("Yükleniyor");
-        }
+Widget _buildMessageList() {
+  return StreamBuilder(
+    stream: _chatService.getMessages(sharedValues.sellerUid, _firebaseAuth.currentUser!.uid),
+    builder: (context, snapshot) {
+      if (snapshot.hasError) {
+        return Text("Hata ${snapshot.error}");
+      }
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Text("Yükleniyor");
+      }
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        });
-
-        return ListView(
-          controller: _scrollController,
-          children: snapshot.data!.docs.map((document) => _buildMessageItem(document)).toList(),
+      // Scroll to the bottom when the message list updates
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
         );
-      },
-    );
-  }
+      });
 
-  Widget _buildMessageItem(DocumentSnapshot documentSnapshot) {
-    Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+      return ListView(
+        controller: _scrollController,
+        children: snapshot.data!.docs.map((document) => _buildMessageItem(document)).toList(),
+      );
+    },
+  );
+}
 
-    var alignment = (data['uid'] == _firebaseAuth.currentUser!.uid)
+Widget _buildMessageItem(DocumentSnapshot documentSnapshot) {
+  Map<String, dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
+
+  var alignment = (data['uid'] == _firebaseAuth.currentUser!.uid)
     ? Alignment.centerRight
     : Alignment.centerLeft;
 
-    return Container(
-      alignment: alignment,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: (data["uid"] == _firebaseAuth.currentUser!.uid) 
-          ? CrossAxisAlignment.end 
-          : CrossAxisAlignment.start,
-          children: [
-            // sender maili göstermese de olur. Kaldırabilir sin
-            Text(data['email']),
-            const SizedBox(height: 5),
-            ChatBubble(message: data['message'])
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMessageInput() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal:20),
-      child: Row(
+  return Container(
+    alignment: alignment,
+    child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: (data["uid"] == _firebaseAuth.currentUser!.uid) 
+        ? CrossAxisAlignment.end 
+        : CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              obscureText: false,
-            ),
-          ),
-      
-          // gönder butonu
-          IconButton(onPressed: sendMessage, icon: const Icon(Icons.arrow_upward))
+          // sender email is optional, can be removed
+          Text(data['email']),
+          const SizedBox(height: 5),
+          ChatBubble(message: data['message'])
         ],
       ),
-    );
-  } 
-  Future<void> _getEmail(String uid) async {
+    ),
+  );
+}
+
+Widget _buildMessageInput() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _messageController,
+            obscureText: false,
+          ),
+        ),
+        // send button
+        IconButton(
+          onPressed: sendMessage,
+          icon: const Icon(Icons.arrow_upward),
+        ),
+      ],
+    ),
+  );
+}
+ Future<void> _getEmail(String uid) async {
     try {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(uid).get();
       if (snapshot.exists) {
