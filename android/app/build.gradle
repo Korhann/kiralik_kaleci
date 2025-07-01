@@ -1,3 +1,7 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+
 plugins {
     id "com.android.application"
     id "kotlin-android"
@@ -14,9 +18,16 @@ if (localPropertiesFile.exists()) {
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '1'
 def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0'
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace "com.example.kiralik_kaleci" // Define the namespace
-    compileSdkVersion 35 // Match the latest stable SDK version
+    compileSdk 35
+    //compileSdkVersion 35 // Match the latest stable SDK version
     ndkVersion = "27.0.12077973" // Ensure NDK matches installed version
     lintOptions {
         abortOnError false
@@ -46,14 +57,23 @@ android {
         multiDexEnabled true // Enable multidex support
     }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.debug // Use debug signing for now
-            // Optionally enable proguard for release builds:
-            // minifyEnabled true
-            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] 
+            keyPassword = keystoreProperties["keyPassword"]
+            storeFile = keystoreProperties["storeFile"] ? file(keystoreProperties['storeFile']):null
+            storePassword = keystoreProperties["storePassword"]
         }
     }
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now,
+            // so `flutter run --release` works.
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
     flavorDimensions "env"
 
         productFlavors {
@@ -97,4 +117,5 @@ dependencies {
     // (Optional) Add other dependencies here as needed
     implementation 'androidx.window:window:1.0.0'
     implementation 'androidx.window:window-java:1.0.0'
+    implementation("com.google.android.material:material:1.14.0-alpha02")
 }
