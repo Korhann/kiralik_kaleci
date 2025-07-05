@@ -1,14 +1,16 @@
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onRequest } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
+const iyzipayApp = require('./iyzipay');
 
 admin.initializeApp();
 
-// Set region & time zone
-setGlobalOptions({ region: 'europe-west2' });  // London (closest stable region)
+setGlobalOptions({ region: 'europe-west2' });
 
+// Pazartesi öğlen 5-6 arası çalışıyor
 exports.resetAppointments = onSchedule(
-  { schedule: 'every Monday 00:00', timeZone: 'Europe/Istanbul' },  // Runs at 00:00 Turkey time
+  { schedule: 'every Monday 17:00', timeZone: 'Europe/Istanbul' },
   async () => {
     try {
       const usersRef = admin.firestore().collection('Users');
@@ -21,9 +23,10 @@ exports.resetAppointments = onSchedule(
         const userRef = userDoc.ref;
         const userData = userDoc.data();
 
-        // Haftalık randevu durumu resetleme
+        // Reset `istaken` values properly by making a deep copy
         if (userData.sellerDetails && userData.sellerDetails.selectedHoursByDay) {
-          let updatedHours = userData.sellerDetails.selectedHoursByDay;
+          const updatedHours = JSON.parse(JSON.stringify(userData.sellerDetails.selectedHoursByDay));
+
           Object.keys(updatedHours).forEach((day) => {
             updatedHours[day] = updatedHours[day].map((hourSlot) => ({
               ...hourSlot,
@@ -35,7 +38,7 @@ exports.resetAppointments = onSchedule(
           batchCounter++;
         }
 
-        // Haftalık randevuları silme
+        // Delete old appointments
         const appointmentBuyerRef = userRef.collection("appointmentbuyer");
         const appointmentSellerRef = userRef.collection("appointmentseller");
 
@@ -60,7 +63,7 @@ exports.resetAppointments = onSchedule(
         }
       }
 
-      // Commit any remaining batch writes
+      // Commit remaining batch writes
       if (batchCounter > 0) {
         await batch.commit();
       }
@@ -71,3 +74,25 @@ exports.resetAppointments = onSchedule(
     }
   }
 );
+exports.runVerificationFunction = onSchedule(
+
+  {schedule : 'every 30 minutes', timeZone: 'Europe/Istanbul'},
+  async ()=> {
+    
+    try {
+      const usersRef = admin.firestore().collection('Users');
+      const usersSnapshot = await usersRef.get();
+
+      for (const userDoc of usersSnapshot.docs) {
+        const userRef = userDoc.doc('');
+      }
+    } catch (e) {
+    }
+  }
+);
+
+exports.api = onRequest({ region: 'europe-west2' }, iyzipayApp);
+
+
+
+

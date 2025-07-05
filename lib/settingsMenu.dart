@@ -4,6 +4,7 @@ import 'package:kiralik_kaleci/changeEmail.dart';
 import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/changePassword.dart';
 import 'package:kiralik_kaleci/changeUsername.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
 
 class SettingsMenu extends StatefulWidget {
@@ -14,136 +15,111 @@ class SettingsMenu extends StatefulWidget {
 }
 
 class _SettingsMenuState extends State<SettingsMenu> {
-
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: userorseller ? sellerbackground: background,
+        backgroundColor: userorseller ? sellerbackground : background,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back, color: userorseller ? Colors.white: Colors.black)
-        ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back,
+                color: userorseller ? Colors.white : Colors.black)),
       ),
-      backgroundColor: userorseller ? sellerbackground: background,
+      backgroundColor: userorseller ? sellerbackground : background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 30),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SellerChangeUserName())
-                );
-              },
-              child: Container(
-                height: 50,
-                width: double.infinity,
-                color: userorseller ? sellergrey: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Kullanıcı Adı Değiştir',
-                        style: GoogleFonts.roboto(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
-                          color: userorseller ? Colors.white: Colors.black
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 24,
-                        color: userorseller ? Colors.white: Colors.black,
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
+
+            Menus(text: 'Kullanıcı Adı Değiştir', ontap:() => _navigateToPage('username') ),
+
             Container(
               height: 1,
               color: sellerwhite,
             ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SellerChangePassword())
-                );
-              },
-              child: Container(
-                height: 50,
-                width: double.infinity,
-                color: userorseller ? sellergrey: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Şifre Değiştir',
-                        style: GoogleFonts.roboto(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
-                          color: userorseller ? Colors.white: Colors.black
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 24,
-                        color: userorseller ? Colors.white: Colors.black,
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
+
+            Menus(text: 'Şifre Değiştir', ontap:() => _navigateToPage('password')),
+
             Container(
               height: 1,
               color: sellerwhite,
             ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ChangeEmail())
-                );
-              },
-              child: Container(
-                height: 50,
-                width: double.infinity,
-                color: userorseller ? sellergrey: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Email Değiştir',
-                        style: GoogleFonts.roboto(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
-                          color: userorseller ? Colors.white: Colors.black
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 24,
-                        color: userorseller ? Colors.white: Colors.black,
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            )
+
+            Menus(text: 'Email Değiştir', ontap:() => _navigateToPage('email'))
+
           ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToPage(String menuOption) async {
+    Widget page;
+    switch (menuOption) {
+      case 'username':
+        page = const ChangeUserName();
+        break;
+      case 'password':
+        page = const ChangePassword();
+        break;
+      case 'email':
+        page = const ChangeEmail(); 
+        break;
+      default:
+        return; 
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
+}
+
+
+class Menus extends StatelessWidget {
+
+  final String text;
+  final VoidCallback ontap;
+
+  const Menus({required this.text, required this.ontap});
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
+    TextScaler textScaler = TextScaler.linear(ScaleSize.textScaleFactor(context));
+    return GestureDetector(
+      onTap: ontap,
+      child: Container(
+        height: height*0.065,
+        width: double.infinity,
+        color: userorseller ? sellergrey : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Text(
+                text,
+                style: GoogleFonts.roboto(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    color: userorseller ? Colors.white : Colors.black),
+                    textScaler: textScaler,
+              ),
+              const Spacer(),
+              Icon(
+                Icons.arrow_forward,
+                size: width*0.06,
+                color: userorseller ? Colors.white : Colors.black,
+              )
+            ],
+          ),
         ),
       ),
     );

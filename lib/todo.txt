@@ -1,0 +1,7 @@
+Yapılacaklar
+
+- android ve ios a nasıl yükleniyor video izle
+
+
+ERRORS
+- login de bazen giriş yapmıyor

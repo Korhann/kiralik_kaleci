@@ -1,25 +1,34 @@
 
+import 'dart:async';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiralik_kaleci/mainpage.dart';
 import 'package:kiralik_kaleci/notification/push_helper.dart';
 import 'package:kiralik_kaleci/notification_model.dart';
-import 'package:kiralik_kaleci/styles/button.dart';
+import 'package:kiralik_kaleci/responsiveTexts.dart';
+import 'package:kiralik_kaleci/showAlert.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:kiralik_kaleci/styles/designs.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:kiralik_kaleci/utils/crashlytics_helper.dart';
 
 class ApptRequest extends StatefulWidget {
   final String sellerUid;
   final String selectedDay;
   final String selectedHour;
   final String selectedField;
+  final int selectedPrice;
 
   const ApptRequest({
     super.key,
     required this.sellerUid,
     required this.selectedDay,
     required this.selectedHour,
-    required this.selectedField
+    required this.selectedField,
+    required this.selectedPrice
   });
 
   @override
@@ -27,10 +36,6 @@ class ApptRequest extends StatefulWidget {
 }
 
 class _ApptRequestState extends State<ApptRequest> {
-
-  /*
-  kullanıcı adı soyadı, seçili saat, seçili gün 
-  */
 
   // referanslar
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -44,6 +49,8 @@ class _ApptRequestState extends State<ApptRequest> {
   
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: background,
@@ -58,10 +65,10 @@ class _ApptRequestState extends State<ApptRequest> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 10),
+            const SizedBox(height: 30),
             Container(
               width: double.infinity,
-              height: 220,
+              height: height*0.30,
               color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -69,13 +76,14 @@ class _ApptRequestState extends State<ApptRequest> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 10),
                     Text(
                       'Seçilen gün ve saat',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.bold
                       ),
+                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                     ),
                     const SizedBox(height: 8),
                     Padding(
@@ -88,26 +96,28 @@ class _ApptRequestState extends State<ApptRequest> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
                     Text(
                       'Seçilen saha',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.bold
                       ),
+                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
                     ),
                     const SizedBox(height: 8),
                     Padding(
                       padding: EdgeInsets.only(right: 20),
                       child: _selectedField(),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
                     Text(
                       'Ödenecek Tutar',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.bold
                       ),
+                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
                     ),
                     const SizedBox(height: 8),
                     Padding(
@@ -121,6 +131,7 @@ class _ApptRequestState extends State<ApptRequest> {
                                 fontWeight: FontWeight.normal,
                                 color: Colors.black
                               ),
+                              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
                           ),
                           const Spacer(),
                           _price()
@@ -131,19 +142,21 @@ class _ApptRequestState extends State<ApptRequest> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             Center(
               child: ElevatedButton(
-                // burada bir method oluştur ve onun içinde çalıştır
+                // check for the internet connection
                 onPressed: () async{
-                  await appointmentSeller();
-                  
-                  NotificationModel notificationModel = NotificationModel(widget.selectedHour, widget.selectedDay, widget.selectedField);
-                  await PushHelper.sendPushBefore(userId: widget.sellerUid, text: notificationModel.notification(), page: 'appointment');
-
-                  print(DateTime.now().toUtc());
-              }, 
-              style: buttonPrimary,
+                  if (await InternetConnection().hasInternetAccess) {
+                    await sendRequest();
+                    await navigateToHomePage();
+                  } else {
+                    if (mounted) {
+                      Showalert(context: context, text: 'Ooops...').showErrorAlert();
+                    }
+                  }
+                }, 
+              style: GlobalStyles.buttonPrimary(context),
               child: Text(
                 'Randevu Talebi Gönder',
                 style: GoogleFonts.inter(
@@ -151,6 +164,7 @@ class _ApptRequestState extends State<ApptRequest> {
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
+                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
                 )
               ),
             )
@@ -158,6 +172,16 @@ class _ApptRequestState extends State<ApptRequest> {
         ),
       ),
     );
+  }
+
+  Future<void> navigateToHomePage() async{
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      await Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (context) => const MainPage(index: 0))
+    );
+    }
   }
 
   Widget _selectedField() {
@@ -168,6 +192,7 @@ class _ApptRequestState extends State<ApptRequest> {
       fontWeight: FontWeight.normal,
       color: Colors.black,
     ),
+    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
     );
   }
 
@@ -179,6 +204,7 @@ class _ApptRequestState extends State<ApptRequest> {
       fontWeight: FontWeight.normal,
       color: Colors.black,
     ),
+    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
   );
 }
   Widget _selectedHour() {
@@ -189,39 +215,24 @@ class _ApptRequestState extends State<ApptRequest> {
       fontWeight: FontWeight.normal,
       color: Colors.black,
     ),
+    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
   );
 }
 
   Widget _price() {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: _firestore.collection('Users').doc(widget.sellerUid).snapshots(),
-      builder: (context,snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const Text('Veri bulunamadı');
-        }
-        var userData = snapshot.data!.data() as Map<String,dynamic>;
-        var sellerDetails = userData['sellerDetails'];
-        var sellerPrice = sellerDetails['sellerPrice'];
-
-        // appointment page için
-        sellerFullName = sellerDetails['sellerFullName'];
-
-        return Text(
-          sellerPrice != null ? '${sellerPrice.toString()}TL' : '',
+    return Text(
+          '${widget.selectedPrice}TL',
           style: GoogleFonts.inter(
             fontSize: 15,
             fontWeight: FontWeight.normal,
             color: Colors.black
           ),
+          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context))
         );
-      }
-    );
   }
 
   Future<void> markHourAsTaken(String day, String hourTitle) async {
+    try {
     DocumentReference userRef = FirebaseFirestore.instance.collection("Users").doc(widget.sellerUid);
 
     // Get the existing document
@@ -253,26 +264,41 @@ class _ApptRequestState extends State<ApptRequest> {
         }
       }
     }
+    } catch (e, stack) {
+      await reportErrorToCrashlytics(e, stack, reason: 'apptRequest markHourAsTaken error for sellerUid: ${widget.sellerUid}');
+    }
   }
 
-  // ÖDEME BURAYA EKLENECEK
-  Future<bool> _processPayment() async {
+  // // ÖDEME BURAYA EKLENECEK
+  // Future<bool> _processPayment() async {
 
-    // Simulate payment process (replace this with actual payment gateway logic)
-    await Future.delayed(const Duration(seconds: 2));
-    return true; // Return true if payment is successful
-  }
+  //   // Simulate payment process (replace this with actual payment gateway logic)
+  //   await Future.delayed(const Duration(seconds: 2));
+  //   return true; // Return true if payment is successful
+  // }
 
   // burada eğer approved olursa eklenecek
-  Future<String> appointmentBuyer() async{
-    Map<String,String> appointmentDetails = {
+  Future<String> appointmentBuyer(String verificationCode, String startTime, String endTime) async{
+    try {
+      final snapshot = await _firestore.collection('Users').doc(widget.sellerUid).get();
+      if (snapshot.exists) {
+        final sellerData = snapshot.data();
+        sellerFullName = await sellerData!['fullName'];
+      }
+
+      Map<String,dynamic> appointmentDetails = {
       'name': sellerFullName,
       'selleruid': widget.sellerUid,
       'day': widget.selectedDay,
       'hour': widget.selectedHour,
       'field': widget.selectedField,
+      'verificationCode': verificationCode,
+      'startTime': startTime,
+      'endTime': endTime,
+      'isPastDay': 'false',
       'status': 'pending',
-      'paymentStatus' : 'waiting'
+      'paymentStatus' : 'waiting',
+      'isSeen' : false
     };
 
     DocumentReference buyerDocRef = await _firestore.collection('Users')
@@ -282,47 +308,98 @@ class _ApptRequestState extends State<ApptRequest> {
       'appointmentDetails': appointmentDetails
     });
     return buyerDocRef.id;
+    } catch (e, stack){
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'apptRequest appointmentBuyer error for sellerUid: ${widget.sellerUid}',
+      );
+      return '';
+    }
   }
 
   Future<void> appointmentSeller() async {
   String fullName;
-  
-  // Fetch user data once using `get()` to avoid the asynchronous issue
-  final snapshot = await _firestore.collection('Users').doc(currentuser).get();
-  if (snapshot.exists) {
-    final userdata = snapshot.data();
-    fullName = userdata!['fullName'] ?? '';
-  } else {
-    throw Exception("User data not found"); 
-  }
+  String verificationCode = generateCode();
+  String startTime = widget.selectedHour.split('-')[0];
+  String endTime = widget.selectedHour.split('-')[1];
 
-  String buyerDocId = await appointmentBuyer();
+  // Fetch user data once using `get()` to avoid the asynchronous issue
+  try {
+    final snapshot = await _firestore.collection('Users').doc(currentuser).get();
+    if (snapshot.exists) {
+      final userdata = snapshot.data();
+      fullName = await userdata!['fullName'];
+    } else {
+      throw Exception("User data not found"); 
+    }
+
+    String buyerDocId = await appointmentBuyer(verificationCode, startTime, endTime);
 
   // Create the appointmentDetails map with the fetched data
-  Map<String, String> appointmentDetails = {
+  Map<String, dynamic> appointmentDetails = {
     'fullName': fullName,
     'buyerUid': currentuser,
     'buyerDocId' : buyerDocId,
     'day': widget.selectedDay,
     'hour': widget.selectedHour,
     'field':widget.selectedField,
+    'price': widget.selectedPrice,
+    'verificationCode': verificationCode,
+    'verificationState': 'notVerified',
+    'startTime':startTime,
+    'endTime': endTime,
+    'isPastDay': 'false',
     'status': 'pending',
+    'isSeen' : false
   };
   
-  // Add appointment details to Firestore to the seller account
-  DocumentReference sellerDocRef = await _firestore
+    // Add appointment details to Firestore to the seller account
+    DocumentReference sellerDocRef = await _firestore
       .collection('Users')
       .doc(widget.sellerUid)
       .collection('appointmentseller')
       .add({
-    'appointmentDetails': appointmentDetails,
-  });
+        'appointmentDetails': appointmentDetails,
+      });
   
-  await _firestore
-  .collection('Users')
-  .doc(currentuser)
-  .collection('appointmentbuyer')
-  .doc(buyerDocId)
-  .update({'appointmentDetails.sellerDocId' : sellerDocRef.id});
+    await _firestore
+    .collection('Users')
+    .doc(currentuser)
+    .collection('appointmentbuyer')
+    .doc(buyerDocId)
+    .update({'appointmentDetails.sellerDocId' : sellerDocRef.id});
+  } catch (e,stack) {
+    await reportErrorToCrashlytics(
+      e,
+      stack,
+      reason: 'apptRequest appointmentSeller error for sellerUid: ${widget.sellerUid}',
+    );
   }
+  } 
+
+
+  Future<void> sendRequest() async{
+    try {
+      await appointmentSeller();
+      NotificationModel notificationModel = NotificationModel(widget.selectedHour, widget.selectedDay, widget.selectedField);
+      await PushHelper.sendPushBefore(userId: widget.sellerUid, text: notificationModel.notification(), page: 'appointment');
+      if (mounted) {
+        Showalert(context: context, text: 'Randevu talebi gönderilmiştir').showSuccessAlert();
+      }
+    } catch (e,stack) {
+      await reportErrorToCrashlytics(
+        e,
+        stack,
+        reason: 'apptRequest sendRequest error for sellerUid: ${widget.sellerUid}',
+      );
+      if (mounted){
+        Showalert(context: context, text: 'Ooops...').showErrorAlert();
+      }
+    }
+  }
+  String generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return List.generate(5, (index) => chars[Random().nextInt(chars.length)]).join();
+}
 }

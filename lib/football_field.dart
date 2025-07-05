@@ -17,6 +17,7 @@ class FootballField {
     required this.fieldName
   });
 
+  //todo: Bunu sadece istanbul yap
   static Future<void> storeFields() async {
   var localDb = await Hive.openBox<FootballField>('football_fields');
 
@@ -26,6 +27,7 @@ class FootballField {
   // Define data with cities and districts
   final List<FootballField> fields = [
     // ADANA
+    /*
     FootballField(
       city: 'Adana',
       district: 'Çukurova',
@@ -633,6 +635,7 @@ class FootballField {
       district: 'Merkez',
       fieldName: ['Isparta Sporland Halı Saha','Isparta Demirköprü Halı Saha','Isparta Batıkent Halı Saha','Isparta Fairplay Halı Saha','Yeşil Krampon Halı Saha','Isparta Fatih Halı Saha','Isparta Mavikent Halı Saha','Isparta Arena Park Halı Saha']
     ),
+    */
     // İSTANBUL
     FootballField(
       city: 'İstanbul',
@@ -827,5 +830,4 @@ class FootballField {
     await localDb.add(field);
   }
 }
-
 }

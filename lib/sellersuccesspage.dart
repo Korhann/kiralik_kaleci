@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:kiralik_kaleci/globals.dart';
 import 'package:kiralik_kaleci/sellerDetails.dart';
 import 'package:kiralik_kaleci/styles/colors.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class SellerSuccessPage extends StatefulWidget {
   const SellerSuccessPage({super.key});
@@ -23,61 +23,55 @@ class _SellerSuccessPageState extends State<SellerSuccessPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _fetchUserDetails();
-    userorseller = false;
+    runMethods();
   }
 
-  Future<void> _fetchUserDetails() async{
+  void runMethods() async {
+    await _fetchUserDetails();
+  }
 
-    final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserUid != null && currentUserUid.isNotEmpty) {
-      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-      .collection('Users')
-      .doc(currentUserUid)
-      .get();
-      if (documentSnapshot.exists) {
-        Map<String,dynamic> data = documentSnapshot.data() as Map<String,dynamic>;
-        if (data.isNotEmpty && data.containsKey('sellerDetails')) {
-          Map<String, dynamic> sellerDetails = data['sellerDetails'];
-          Duration duration = const Duration(seconds: 3);
-          Timer(duration, () { 
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: sellerDetails, sellerUid: currentUserUid)));
-          });
-        }
+  Future<void> _fetchUserDetails() async {
+  final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+
+  if (currentUserUid != null && currentUserUid.isNotEmpty) {
+    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUserUid)
+        .get();
+
+    if (documentSnapshot.exists) {
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+      if (data.isNotEmpty && data.containsKey('sellerDetails')) {
+        Map<String, dynamic> sellerDetails = data['sellerDetails'];
+
+        if (!mounted) return; // important check
+
+        QuickAlert.show(
+          onConfirmBtnTap: () {
+            Navigator.of(context).pop(); // close the alert first
+            navigate(sellerDetails, currentUserUid);
+          },
+          context: context,
+          title: 'Başarılı',
+          text: 'İlanınız yüklenmiştir',
+          type: QuickAlertType.success,
+          textColor: Colors.white,
+          backgroundColor: sellergrey,
+          confirmBtnText: 'Tamam',
+          titleColor: Colors.white,
+        );
       }
     }
   }
+}
 
-
+  void navigate(Map<String,dynamic> details, String user) {
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SellerDetailsPage(sellerDetails: details, sellerUid: user, wherFrom: 'fromSomewhere')));
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: sellerbackground,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Yükleme Tamamlanmıştır',
-                      style: GoogleFonts.poppins(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
